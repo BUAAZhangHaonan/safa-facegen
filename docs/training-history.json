@@ -1,7 +1,7 @@
 {
   "recorded_at": "2026-09-22",
-  "phase": "before_HQ_refactor",
-  "scope": "Statistics from existing logs. No new optimizer updates or model ranking.",
+  "phase": "historical_initialization_and_HQ_pretraining",
+  "scope": "The records array retains historical log statistics. HQ stages record actual production training, committed checkpoints, interruptions, and explicit image acceptance.",
   "selected_weight_provenance": "initializations.json",
   "records": [
     {
@@ -470,5 +470,102 @@
         }
       }
     }
-  ]
+  ],
+  "hq_pretraining": {
+    "recorded_at_utc": "2026-09-22T13:00:57Z",
+    "dataset_size": 100000,
+    "queue": [
+      "Diffusion-LDM-UNet",
+      "LatentConsistency-LDM-UNet",
+      "RectifiedFlow-NCSNpp",
+      "MeanFlow-B-4",
+      "MeanFlow-B-2",
+      "MeanFlow-L-2"
+    ],
+    "quality_acceptance": {
+      "Diffusion-LDM-UNet": "awaiting_explicit_user_image_acceptance",
+      "LatentConsistency-LDM-UNet": "awaiting_explicit_user_image_acceptance",
+      "RectifiedFlow-NCSNpp": "awaiting_explicit_user_image_acceptance",
+      "MeanFlow-B-4": "awaiting_explicit_user_image_acceptance",
+      "MeanFlow-B-2": "awaiting_explicit_user_image_acceptance",
+      "MeanFlow-L-2": "awaiting_explicit_user_image_acceptance"
+    },
+    "active_training": {
+      "model_id": "Diffusion-LDM-UNet",
+      "training_code_commit": "81096e7f3d5c2f8b8aa1dff7a1d5a96fe6ea94f3",
+      "controller_started_at_utc": "2026-09-22T12:57:35Z",
+      "world_size": 4,
+      "microbatch": 88,
+      "effective_batch": 352,
+      "learning_rate": 1e-05,
+      "precision": "bf16",
+      "num_workers_per_rank": 4,
+      "prefetch_factor": 2,
+      "resume_checkpoint": "Diffusion-LDM-UNet-0000ep-20260922T125519Z",
+      "resume_optimizer_step": 51,
+      "resume_samples_seen": 17952,
+      "resume_completed_HQ_epochs": 0,
+      "resume_exact_HQ_exposure": 0.17952,
+      "latest_observed_at_utc": "2026-09-22T12:59:21Z",
+      "latest_observed_step": 170,
+      "latest_observed_samples_seen": 59840,
+      "latest_observed_loss": 0.1839846521615982,
+      "latest_observed_gradient_norm": 0.008952206932008266,
+      "latest_observation_is_a_complete_checkpoint": false,
+      "saved_timer_policy": "Absolute save/preview/review times resume from the complete checkpoint; step and sample counters continue."
+    },
+    "interruptions": [
+      {
+        "at_utc": "2026-09-22T12:08:50Z",
+        "model_id": "Diffusion-LDM-UNet",
+        "training_code_commit": "b5234e01766109f1dc1b4ab7e2630035810caa7f",
+        "reason": "CUDA out of memory",
+        "last_logged_step": 140,
+        "last_logged_samples_seen": 98560,
+        "change": {
+          "microbatch_before": 176,
+          "microbatch_after": 88,
+          "learning_rate_before": 1e-05,
+          "learning_rate_after": 1e-05
+        },
+        "resumed_step": 0,
+        "resumed_samples_seen": 0,
+        "persisted_recovery_number": 1
+      },
+      {
+        "at_utc": "2026-09-22T12:16:45Z",
+        "model_id": "Diffusion-LDM-UNet",
+        "training_code_commit": "b5234e01766109f1dc1b4ab7e2630035810caa7f",
+        "reason": "GPU telemetry timeout followed by a process-group stop that terminated DataLoader workers",
+        "last_logged_step": 570,
+        "last_logged_samples_seen": 200000,
+        "last_complete_step": 0,
+        "last_complete_samples_seen": 0,
+        "logged_updates_were_not_saved": true,
+        "recovery_budget_changed": false
+      }
+    ],
+    "subsequent_complete_states": [
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0000ep-20260922T125428Z",
+        "step": 22,
+        "samples_seen": 7744,
+        "reason": "controller_signal"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0000ep-20260922T125519Z",
+        "step": 51,
+        "samples_seen": 17952,
+        "reason": "controller_signal"
+      }
+    ],
+    "quality_materials": {
+      "status": "preview_EMA_transfer_in_progress",
+      "checkpoint_id": "Diffusion-LDM-UNet-0000ep-20260922T125344Z",
+      "generation_host": "K100",
+      "formal_review_samples": 1024,
+      "formal_review_fixed_prefix": 256,
+      "approval_received": false
+    }
+  }
 }
