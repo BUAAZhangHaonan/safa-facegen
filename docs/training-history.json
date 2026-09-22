@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-22T20:50:24.520181+00:00",
+    "recorded_at_utc": "2026-09-22T22:38:58.996569+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -522,7 +522,15 @@
         "saved_at_utc": "2026-09-22T19:24:39.300518+00:00",
         "training_code_commit": "b3c1983a4992d375f7f8d529177e220acb142579",
         "num_workers_per_rank": 2,
-        "prefetch_factor": 1
+        "prefetch_factor": 1,
+        "storage_replica": {
+          "checkpoint_id": "Diffusion-LDM-UNet-0114ep-20260922T192429Z",
+          "host": "K100",
+          "state_path": "models/replicas/Diffusion-LDM-UNet/restore/Diffusion-LDM-UNet-0114ep-20260922T192429Z/Diffusion-LDM-UNet-0114ep-20260922T192429Z.state.pt",
+          "status": "transport_verified",
+          "completed_at_utc": "2026-09-22T21:50:15.501213+00:00",
+          "restore_exercised": false
+        }
       },
       "consecutive_recovery_status": {
         "schema_version": 1,
