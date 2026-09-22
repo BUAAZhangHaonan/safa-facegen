@@ -52,12 +52,14 @@ export SAFA_FACEGEN_ROOT="$PWD"
 import torch
 from safa_facegen import load_generator
 
-generator = load_generator(model_id, checkpoint, codec=codec_path, device="cuda")
+generator = load_generator(model_id, checkpoint)
 noise = torch.randn(1, *generator.noise_shape, device="cuda", requires_grad=True)
 images = generator.sample(noise, step_noises=step_noises, grad_enabled=True)
 ```
 
 `images` 为 `[B,3,256,256]` RGB Tensor，值域约定为 `[-1,1]`。生成器参数保持冻结，输入噪声可以接收梯度。随机多步采样通过显式 `step_noises` 复现；模型暴露 `step_noise_count` 和 `step_noise_shape`。
+
+两参数加载会读取项目 `configs/local.json` 中该模型登记的 `paths.codec`；未设置覆盖时，MeanFlow 使用 `models/codecs/SD-VAE-EMA`，Diffusion 与 LCM 使用 `models/codecs/LDM-VQ4.pt`。路径按 `SAFA_FACEGEN_ROOT` 或当前安装源码的项目根目录解析，缺失路径会直接报错。显式 `codec=` 参数可以指定已登记的编解码器，加载过程继续核对权重中的编解码器身份、结构和缩放。
 
 LDM与LCM保留官方VQ量化的直通梯度估计。预训练始终使用无条件输入，SAFA 的条件注入在独立研究项目中实现。
 
