@@ -25,6 +25,7 @@ import errno
 
 from .common import MODEL_IDS, fsync_directory
 from .data import atomic_json, sha256_file
+from .retention import timestamp as checkpoint_timestamp
 
 H100_ROOT = PurePosixPath("/home/apulis-dev/code/meanflow_e15_h100_bundle")
 K100_ROOT = Path("/home/k100/projects/safa-facegen")
@@ -649,10 +650,26 @@ def transfer_pending(reader: RemoteReader, journal: Journal, root: Path):
             request["source_receipt"] = str(RECEIPT_ROOT / (row["id"] + ".json"))
             if role == "restore":
                 previous = journal.get_pointer(row["model"], "latest_restore")
-                journal.pointer(row["model"], "latest_restore", {"identity": row["identity"], "path": str(path), "restore_exercised": False})
+                current = {"identity": row["identity"], "path": str(path), "restore_exercised": False}
+                newer = previous is None or (
+                    checkpoint_timestamp(current["identity"], row["model"]), current["identity"]
+                ) >= (
+                    checkpoint_timestamp(previous["identity"], row["model"]), previous["identity"]
+                )
+                request["latest_restore_advanced"] = newer
+                if newer:
+                    journal.pointer(row["model"], "latest_restore", current)
                 journal.update(row["id"], "transport_verified", request=request)
                 try:
-                    retire_previous_restore(previous, path, root, row["model"])
+                    if newer:
+                        retire_previous_restore(previous, path, root, row["model"])
+                    else:
+                        # A backoff may finish an older save after a newer restore.
+                        # Keep its receipt, but never replace or retire the newer copy.
+                        retire_previous_restore(current, Path(previous["path"]), root, row["model"])
+                        request["local_copy_retired"] = True
+                        request["retained_restore_identity"] = previous["identity"]
+                        journal.update(row["id"], "transport_verified", request=request)
                 except Exception as exc:
                     request["retention_warning"] = f"{type(exc).__name__}: {exc}"
                     journal.update(row["id"], "transport_verified", request=request)

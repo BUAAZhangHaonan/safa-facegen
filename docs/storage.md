@@ -34,6 +34,8 @@ SHA256 与完整标记证明传输内容一致，不能替代恢复训练的实�
 
 `reports/replication/journal.sqlite3` 用 WAL 记录每个 request 的身份、状态、传输位置、失败原因与审核指针。同 ID、同内容重复到达不会重复启动；同 ID 指向不同内容直接失败。进程中断留下的 copying 状态进入可续传队列，paused_transfer 保持可续传，evaluating 标为 failed 等待显式处理。哈希不一致、模型加载失败、磁盘不足或指标失败均不会被当作网络问题重试，也不自动降低参数。`reports/replication/status.json` 提供最后轮询时间、待评价、失败、网络重试与调度暂停数量。
 
+`latest_restore` 按同模型 checkpoint 身份中的 UTC 时间（相同时按完整身份）单调更新。网络退避造成旧 save 晚于新 save 完成时，保留旧请求的传输回执并清理其已完成本地副本，不回退恢复指针，也不删除较新的完整恢复文件。
+
 CPU 复制循环和单 GPU 评价线程分开运行。K100 GPU0 每次只运行一个正式任务，优先处理 review，避免预览占满审核队列。`reports/evaluation/<identity>/preview/` 存固定 64 张预览；`review/` 存固定 1,024 张及 FID1024、KID、单脸率，详情见 [data.md](data.md)。生成器是真实新权重；没有可加载的权重时，任务明确失败。
 
 ## 启动配置与凭据
