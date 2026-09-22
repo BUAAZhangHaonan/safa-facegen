@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-22T18:43:09.846485+00:00",
+    "recorded_at_utc": "2026-09-22T20:50:24.520181+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -506,34 +506,68 @@
       "resume_samples_seen": 2076736,
       "resume_completed_HQ_epochs": 20,
       "resume_exact_HQ_exposure": 20.76736,
-      "latest_observed_at_utc": "2026-09-22T18:43:07+00:00",
-      "latest_observed_step": 21880,
-      "latest_observed_samples_seen": 10220480,
-      "latest_observed_loss": 0.1664937138557434,
-      "latest_observed_gradient_norm": 0.008968636393547058,
+      "latest_observed_at_utc": "2026-09-22T19:23:49+00:00",
+      "latest_observed_step": 24330,
+      "latest_observed_samples_seen": 11470656,
+      "latest_observed_loss": 0.16673873364925385,
+      "latest_observed_gradient_norm": 0.008547044359147549,
       "latest_observation_is_a_complete_checkpoint": false,
       "saved_timer_policy": "Absolute save/preview/review times resume from the complete checkpoint; step and sample counters continue.",
       "latest_complete_checkpoint": {
-        "checkpoint_id": "Diffusion-LDM-UNet-0100ep-20260922T183850Z",
-        "optimizer_step": 21620,
-        "samples_seen": 10088064,
-        "completed_HQ_epochs": 100,
-        "exact_HQ_exposure": 100.88064,
-        "saved_at_utc": "2026-09-22T18:39:00.817393+00:00",
-        "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611"
+        "checkpoint_id": "Diffusion-LDM-UNet-0114ep-20260922T192429Z",
+        "optimizer_step": 24331,
+        "samples_seen": 11471168,
+        "completed_HQ_epochs": 114,
+        "exact_HQ_exposure": 114.71168,
+        "saved_at_utc": "2026-09-22T19:24:39.300518+00:00",
+        "training_code_commit": "b3c1983a4992d375f7f8d529177e220acb142579",
+        "num_workers_per_rank": 2,
+        "prefetch_factor": 1
       },
       "consecutive_recovery_status": {
-        "status": "idle",
-        "recoveries_scheduled": 0,
-        "updated_at": "20260922T131033Z"
+        "schema_version": 1,
+        "model_id": "Diffusion-LDM-UNet",
+        "status": "exhausted",
+        "failure_kind": "host_memory",
+        "recoveries_scheduled": 2,
+        "recovery_origin_step": 24331,
+        "parameters": {
+          "microbatch": 128,
+          "learning_rate": 1e-05,
+          "precision": "bf16",
+          "num_workers": 1,
+          "prefetch_factor": 1
+        },
+        "changes": {
+          "num_workers": 1,
+          "prefetch_factor": 1
+        },
+        "source_identity": "Diffusion-LDM-UNet-0114ep-20260922T192429Z",
+        "updated_at": "20260922T192458Z",
+        "trainer_pid": 382842
       },
-      "status": "training",
+      "status": "stopped_after_recovery_exhaustion",
       "configured_microbatch": 128,
       "resource_observation": {
         "observed_at_utc": "2026-09-22T18:43:06+00:00",
         "peak_gpu_gib": 54.6728515625,
         "peak_container_memory_gib": 176.4468650817871,
         "recovery_attempt": 0
+      },
+      "stopped_at_utc": "2026-09-22T19:24:58+00:00",
+      "last_attempt_training_code_commit": "b3c1983a4992d375f7f8d529177e220acb142579",
+      "last_attempt_runtime": {
+        "microbatch": 128,
+        "learning_rate": 1e-05,
+        "precision": "bf16",
+        "num_workers": 1,
+        "prefetch_factor": 1
+      },
+      "logged_progress_covered_by_complete_checkpoint": true,
+      "unsaved_optimizer_steps_after_latest_complete": 0,
+      "post_stop_resource_observation": {
+        "observed_at_utc": "2026-09-22T20:50:24.520181+00:00",
+        "container_memory_gib": 33.894866943359375
       }
     },
     "interruptions": [
@@ -565,6 +599,61 @@
         "last_complete_samples_seen": 0,
         "logged_updates_were_not_saved": true,
         "recovery_budget_changed": false
+      },
+      {
+        "at_utc": "2026-09-22T19:24:02+00:00",
+        "model_id": "Diffusion-LDM-UNet",
+        "controller_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611",
+        "reason": "host-memory soft limit; completed checkpoint file pages remained cached",
+        "soft_limit_gib": 192,
+        "hard_limit_gib": 224,
+        "last_logged_step": 24330,
+        "last_complete_step": 24331,
+        "last_complete_samples_seen": 11471168,
+        "last_complete_checkpoint": "Diffusion-LDM-UNet-0114ep-20260922T192429Z",
+        "unsaved_optimizer_steps": 0,
+        "initial_stop_memory_bytes": 207167995904,
+        "recovery_attempts": [
+          {
+            "attempt": 1,
+            "scheduled_at_utc": "2026-09-22T19:24:07+00:00",
+            "training_code_commit": "b3c1983a4992d375f7f8d529177e220acb142579",
+            "resume_checkpoint": "Diffusion-LDM-UNet-0114ep-20260922T192350Z",
+            "resume_optimizer_step": 24331,
+            "resume_samples_seen": 11471168,
+            "num_workers_before": 4,
+            "num_workers_after": 2,
+            "prefetch_factor_before": 2,
+            "prefetch_factor_after": 1,
+            "microbatch_before": 128,
+            "microbatch_after": 128,
+            "learning_rate_before": 1e-05,
+            "learning_rate_after": 1e-05,
+            "new_optimizer_steps": 0,
+            "outcome": "same_host_memory_soft_limit"
+          },
+          {
+            "attempt": 2,
+            "scheduled_at_utc": "2026-09-22T19:24:43+00:00",
+            "training_code_commit": "b3c1983a4992d375f7f8d529177e220acb142579",
+            "resume_checkpoint": "Diffusion-LDM-UNet-0114ep-20260922T192429Z",
+            "resume_optimizer_step": 24331,
+            "resume_samples_seen": 11471168,
+            "num_workers_before": 2,
+            "num_workers_after": 1,
+            "prefetch_factor_before": 1,
+            "prefetch_factor_after": 1,
+            "microbatch_before": 128,
+            "microbatch_after": 128,
+            "learning_rate_before": 1e-05,
+            "learning_rate_after": 1e-05,
+            "new_optimizer_steps": 0,
+            "outcome": "same_host_memory_soft_limit"
+          }
+        ],
+        "stopped_at_utc": "2026-09-22T19:24:58+00:00",
+        "status": "exhausted",
+        "training_restarted_after_manual_diagnosis": false
       }
     ],
     "subsequent_complete_states": [
@@ -777,6 +866,38 @@
         "reason": "scheduled",
         "saved_at_utc": "2026-09-22T18:39:00.817393+00:00",
         "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0105ep-20260922T185349Z",
+        "step": 22527,
+        "samples_seen": 10550688,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-22T18:54:00.643094+00:00",
+        "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0110ep-20260922T190850Z",
+        "step": 23441,
+        "samples_seen": 11016896,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-22T19:09:00.751295+00:00",
+        "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0114ep-20260922T192350Z",
+        "step": 24331,
+        "samples_seen": 11471168,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-22T19:24:01.168165+00:00",
+        "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0114ep-20260922T192429Z",
+        "step": 24331,
+        "samples_seen": 11471168,
+        "reason": "recovery",
+        "saved_at_utc": "2026-09-22T19:24:39.300518+00:00",
+        "training_code_commit": "b3c1983a4992d375f7f8d529177e220acb142579"
       }
     ],
     "quality_materials": {
@@ -1249,6 +1370,22 @@
         },
         "status": "completed_by_requested_configuration_change",
         "paused_at_utc": "2026-09-22T14:06:03.583425+00:00"
+      }
+    ],
+    "operational_actions": [
+      {
+        "at_utc": "2026-09-22T20:43:05+00:00",
+        "model_id": "Diffusion-LDM-UNet",
+        "action": "release_completed_checkpoint_file_cache",
+        "reason": "diagnosed_host_memory_failure_after_two_exhausted_recoveries",
+        "files_advised": 61,
+        "file_bytes_advised": 165554207067,
+        "memory_before_bytes": 198452764672,
+        "memory_after_bytes": 35870523392,
+        "errors": [],
+        "implementation_fix_commit": "593b3bfd1b58c7e1da176f79547716d56e5ee69e",
+        "training_restarted": false,
+        "recovery_budget_reset": false
       }
     ]
   }
