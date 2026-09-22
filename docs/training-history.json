@@ -1,0 +1,474 @@
+{
+  "recorded_at": "2026-09-22",
+  "phase": "before_HQ_refactor",
+  "scope": "Statistics from existing logs. No new optimizer updates or model ranking.",
+  "selected_weight_provenance": "initializations.json",
+  "records": [
+    {
+      "model_id": "MeanFlow-B-4",
+      "status": "retained_initialization",
+      "legacy_source_directory": "/home/apulis-dev/code/meanflow_e15_h100_bundle/artifacts/checkpoints/e15_meanflow_sit_b_face_mixed_h100_resume_2400ep",
+      "available_log_records": 1552,
+      "record_count_is_not_cumulative_epochs": true,
+      "recorded_batch_changes": [
+        {
+          "index": 0,
+          "config": {
+            "global_batch_size": 512,
+            "per_device_batch_size": 512,
+            "gradient_accumulation_steps": 1,
+            "world_size": 1
+          }
+        },
+        {
+          "index": 341,
+          "config": {
+            "global_batch_size": 1024,
+            "per_device_batch_size": 256,
+            "gradient_accumulation_steps": 1,
+            "world_size": 4
+          }
+        }
+      ],
+      "recorded_training_statistics": {
+        "all": {
+          "loss": {
+            "min": 0.9476590649586457,
+            "max": 0.9690297877238347,
+            "mean": 0.9584031927496242,
+            "median": 0.9582159293238933
+          },
+          "flow_matching_mse": {
+            "min": 7.606445381634052,
+            "max": 56.18307742360922,
+            "mean": 11.452868718589775,
+            "median": 11.419485175851676
+          },
+          "grad_norm": {
+            "min": 0.11765457292153285,
+            "max": 0.21266855193284842,
+            "mean": 0.15791359578152966,
+            "median": 0.1544611211996812
+          }
+        },
+        "first100": {
+          "loss": {
+            "min": 0.9594465866382306,
+            "max": 0.9690297877238347,
+            "mean": 0.9642744426921698,
+            "median": 0.9643236377569345
+          },
+          "flow_matching_mse": {
+            "min": 7.606445381634052,
+            "max": 11.923506135793833,
+            "mean": 8.55459448960143,
+            "median": 8.349004233492337
+          },
+          "grad_norm": {
+            "min": 0.154416791837949,
+            "max": 0.20936188408411466,
+            "mean": 0.17997693181978738,
+            "median": 0.17981145517275882
+          }
+        },
+        "last100": {
+          "loss": {
+            "min": 0.9476590649586457,
+            "max": 0.9596829171914321,
+            "mean": 0.9533107639663952,
+            "median": 0.9532892198507603
+          },
+          "flow_matching_mse": {
+            "min": 11.030791599963262,
+            "max": 18.009443088678214,
+            "mean": 13.525693344279436,
+            "median": 13.311440148170178
+          },
+          "grad_norm": {
+            "min": 0.13371288771996132,
+            "max": 0.18922041464860623,
+            "mean": 0.1595929590898202,
+            "median": 0.15854643572018698
+          }
+        }
+      }
+    },
+    {
+      "model_id": "RectifiedFlow-Transformer-B-2",
+      "status": "retired",
+      "legacy_source_directory": "/home/apulis-dev/code/meanflow_e15_h100_bundle/artifacts/checkpoints/e20_rectified_flow_sit_b2_face_mixed_2400ep",
+      "available_log_records": 5000,
+      "record_count_is_not_cumulative_epochs": true,
+      "recorded_batch_changes": [
+        {
+          "index": 0,
+          "config": {
+            "global_batch_size": 1024,
+            "per_device_batch_size": 256,
+            "gradient_accumulation_steps": 1,
+            "world_size": 4
+          }
+        }
+      ],
+      "recorded_training_statistics": {
+        "all": {
+          "loss": {
+            "min": 0.6470886650709006,
+            "max": 0.840555374956131,
+            "mean": 0.6626862570729314,
+            "median": 0.6603730131699489
+          },
+          "flow_matching_mse": {
+            "min": 0.6470886650709006,
+            "max": 0.840555374956131,
+            "mean": 0.6626862570729314,
+            "median": 0.6603730131699489
+          },
+          "grad_norm": {
+            "min": 0.056559566754561204,
+            "max": 0.13831261309935497,
+            "mean": 0.07818768150461665,
+            "median": 0.07785763045572318
+          }
+        },
+        "first100": {
+          "loss": {
+            "min": 0.6924071848447506,
+            "max": 0.840555374956131,
+            "mean": 0.7045134621740855,
+            "median": 0.6996437371134758
+          },
+          "flow_matching_mse": {
+            "min": 0.6924071848447506,
+            "max": 0.840555374956131,
+            "mean": 0.7045134621740855,
+            "median": 0.6996437371134758
+          },
+          "grad_norm": {
+            "min": 0.06347421133243121,
+            "max": 0.13831261309935497,
+            "mean": 0.07953794928379701,
+            "median": 0.07833943630158902
+          }
+        },
+        "last100": {
+          "loss": {
+            "min": 0.6470886650709006,
+            "max": 0.6492794973556812,
+            "mean": 0.6480632011436133,
+            "median": 0.6481188629095371
+          },
+          "flow_matching_mse": {
+            "min": 0.6470886650709006,
+            "max": 0.6492794973556812,
+            "mean": 0.6480632011436133,
+            "median": 0.6481188629095371
+          },
+          "grad_norm": {
+            "min": 0.0702919028703983,
+            "max": 0.11007851718389071,
+            "mean": 0.0855008874479028,
+            "median": 0.08409586911797523
+          }
+        }
+      }
+    },
+    {
+      "model_id": "Diffusion-Transformer-B-2",
+      "status": "retired",
+      "legacy_source_directory": "/home/apulis-dev/code/meanflow_e15_h100_bundle/artifacts/checkpoints/e22_sit_diffusion_b2_face_mixed_2400ep",
+      "available_log_records": 5208,
+      "record_count_is_not_cumulative_epochs": true,
+      "recorded_batch_changes": [
+        {
+          "index": 0,
+          "config": {
+            "global_batch_size": 128,
+            "per_device_batch_size": 32,
+            "gradient_accumulation_steps": 1,
+            "world_size": 4
+          }
+        },
+        {
+          "index": 4,
+          "config": {
+            "global_batch_size": 512,
+            "per_device_batch_size": 128,
+            "gradient_accumulation_steps": 1,
+            "world_size": 4
+          }
+        },
+        {
+          "index": 48,
+          "config": {
+            "global_batch_size": 1024,
+            "per_device_batch_size": 256,
+            "gradient_accumulation_steps": 1,
+            "world_size": 4
+          }
+        }
+      ],
+      "recorded_training_statistics": {
+        "all": {
+          "loss": {
+            "min": 0.11786279600400192,
+            "max": 0.2048506017446518,
+            "mean": 0.12248316059380168,
+            "median": 0.12172434097860868
+          },
+          "flow_matching_mse": {
+            "min": 0.11786279600400192,
+            "max": 0.2048506017446518,
+            "mean": 0.12248316059380168,
+            "median": 0.12172434097860868
+          },
+          "grad_norm": {
+            "min": 0.01141001502413016,
+            "max": 0.20686853026701854,
+            "mean": 0.016063257183825525,
+            "median": 0.014609479028846208
+          }
+        },
+        "first100": {
+          "loss": {
+            "min": 0.1299238165676594,
+            "max": 0.2048506017446518,
+            "mean": 0.1359499495167503,
+            "median": 0.13320787660571246
+          },
+          "flow_matching_mse": {
+            "min": 0.1299238165676594,
+            "max": 0.2048506017446518,
+            "mean": 0.1359499495167503,
+            "median": 0.13320787660571246
+          },
+          "grad_norm": {
+            "min": 0.0280769100773793,
+            "max": 0.20686853026701854,
+            "mean": 0.049118725493509034,
+            "median": 0.044475051285211856
+          }
+        },
+        "last100": {
+          "loss": {
+            "min": 0.11786279600400192,
+            "max": 0.12046441458899242,
+            "mean": 0.11930766796104265,
+            "median": 0.11932032143576787
+          },
+          "flow_matching_mse": {
+            "min": 0.11786279600400192,
+            "max": 0.12046441458899242,
+            "mean": 0.11930766796104265,
+            "median": 0.11932032143576787
+          },
+          "grad_norm": {
+            "min": 0.014261489814978379,
+            "max": 0.016349865718415152,
+            "mean": 0.015126064838569897,
+            "median": 0.015138708672271326
+          }
+        }
+      }
+    },
+    {
+      "model_id": "X0Regression-Transformer-B-2",
+      "status": "retired",
+      "legacy_source_directory": "/home/apulis-dev/code/meanflow_e15_h100_bundle/artifacts/checkpoints/e23_latent_consistency_b2_face_mixed_2400ep",
+      "available_log_records": 5000,
+      "record_count_is_not_cumulative_epochs": true,
+      "recorded_batch_changes": [
+        {
+          "index": 0,
+          "config": {
+            "global_batch_size": 1024,
+            "per_device_batch_size": 256,
+            "gradient_accumulation_steps": 1,
+            "world_size": 4
+          }
+        }
+      ],
+      "recorded_training_statistics": {
+        "all": {
+          "loss": {
+            "min": 0.3410486516228089,
+            "max": 0.486119480239428,
+            "mean": 0.34743948366040467,
+            "median": 0.34700251240501034
+          },
+          "flow_matching_mse": {
+            "min": 0.3410486516228089,
+            "max": 0.486119480239428,
+            "mean": 0.34743948366040467,
+            "median": 0.34700251240501034
+          },
+          "grad_norm": {
+            "min": 0.029560596676629323,
+            "max": 0.5014576985230813,
+            "mean": 0.039831730229374356,
+            "median": 0.0390128312087976
+          }
+        },
+        "first100": {
+          "loss": {
+            "min": 0.3546165082546381,
+            "max": 0.486119480239428,
+            "mean": 0.362447754572309,
+            "median": 0.3594812180023927
+          },
+          "flow_matching_mse": {
+            "min": 0.3546165082546381,
+            "max": 0.486119480239428,
+            "mean": 0.362447754572309,
+            "median": 0.3594812180023927
+          },
+          "grad_norm": {
+            "min": 0.04124381316029108,
+            "max": 0.5014576985230813,
+            "mean": 0.0700166995324309,
+            "median": 0.05471484267069743
+          }
+        },
+        "last100": {
+          "loss": {
+            "min": 0.34182519664305905,
+            "max": 0.344877195923145,
+            "mean": 0.34328560135687314,
+            "median": 0.3432491054447797
+          },
+          "flow_matching_mse": {
+            "min": 0.34182519664305905,
+            "max": 0.344877195923145,
+            "mean": 0.34328560135687314,
+            "median": 0.3432491054447797
+          },
+          "grad_norm": {
+            "min": 0.035063772528905135,
+            "max": 0.04776680731681677,
+            "mean": 0.041278726613484897,
+            "median": 0.04078953548165468
+          }
+        }
+      }
+    },
+    {
+      "model_id": "MeanFlow-L-2",
+      "status": "retained_initialization",
+      "legacy_source_directory": "/home/apulis-dev/code/meanflow_e15_h100_bundle/artifacts/checkpoints/e16_meanflow_sit_l2_face_mixed_official_prior_h100",
+      "available_log_records": 397,
+      "record_count_is_not_cumulative_epochs": true,
+      "recorded_batch_changes": [
+        {
+          "index": 0,
+          "config": {
+            "global_batch_size": 128,
+            "per_device_batch_size": 32,
+            "gradient_accumulation_steps": null,
+            "world_size": 4
+          }
+        },
+        {
+          "index": 215,
+          "config": {
+            "global_batch_size": 256,
+            "per_device_batch_size": 32,
+            "gradient_accumulation_steps": 2,
+            "world_size": 4
+          }
+        }
+      ],
+      "recorded_training_statistics": {
+        "all": {
+          "loss": {
+            "min": 0.9863126186517569,
+            "max": 1.7199410706281661,
+            "mean": 1.0005596555781295,
+            "median": 0.99999963714056
+          },
+          "flow_matching_mse": {
+            "min": 1.4951204977767942,
+            "max": 27.995457222454366,
+            "mean": 7.784173668403541,
+            "median": 5.348891399728335
+          },
+          "grad_norm": {
+            "min": 0.1905432114087383,
+            "max": 1.1268953390745016,
+            "mean": 0.2959554390418644,
+            "median": 0.2395636234836583
+          },
+          "eval_ema_flow_matching_mse": {
+            "min": 1.005535762757063,
+            "max": 100.57442797720432,
+            "mean": 33.455959930084646,
+            "median": 17.99326805397868
+          },
+          "eval_raw_flow_matching_mse": {
+            "min": 1.038194913417101,
+            "max": 42.98668396472931,
+            "mean": 12.072649548295885,
+            "median": 10.488341938704252
+          }
+        },
+        "first100": {
+          "loss": {
+            "min": 0.9863126186517569,
+            "max": 1.7199410706281661,
+            "mean": 1.004584462384279,
+            "median": 0.996874878180027
+          },
+          "flow_matching_mse": {
+            "min": 2.252894450715872,
+            "max": 22.580002670361445,
+            "mean": 8.742073823613625,
+            "median": 8.657741594993151
+          },
+          "eval_ema_flow_matching_mse": {
+            "min": 6.567973874509335,
+            "max": 97.98815071582794,
+            "mean": 44.78485191861788,
+            "median": 29.798431165516376
+          },
+          "eval_raw_flow_matching_mse": {
+            "min": 10.09303244203329,
+            "max": 17.564060360193253,
+            "mean": 12.846914745867252,
+            "median": 10.883651435375214
+          }
+        },
+        "last100": {
+          "loss": {
+            "min": 0.99999963575919,
+            "max": 0.9999996398886045,
+            "mean": 0.9999996379777584,
+            "median": 0.9999996380222855
+          },
+          "flow_matching_mse": {
+            "min": 1.624035393712671,
+            "max": 26.039991591059596,
+            "mean": 2.5903356964839164,
+            "median": 2.0899820816896018
+          },
+          "grad_norm": {
+            "min": 0.21557418743416637,
+            "max": 0.2649583715570749,
+            "mean": 0.2390064218419896,
+            "median": 0.2387852253102104
+          },
+          "eval_ema_flow_matching_mse": {
+            "min": 1.0070690289139748,
+            "max": 1.287528682500124,
+            "mean": 1.1472988557070494,
+            "median": 1.1472988557070494
+          },
+          "eval_raw_flow_matching_mse": {
+            "min": 1.088281076401472,
+            "max": 1.3308489881455898,
+            "mean": 1.209565032273531,
+            "median": 1.209565032273531
+          }
+        }
+      }
+    }
+  ]
+}
