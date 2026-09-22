@@ -153,30 +153,46 @@ def stop_group(process, *, hard=False):
     os.killpg(process.pid, signal.SIGKILL if hard else signal.SIGTERM)
 
 
-def log_tail(path, size=32000):
+def log_tail(path, size=32000, start=0):
     with open(path, "rb") as handle:
         handle.seek(0, 2)
-        handle.seek(max(0, handle.tell() - size))
+        handle.seek(max(start, handle.tell() - size))
         return handle.read().decode("utf-8", errors="replace")
 
 
 def recovery_config(config, state, reason):
     result = copy.deepcopy(config)
     changes = {}
+    is_meanflow = result['model_id'].startswith('MeanFlow-')
+    previous_batch = int(result['microbatch'])
+    previous_learning_rate = float(result['learning_rate'])
+    if is_meanflow and state:
+        saved = read_json(Path(state['checkpoint']) / 'manifest.json')
+        previous_batch = min(previous_batch, int(saved['progress']['microbatch']))
+        previous_learning_rate = min(previous_learning_rate, float(saved['learning_rate']))
     if reason in ("gpu_memory", "out_of_memory"):
-        changes["microbatch"] = max(1, result["microbatch"] // 2)
-        if changes["microbatch"] == result["microbatch"]:
+        changes["microbatch"] = max(1, previous_batch // 2)
+        if changes["microbatch"] == previous_batch:
             raise RuntimeError("No smaller microbatch is available")
     elif reason == "nonfinite":
-        changes["learning_rate"] = result["learning_rate"] * 0.5
+        changes["learning_rate"] = previous_learning_rate * 0.5
         changes["precision"] = "fp32"
     elif reason == "host_memory":
+        if is_meanflow:
+            raise RuntimeError('MeanFlow host-memory limit reached; direct memory-map input has no '
+                               'prefetch workers to reduce. Inspect resident memory before restarting; '
+                               'the latest complete checkpoint is retained.')
         changes["num_workers"] = max(0, result.get("num_workers", 4) // 2)
         changes["prefetch_factor"] = 1
     else:
         raise RuntimeError("Failure requires code diagnosis before recovery")
     result.update(changes)
-    result["recovery_overrides"] = changes
+    if state:
+        result["recovery_overrides"] = changes
+    else:
+        # Before the first completed save, restart from the registered
+        # initialization using the adjusted recipe and fresh optimizer.
+        result.pop('recovery_overrides', None)
     if state and not result["model_id"].startswith("MeanFlow-"):
         result["paths"]["resume"] = state["state_path"]
     return result, changes
@@ -224,6 +240,7 @@ def run_campaign(root, campaign_path):
                 atomic_json(runtime, config)
                 log_path = root / "logs/training" / (model_id + ".log")
                 with log_path.open("ab", buffering=0) as log:
+                    log_offset = log.tell()
                     process = subprocess.Popen(training_command(root, runtime, config, resume=bool(state)),
                                                cwd=root, env=process_environment(root), stdout=log,
                                                stderr=subprocess.STDOUT, start_new_session=True)
@@ -280,15 +297,18 @@ def run_campaign(root, campaign_path):
                     atomic_json(root / "models/formal" / (model_id + ".json"), approval)
                     append_event(events, "model_approved", model_id=model_id, approval=approval, exit_code=exit_code)
                     break
-                tail = log_tail(log_path).lower()
+                tail = log_tail(log_path, start=log_offset).lower()
                 if reason is None:
                     if "automatic recovery exhausted" in tail:
                         raise RuntimeError("Trainer exhausted its bounded recovery; inspect events")
-                    if "out of memory" in tail or "resource_exhausted" in tail:
+                    if "gpu_memory_stop" in tail:
+                        reason = "gpu_memory"
+                    elif "out of memory" in tail or "resource_exhausted" in tail:
                         reason = "out_of_memory"
                     elif "non-finite" in tail or "nonfinite" in tail:
                         reason = "nonfinite"
-                    elif "resource_limit" in tail or "memory_stop" in tail:
+                    elif any(token in tail for token in ('resource_limit', 'memory_stop',
+                                                         'ram soft limit', 'ram hard limit', 'host-memory')):
                         reason = "host_memory"
                     else:
                         reason = "runtime_error"
@@ -298,9 +318,11 @@ def run_campaign(root, campaign_path):
                              consecutive_failures=attempts, log_path=str(log_path))
                 if attempts > campaign["max_consecutive_recovery_failures"]:
                     raise RuntimeError("Two recovery attempts failed; current model stopped")
-                config, changes = recovery_config(config, latest_state(root, model_id), reason)
+                recovery_state = latest_state(root, model_id)
+                config, changes = recovery_config(config, recovery_state, reason)
                 append_event(events, "recovery_scheduled", model_id=model_id, reason=reason, changes=changes,
-                             attempt=attempts)
+                             attempt=attempts, recovery_state=recovery_state,
+                             initialization=config['paths'].get('initial_checkpoint') if not recovery_state else None)
             if stop_requested[0]:
                 return
         atomic_json(state_dir / "status.json", {"status": "all_models_approved", "time": utc_now()})

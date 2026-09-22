@@ -100,10 +100,13 @@ valid samples、OOM/无效步数、当前 batch、周期时刻。恢复时严格
 旧数据阶段训练量保存在 provenance。不会把训练未完成的轮数加到名称里。
 
 默认 JAX 预分配 85%；RAM soft/hard=192/224 GiB，GPU allocator peak 上限 72 GiB。
-超过 RAM soft 时完成停止保存，hard 时避免再复制大状态，保留最近完整检查点。
-显存超预算记录并减小恢复 batch 后退出。OOM/NaN 最多连续自动恢复两次，减 batch，
-NaN 同时减 lr；失败步不更新参数、EMA、RNG、有效样本。耗尽后非零退出并保存
-最后有效状态，交由控制器处理，不修改原始资产。
+达到 RAM soft/hard 阈值时释放当前进程可释放缓存并停止，保留最近完整检查点。
+所有保存入口都先检查内存，包含退出、信号、标定与自动恢复路径；超过阈值不创建
+新的 CPU 状态副本。显存超预算记录并减小恢复 batch 后退出。OOM/NaN 最多连续
+自动恢复两次：OOM 调小 batch；NaN 保留 batch、lr 减半并维持 fp32。失败步不更新
+参数、EMA、RNG、有效样本；耗尽后非零退出，内存允许时保存最后有效状态。
+控制器明确提供的恢复 batch/LR 在恢复完整检查点后生效，事件记录来源与前后值；
+该 trainer 使用直接 memmap 读取，拒绝无效的 worker/prefetch 恢复参数。
 
 每 900 秒保存；每 1800/7200 秒导出 EMA 并向 `requests.jsonl` 写 preview/review
 请求，包含 codec、seed、step 对应检查点。K100 消费这些请求执行真实解码和评价。

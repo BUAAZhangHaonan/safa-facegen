@@ -8,7 +8,11 @@ H100 负责预训练，工程根目录固定为 `/home/apulis-dev/code/meanflow_
 
 训练器在完成原子保存后向 `runs/<model_id>/requests.jsonl` 写入 `save`、`preview` 或 `review`。完整恢复保存约每 900 秒、64 张预览约每 1,800 秒、1,024 张质量评价约每 7,200 秒触发；这些间隔由训练配置控制，worker 默认每 30 秒发现新请求。
 
-传输耗时可能大于保存间隔。worker 在开始复制前刷新请求，未开始的完整恢复只取最新一份，旧 save 明确标为 superseded，之后不再尝试读取已淘汰的源状态；所有 review EMA 请求保留。SFTP 使用最多 32 个并发预读请求，内存按块使用。网络断线后按 30 至 900 秒退避，重连并从已保存的 partial 文件长度继续传输；本地前缀重新参与完整 SHA256 计算，最终内容不匹配时失败，不把损坏文件当成恢复副本。
+传输耗时可能大于保存间隔。每完成或暂停一个产物后，worker 刷新请求并按 `review EMA → preview EMA → 完整恢复` 排序。同类请求优先继续已开始的传输；尚未开始的 save/preview 只保留该模型最新一份，旧请求明确标为 superseded，之后不再读取已淘汰的源状态。所有 review 请求保留，包括每两小时产生的不同审核候选。
+
+完整恢复和 preview 文件复制期间，每约30秒在1 MiB分块边界检查新请求。出现更高优先级 EMA 时，先 flush/fsync 当前 partial，登记 `paused_transfer` 并释放文件句柄，再复制 EMA。新 review 因而不必等数 GiB 的完整状态传完；实际响应时间还受当前网络读取及请求元数据往返限制。正在复制的 review 不会被后来的 preview/save 打断。这里保证调度优先级，不能保证低带宽下每个候选都在两小时间隔内完成传输。
+
+受控暂停保留当前进程内的 SHA256 累积状态，续传先核对源身份和本地大小/mtime/ctime，再从已有字节偏移继续，不反复扫描前缀。已经完整核对的分片在 partial 的 REPLICA 元数据中登记 stat，恢复时直接复用。worker 重启或网络重连丢失内存状态时，仅对尚未完成文件的已有前缀重新计算一次，再继续后续字节；最终仍必须匹配源登记的完整 SHA。SFTP 每次最多预读1 MiB、32个并发请求，读完该窗口后才允许暂停，避免关闭文件后旧预取线程继续占用连接。网络失败按30至900秒退避。partial 从不作为完整模型或可评价权重发布。
 
 MeanFlow checkpoint 是包含 `state/`、`manifest.json` 与 `COMPLETE.json` 的目录。worker 验证 COMPLETE 内的 metadata 身份，并复用 checkpoint 的 `state_files` 清单中已登记的分片 SHA256，流式写入 K100 时核对传输内容；不在每轮同步前重新扫描 H100 大文件。EMA 同样复用导出 manifest 中的 `ema.safetensors` 身份。普通 `save` 可以不含 EMA 导出。
 
@@ -20,7 +24,7 @@ SHA256 与完整标记证明传输内容一致，不能替代恢复训练的实�
 
 源控制器把某份完整恢复视为已转存时必须同时确认：`event="save"`、`artifact_role="restore"`、`received_complete=true`、`checkpoint_received=true`，模型身份与源 checkpoint 路径完全匹配，文件哈希与源内容一致。`preview/review` 的 EMA 回执不能作为完整恢复状态已转存的证据。模型至少有一份有效完整恢复回执后，才可按下述 latest/active/retry 保护策略清理旧恢复状态，包括带宽限制下未开始复制而被 superseded 的状态。所有仍在等待用户决定的 EMA 与正式 approved EMA 必须保留；MeanFlow 的旧恢复状态可清理 `state/`，但仍有待审核导出时必须保留 `COMPLETE.json`、`manifest.json` 和 `export/`，供后续严格校验。`event="probe"` 的传输验证回执不是模型 checkpoint，不得用于清理。
 
-`active-transfer.json` 的 `status="active"` 表示正在复制，携带 `request_id`、`identity`、`model_id`、`source_checkpoint`、`event` 与 `updated_at_unix`，每约 30 秒更新。结束后 `status="idle"` 且清空当前对象。`retrying` 数组单独列出因网络中断仍待重试的身份和源路径。源控制器必须保护 latest、active 与 retrying 中的完整状态；不能仅因一次心跳延迟删除活动源文件。已有至少一次完整且验证通过的恢复回执后，才允许按主控制流程策略清理其余已被明确 superseded 的旧恢复状态，EMA 审核边界保持不变。
+`active-transfer.json` 的 `status="active"` 表示正在复制，携带 `request_id`、`identity`、`model_id`、`source_checkpoint`、`event` 与 `updated_at_unix`，每约30秒更新。结束后 `status="idle"` 且清空当前对象。`retrying` 数组包含网络重试和调度暂停两类待续传身份，分别登记 `status="retry_transfer"` 或 `"paused_transfer"`。暂停时先持久化队列状态，再将 active 转为 retrying 保护；EMA 传输期间该保护持续存在，恢复时再转回 active。已开始的暂停/重试状态不会被新 save 静默 superseded。源控制器必须保护 latest、active 与 retrying 中的完整状态；不能仅因一次心跳延迟删除活动源文件。已有至少一次完整且验证通过的恢复回执后，才允许按主控制流程策略清理其余已被明确 superseded 的旧恢复状态，EMA 审核边界保持不变。
 
 ## 本地保存与审核边界
 
@@ -28,7 +32,7 @@ SHA256 与完整标记证明传输内容一致，不能替代恢复训练的实�
 
 `models/replicas/<model_id>/ema/<identity>/` 保存待评价和已发布候选。尚未开始的旧 preview 可以标记为 superseded；review 不自动合并。已发布审核候选及其评价结果保留，直到用户明确 decision 或授权替换后的清理。新 review 完成真实生成和全部指标后才更新 `current_review`；旧审核对象不会因为新权重抵达而被删除。审核积压会暂存多份 EMA，需要在用户作出决定后由主控制流程收束为正式 EMA 与最新完整恢复副本。
 
-`reports/replication/journal.sqlite3` 用 WAL 记录每个 request 的身份、状态、传输位置、失败原因与审核指针。同 ID、同内容重复到达不会重复启动；同 ID 指向不同内容直接失败。进程中断留下的 copying 状态进入可续传队列，evaluating 状态标为 failed 等待显式处理。哈希不一致、模型加载失败、磁盘不足或指标失败均不会被当作网络问题重试，也不自动降低参数。`reports/replication/status.json` 提供最后轮询时间、待评价数量与失败数量。
+`reports/replication/journal.sqlite3` 用 WAL 记录每个 request 的身份、状态、传输位置、失败原因与审核指针。同 ID、同内容重复到达不会重复启动；同 ID 指向不同内容直接失败。进程中断留下的 copying 状态进入可续传队列，paused_transfer 保持可续传，evaluating 标为 failed 等待显式处理。哈希不一致、模型加载失败、磁盘不足或指标失败均不会被当作网络问题重试，也不自动降低参数。`reports/replication/status.json` 提供最后轮询时间、待评价、失败、网络重试与调度暂停数量。
 
 CPU 复制循环和单 GPU 评价线程分开运行。K100 GPU0 每次只运行一个正式任务，优先处理 review，避免预览占满审核队列。`reports/evaluation/<identity>/preview/` 存固定 64 张预览；`review/` 存固定 1,024 张及 FID1024、KID、单脸率，详情见 [data.md](data.md)。生成器是真实新权重；没有可加载的权重时，任务明确失败。
 
@@ -63,6 +67,8 @@ codec、参考图片和评价权重必须已在 K100 项目中存在；这些路
 启动器以管道向 `python -m safa_facegen.replicate --config <配置路径>` 的 stdin 发送一行 JSON：`{jump:{hostname,port,user,password,key},h100:{hostname,port,user,password,key}}`。`key` 是已核验 SSH 公钥完整二进制 blob 的 base64，不是指纹字符串或私钥。两级主机都执行严格 pin 校验。密码不写入配置、环境变量、命令行、日志或临时文件；启动器只在内存构造并注入。worker 不承担凭据持久化或自动重启注入工作。
 
 `--once` 仅用于 `evaluate:false` 的单次同步检查。本地 `.tools/start_replication.py` 从已有 SSH 配置与 known_hosts 在内存读取凭据，通过 SSH stdin 调用 K100 `.tools/replication_launch.py`。不加 `--once` 时，后者以匿名 stdin 管道将凭据交给独立 session 的 worker；加 `--once` 时只执行同步检查，不启动 GPU 评价。普通配置为 `configs/replication.local.json`，其中不包含密码。长期任务由主控制流程启动；worker 用本地文件锁拒绝第二个进程抢占同一队列。失败详情和请求状态保留，恢复或重试需主控制流程明确处理。
+
+源端收到更新完整恢复的有效回执后，可同时删除旧状态对应的 save-only EMA；preview/review 候选及已审批的正式 EMA 继续保留。训练 metadata 保留，并用 `recovery_state_available`、`ema_available` 明确登记文件是否仍可用。
 
 ## K100 研究材料保留边界
 

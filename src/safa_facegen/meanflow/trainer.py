@@ -209,6 +209,18 @@ def make_train_step(model, ema_decay=FIXED_RECIPE["ema_decay"]):
 
 
 def save_checkpoint(state, progress, config, identity, *, export=False):
+    level, memory = memory_status(config["limits"])
+    if level != "ok":
+        # Do not allocate a second host state after the shared RAM threshold.
+        # This also guards final, signal-driven, calibration and recovery saves.
+        runtime = sys.modules.get("jax")
+        if runtime is not None:
+            runtime.clear_caches()
+        gc.collect()
+        append_event(Path(config["paths"]["output"])/"events.jsonl", "checkpoint_save_skipped",
+                     reason=f"RAM {level} limit", memory_gib=memory, latest_complete_preserved=True)
+        raise MemoryError(f"RAM {level} limit prevents checkpoint save ({memory:.2f} GiB); "
+                          "preserving the latest complete checkpoint")
     import jax
     from flax import jax_utils, serialization
     import orbax.checkpoint as ocp
@@ -309,6 +321,40 @@ def restore_checkpoint(path, template, identity):
     return serialization.from_state_dict(template, data), metadata["progress"]
 
 
+def apply_recovery_overrides(state, progress, config, *, checkpoint=None):
+    """Apply an explicit controller recovery after restoring the saved state."""
+    requested = config.get("recovery_overrides") or {}
+    if not requested:
+        return state, progress
+    unsupported = set(requested)-{"microbatch", "learning_rate", "precision"}
+    if unsupported:
+        raise ValueError(f"Unsupported MeanFlow recovery overrides: {sorted(unsupported)}; "
+                         "this trainer reads memmap batches directly and has no DataLoader workers or prefetch queue")
+    before = {"microbatch":int(progress["microbatch"]),
+              "learning_rate":float(np.asarray(state.learning_rate)), "precision":"fp32"}
+    after = dict(before)
+    if "microbatch" in requested:
+        value = requested["microbatch"]
+        if isinstance(value,bool) or not isinstance(value,int) or value < 1:
+            raise ValueError("Recovery microbatch must be a positive integer")
+        after["microbatch"] = value
+    if "learning_rate" in requested:
+        value = float(requested["learning_rate"])
+        if not np.isfinite(value) or value <= 0:
+            raise ValueError("Recovery learning_rate must be finite and positive")
+        after["learning_rate"] = float(np.asarray(value,dtype=np.float32))
+    if requested.get("precision","fp32") != "fp32":
+        raise ValueError("Original MeanFlow recovery must retain fp32 precision")
+    restored_progress = copy.deepcopy(progress)
+    restored_progress["microbatch"] = after["microbatch"]
+    if "learning_rate" in requested:
+        state = state.replace(learning_rate=np.asarray(after["learning_rate"],dtype=np.float32))
+    append_event(Path(config["paths"]["output"])/"events.jsonl", "recovery_overrides_applied",
+                 source="controller.recovery_overrides", checkpoint=str(checkpoint) if checkpoint else None,
+                 requested=requested, before=before, after=after)
+    return state, restored_progress
+
+
 def run(config, *, resume=None, max_steps=None):
     validate_recipe(config)
     # Must precede the first JAX import/device initialization.
@@ -360,10 +406,12 @@ def run(config, *, resume=None, max_steps=None):
         rng.bit_generator.state = progress["numpy_rng"]
     elif (output/"latest.json").exists():
         raise FileExistsError("Output already has a checkpoint; pass --resume latest")
+    state, progress = apply_recovery_overrides(state,progress,config,checkpoint=resume)
+    actual_learning_rate = float(np.asarray(state.learning_rate))
     state = jax_utils.replicate(state)
     step_fn = make_train_step(create_model(config["model_id"]))
     append_event(output/"events.jsonl", "training_start", identity=identity, resume=resume,
-                 microbatch=progress["microbatch"], device_count=devices,
+                 microbatch=progress["microbatch"], learning_rate=actual_learning_rate, device_count=devices,
                  jax=jax.__version__, devices=[str(d) for d in jax.local_devices()])
     stop = {"requested": False}
     def request_stop(*_):
@@ -381,13 +429,10 @@ def run(config, *, resume=None, max_steps=None):
         level, ram = memory_status(limits)
         if level != "ok":
             append_event(output/"events.jsonl", "memory_stop", level=level, memory_gib=ram)
-            # At hard limit, avoid allocating another host copy for checkpointing.
-            if level == "hard":
-                raise MemoryError("RAM hard limit reached; preserve most recent complete checkpoint")
-            if config.get("calibration", False):
-                save_checkpoint(state,progress,config,identity,export=False)
-                raise MemoryError("Calibration exceeded RAM soft limit")
-            break
+            jax.clear_caches()
+            gc.collect()
+            raise MemoryError(f"RAM {level} limit reached; stopped without a new CPU state copy; "
+                              "preserving the latest complete checkpoint")
         if order_epoch != progress["sampler_epoch"]:
             order_epoch = progress["sampler_epoch"]
             order = np.random.default_rng(np.random.SeedSequence([config["seed"], order_epoch])).permutation(cache.count)
@@ -429,7 +474,6 @@ def run(config, *, resume=None, max_steps=None):
                 progress["microbatch"] = max(1, old_batch//2)
             else:
                 state = state.replace(learning_rate=jnp.full((devices,), old_lr*0.5, dtype=jnp.float32))
-                progress["microbatch"] = max(1, old_batch//2)
             append_event(output/"events.jsonl", "automatic_recovery", reason=type(exc).__name__, detail=str(exc),
                          old_microbatch=old_batch, new_microbatch=progress["microbatch"],
                          old_learning_rate=old_lr, new_learning_rate=old_lr if is_oom else old_lr*0.5,
@@ -442,6 +486,7 @@ def run(config, *, resume=None, max_steps=None):
                 save_checkpoint(state, progress, config, identity, export=False)
                 raise RecoveryExhausted("Bounded automatic recovery exhausted; last valid state saved") from exc
             continue
+        del batch
         failures = 0
         failure_kind = None
         state = candidate
@@ -464,9 +509,10 @@ def run(config, *, resume=None, max_steps=None):
                 raise MemoryError("Calibration exceeded GPU memory budget")
             # Historical allocator peak cannot be reset reliably in-process.
             # Save the valid state and stop; the supervisor restarts a smaller batch.
-            progress["microbatch"] = max(1, progress["microbatch"]//2)
             append_event(output/"events.jsonl", "gpu_memory_stop", gpu_peak_gib=gpu_peak,
-                         resume_microbatch=progress["microbatch"])
+                         microbatch=progress["microbatch"], recovery_owner="controller")
+            print("gpu_memory_stop: GPU memory budget exceeded; saving the current valid state; "
+                  "controller will choose the recovery microbatch", file=sys.stderr, flush=True)
             break
         now = time.time()
         preview = now-progress["last_preview"] >= config["preview_interval_seconds"]

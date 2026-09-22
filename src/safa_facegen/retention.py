@@ -7,7 +7,7 @@ import re
 import shutil
 import time
 
-from .common import MODEL_IDS, append_event, atomic_json, require_inside
+from .common import MODEL_IDS, append_event, atomic_json, require_inside, utc_now
 
 
 def timestamp(identity, model):
@@ -57,6 +57,21 @@ def retire_states(root, model):
     # Older complete states can be retired once K100 has a newer verified restore.
     # States newer than that receipt remain local through transfer delays/failures.
     cutoff = max(item[0] for item in confirmed)
+    evaluation_candidates = set()
+    requests = run / 'requests.jsonl'
+    if requests.exists():
+        with requests.open(encoding='utf-8') as handle:
+            for line in handle:
+                if not line.endswith('\n'):
+                    continue
+                request = json.loads(line)
+                if request.get('event') in ('preview', 'review'):
+                    evaluation_candidates.add(request.get('checkpoint_id', request.get('identity')))
+    approval_path = root / 'runs/approvals' / (model + '.json')
+    if approval_path.exists():
+        approval = read(approval_path)
+        if approval.get('decision') == 'approved':
+            evaluation_candidates.add(Path(approval['ema_path']).name.removesuffix('.ema.pt'))
     candidates = (run / 'checkpoints').glob('*') if model.startswith('MeanFlow-') else run.glob('*.state.pt')
     retired = []
     for candidate in candidates:
@@ -82,11 +97,21 @@ def retire_states(root, model):
                                                          'confirmed_restore': max(confirmed, key=lambda item: item[0])[1]['identity']})
             shutil.rmtree(target)
         else:
-            metadata = read(candidate.with_name(identity + '.json'))
+            metadata_path = candidate.with_name(identity + '.json')
+            metadata = read(metadata_path)
             if not metadata.get('state_sha256') or metadata.get('complete') is False:
                 raise ValueError('Retiring state has no complete save record')
             candidate.unlink()
+            ema = candidate.with_name(identity + '.ema.pt')
+            if identity not in evaluation_candidates and ema.exists():
+                if ema.is_symlink():
+                    raise ValueError('EMA must not be a symbolic link')
+                require_inside(ema, run).unlink()
+            metadata.update(recovery_state_available=False, ema_available=ema.exists(),
+                            retired_at=utc_now(), retirement_reason='newer_K100_restore_verified')
+            atomic_json(metadata_path, metadata)
         retired.append(identity)
         append_event(root / 'runs/controller/events.jsonl', 'recovery_state_retired', model_id=model,
-                     identity=identity, reason='newer_K100_restore_verified', ema_retained=True)
+                     identity=identity, reason='newer_K100_restore_verified',
+                     ema_retained=True if model.startswith('MeanFlow-') else metadata['ema_available'])
     return retired

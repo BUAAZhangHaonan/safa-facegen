@@ -19,6 +19,18 @@ EXECUTION_PATHS = ('src', 'vendor', 'configs', 'requirements', 'requirements.txt
                    'requirements-jax.txt', 'pyproject.toml')
 
 
+def model_execution_paths(model_id):
+    common = ('src/safa_facegen/__init__.py', 'src/safa_facegen/common.py',
+              'src/safa_facegen/controller.py', 'src/safa_facegen/calibrate.py',
+              'src/safa_facegen/data.py', 'src/safa_facegen/cache.py',
+              'src/safa_facegen/generator.py', 'configs', 'requirements',
+              'requirements.txt', 'requirements-jax.txt', 'pyproject.toml')
+    if model_id.startswith('MeanFlow-'):
+        return common + ('src/safa_facegen/meanflow', 'vendor/meanflow')
+    return common + ('src/safa_facegen/train_torch.py', 'src/safa_facegen/torch_models',
+                     'vendor/rectified_flow', 'vendor/latent_diffusion', 'vendor/latent_consistency')
+
+
 def utc_now():
     return dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
@@ -112,13 +124,14 @@ def same_validated_implementation(root, previous, current):
         return False
     if previous.get('code_commit') == current['code_commit']:
         return True
-    # Documentation and training-record commits do not invalidate completed GPU
-    # runs. The exact validated and current revisions remain in their records.
+    # Compare the code used by this model. Changes to documentation or transfer
+    # workers do not require repeating its optimizer/resume run. Both exact
+    # revisions remain recorded for provenance.
     revision = previous.get('code_commit', '')
     if len(revision) != 40 or any(c not in '0123456789abcdef' for c in revision):
         return False
     return subprocess.run(['git', '-C', str(root), 'diff', '--quiet', revision,
-                           current['code_commit'], '--', *EXECUTION_PATHS],
+                           current['code_commit'], '--', *model_execution_paths(current['recipe']['model_id'])],
                           capture_output=True).returncode == 0
 
 

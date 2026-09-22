@@ -30,6 +30,11 @@ H100_ROOT = PurePosixPath("/home/apulis-dev/code/meanflow_e15_h100_bundle")
 K100_ROOT = Path("/home/k100/projects/safa-facegen")
 ALLOWED_REMOTE = (H100_ROOT / "runs", H100_ROOT / "models", H100_ROOT / "data/hq256")
 RECEIPT_ROOT = H100_ROOT / "reports/replication/receipts"
+TRANSFER_PRIORITY = {"review": 0, "preview": 1, "save": 2}
+
+
+class TransferPaused(Exception):
+    """A durable partial transfer yielded its connection to a higher priority EMA."""
 
 
 def remote_path(value: str) -> PurePosixPath:
@@ -77,6 +82,10 @@ class RemoteReader:
         self.active = None
         self.retrying = []
         self.last_heartbeat = 0.0
+        self.transfer_check = None
+        # hashlib state is deliberately memory-only. Controlled scheduling pauses
+        # reuse it; a process restart must read an unfinished prefix once.
+        self.partial_digests = {}
         try:
             jump, target = credentials["jump"], credentials["h100"]
             self.jump = paramiko.SSHClient()
@@ -174,31 +183,51 @@ class RemoteReader:
         if (before.st_size, before.st_mtime) != (record["bytes"], record["mtime"]):
             raise ValueError("Remote source changed before transfer")
         destination.parent.mkdir(parents=True, exist_ok=True)
+        progress_key = (str(destination), str(source), record["sha256"], record["bytes"], record["mtime"])
         digest, total = hashlib.sha256(), 0
         if destination.exists():
             if not destination.is_file() or destination.is_symlink() or destination.stat().st_size > record["bytes"]:
                 raise ValueError("Invalid resumable local partial file")
-            with destination.open("rb") as existing:
-                for block in iter(lambda: existing.read(1024 * 1024), b""):
-                    digest.update(block); total += len(block)
+            info = destination.stat()
+            previous = self.partial_digests.get(progress_key)
+            if previous and previous["stat"] == (info.st_size, info.st_mtime_ns, info.st_ctime_ns):
+                digest, total = previous["digest"].copy(), info.st_size
+            else:
+                with destination.open("rb") as existing:
+                    for block in iter(lambda: existing.read(1024 * 1024), b""):
+                        digest.update(block); total += len(block)
             if total == record["bytes"]:
                 if digest.hexdigest() != record["sha256"]:
                     raise ValueError("Completed staging file has an incorrect hash")
+                self.partial_digests.pop(progress_key, None)
                 return
-        with self.sftp.open(str(source), "rb") as remote, destination.open("ab" if destination.exists() else "xb") as local:
-            remote.seek(total)
-            # Bounded SFTP pipelining avoids one network round trip per 32 KiB read.
-            remote.prefetch(file_size=record["bytes"], max_concurrent_requests=32)
-            while True:
-                block = remote.read(1024 * 1024)
-                if not block:
-                    break
-                local.write(block); digest.update(block); total += len(block)
-                self.heartbeat()
-            local.flush(); os.fsync(local.fileno())
+        try:
+            with self.sftp.open(str(source), "rb") as remote, destination.open("ab" if destination.exists() else "xb") as local:
+                remote.seek(total)
+                try:
+                    while total < record["bytes"]:
+                        # Drain each bounded window before yielding: Paramiko does not
+                        # cancel a whole-file prefetch thread when its handle closes.
+                        window_end = min(total + 1024 * 1024, record["bytes"])
+                        remote.prefetch(file_size=window_end, max_concurrent_requests=32)
+                        block = remote.read(window_end - total)
+                        if not block:
+                            break
+                        local.write(block); digest.update(block); total += len(block)
+                        self.heartbeat()
+                        if self.transfer_check is not None:
+                            self.transfer_check()
+                finally:
+                    local.flush(); os.fsync(local.fileno())
+        finally:
+            if destination.is_file():
+                info = destination.stat()
+                if info.st_size == total:
+                    self.partial_digests[progress_key] = {"stat": (info.st_size, info.st_mtime_ns, info.st_ctime_ns), "digest": digest.copy()}
         after = self.sftp.stat(str(source))
         if total != record["bytes"] or digest.hexdigest() != record["sha256"] or (after.st_size, after.st_mtime) != (before.st_size, before.st_mtime):
             raise ValueError("Transferred file SHA256/size/source-stability check failed")
+        self.partial_digests.pop(progress_key, None)
         fsync_directory(destination.parent)
 
     def _prepare_replication_directory(self):
@@ -331,7 +360,7 @@ def normalize_request(raw: dict, expected_model: str) -> dict:
 
 
 def copy_bundle(reader: RemoteReader, files: list[dict], destination: Path, *, role: str, request: dict) -> dict:
-    """All files are source-hashed before copy and destination-hashed while copying."""
+    """Verify the committed source identities while streaming an atomic local bundle."""
     if not files:
         raise ValueError("Refusing an empty artifact bundle")
     receipt_name = "REPLICA.json"
@@ -346,8 +375,6 @@ def copy_bundle(reader: RemoteReader, files: list[dict], destination: Path, *, r
                 raise ValueError("Existing verified local replica changed")
         return receipt
     destination.parent.mkdir(parents=True, exist_ok=True)
-    if shutil.disk_usage(destination.parent).free < sum(x["bytes"] for x in files) + 16 * 1024 * 1024:
-        raise OSError("Insufficient disk for complete staging transfer")
     staging = destination.with_name("." + destination.name + ".partial")
     receipt = {"schema_version": 1, "managed_by": "safa_facegen.replicate", "role": role,
                "identity": request["identity"], "model_id": request["model_id"], "status": "transferring", "files": files}
@@ -357,15 +384,37 @@ def copy_bundle(reader: RemoteReader, files: list[dict], destination: Path, *, r
         previous = json.loads((staging / receipt_name).read_text())
         if previous.get("identity") != request["identity"] or [(x["path"],x["sha256"],x["bytes"]) for x in previous["files"]] != [(x["path"],x["sha256"],x["bytes"]) for x in files]:
             raise ValueError("Partial staging content belongs to a different source identity")
+        receipt["verified_files"] = previous.get("verified_files", {})
     else:
         staging.mkdir()
     atomic_json(staging / receipt_name, receipt)
+    remaining = 0
+    for record in files:
+        relative = Path(record["path"])
+        if relative.is_absolute() or ".." in relative.parts or record["path"] == receipt_name:
+            raise ValueError("Unsafe bundle relative path")
+        local = staging / relative
+        if local.is_symlink():
+            raise ValueError("Partial bundle file must not be a symlink")
+        remaining += max(0, record["bytes"] - (local.stat().st_size if local.is_file() else 0))
+    if shutil.disk_usage(destination.parent).free < remaining + 16 * 1024 * 1024:
+        raise OSError("Insufficient disk for the remaining staging transfer")
     try:
         for record in files:
             relative = Path(record["path"])
             if relative.is_absolute() or ".." in relative.parts or record["path"] == receipt_name:
                 raise ValueError("Unsafe bundle relative path")
-            reader.download(record, staging / relative)
+            if reader.transfer_check is not None:
+                reader.transfer_check()
+            local = staging / relative
+            verified = receipt.get("verified_files", {}).get(record["path"])
+            info = local.stat() if local.exists() else None
+            if verified and info and not local.is_symlink() and verified == {"bytes": info.st_size, "mtime_ns": info.st_mtime_ns}:
+                continue
+            reader.download(record, local)
+            info = local.stat()
+            receipt.setdefault("verified_files", {})[record["path"]] = {"bytes": info.st_size, "mtime_ns": info.st_mtime_ns}
+            atomic_json(staging / receipt_name, receipt)
         receipt.update(status="transport_verified", copied_at=time.time(), restore_exercised=False)
         receipt["local_stat"] = {record["path"]: {"bytes": (staging / record["path"]).stat().st_size,
                                 "mtime_ns": (staging / record["path"]).stat().st_mtime_ns} for record in files}
@@ -374,7 +423,7 @@ def copy_bundle(reader: RemoteReader, files: list[dict], destination: Path, *, r
         os.replace(staging, destination)
         fsync_directory(destination.parent)
     except BaseException as exc:
-        receipt.update(status="failed", error=f"{type(exc).__name__}: {exc}")
+        receipt.update(status="paused" if isinstance(exc, TransferPaused) else "failed", error=f"{type(exc).__name__}: {exc}")
         atomic_json(staging / receipt_name, receipt)
         raise
     return receipt
@@ -542,26 +591,45 @@ def transfer_pending(reader: RemoteReader, journal: Journal, root: Path):
     import paramiko
 
     def waiting():
-        return sorted(journal.rows("received") + journal.rows("retry_transfer"), key=lambda item: item["rowid"])
+        rows = journal.rows("received") + journal.rows("retry_transfer") + journal.rows("paused_transfer")
+        return sorted(rows, key=lambda item: (TRANSFER_PRIORITY[item["event"]],
+                      item["status"] == "received", item["rowid"]))
 
     def retry_protection():
         return [{"request_id": row["id"], "identity": row["identity"], "model_id": row["model"],
-                 "source_checkpoint": json.loads(row["payload"])["checkpoint"]} for row in journal.rows("retry_transfer")]
+                 "source_checkpoint": json.loads(row["payload"])["checkpoint"], "status": row["status"]}
+                for row in journal.rows("retry_transfer") + journal.rows("paused_transfer")]
 
-    rows = waiting()
-    for row in rows:
+    while True:
+        # Rebuild the eligible queue after every completed or paused artifact.
+        poll_requests(reader, journal)
+        pending = waiting()
+        for candidate in pending:
+            if candidate["status"] == "received" and candidate["event"] in ("save", "preview"):
+                if any(item["model"] == candidate["model"] and item["event"] == candidate["event"]
+                       and item["rowid"] > candidate["rowid"] for item in pending):
+                    journal.update(candidate["id"], "superseded", error="Newer unstarted request of the same kind exists")
+        eligible = [item for item in waiting() if json.loads(item["payload"]).get("retry_after_unix", 0) <= time.time()]
+        if not eligible:
+            break
+        row = eligible[0]
         request = json.loads(row["payload"])
-        if row["event"] in ("save", "preview"):
-            # A transfer can last longer than several save intervals. Refresh before
-            # starting each older snapshot, never copy an already superseded save.
-            poll_requests(reader, journal)
-            current = [item for item in waiting() if item["model"] == row["model"] and item["event"] == row["event"]]
-            if current and current[-1]["id"] != row["id"]:
-                journal.update(row["id"], "superseded", error="Newer unstarted request of the same kind exists")
-                continue
-        if request.get("retry_after_unix", 0) > time.time():
+        if not journal.change_if(row["id"], row["status"], "copying"):
             continue
-        journal.update(row["id"], "copying")
+        last_poll = time.monotonic()
+
+        def check_priority():
+            nonlocal last_poll
+            if row["event"] == "review" or time.monotonic() - last_poll < 30:
+                return
+            poll_requests(reader, journal)
+            last_poll = time.monotonic()
+            if any(TRANSFER_PRIORITY[item["event"]] < TRANSFER_PRIORITY[row["event"]]
+                   and json.loads(item["payload"]).get("retry_after_unix", 0) <= time.time()
+                   for item in waiting()):
+                raise TransferPaused("Higher priority EMA request arrived; preserve and resume this partial transfer")
+
+        reader.transfer_check = check_priority
         retry = False
         try:
             reader.begin_transfer(request, retry_protection())
@@ -595,6 +663,11 @@ def transfer_pending(reader: RemoteReader, journal: Journal, root: Path):
                         if prior["model"] == row["model"] and prior["event"] == "preview":
                             journal.change_if(prior["id"], "queued", "superseded", "Newer preview transferred before evaluation started")
                 journal.update(row["id"], "queued", request=request)
+        except TransferPaused as exc:
+            # Persist this state before clearing active: source retention always
+            # sees either active or retrying protection for the unfinished state.
+            request.pop("retry_after_unix", None)
+            journal.update(row["id"], "paused_transfer", request=request, error=str(exc))
         except Exception as exc:
             retry = isinstance(exc, (EOFError, ConnectionError, TimeoutError, paramiko.SSHException)) or (
                 isinstance(exc, OSError) and exc.errno in (errno.EPIPE, errno.ECONNRESET, errno.ETIMEDOUT, errno.ENETUNREACH, errno.EHOSTUNREACH))
@@ -603,6 +676,7 @@ def transfer_pending(reader: RemoteReader, journal: Journal, root: Path):
                 request["retry_after_unix"] = time.time() + min(900, 30 * 2 ** min(request["transfer_attempts"] - 1, 5))
             journal.update(row["id"], "retry_transfer" if retry else "failed", request=request, error=f"{type(exc).__name__}: {exc}")
         finally:
+            reader.transfer_check = None
             with contextlib.suppress(Exception):
                 reader.end_transfer(retry_protection())
         if retry:
@@ -683,7 +757,8 @@ def _run(credentials: dict, config: dict, *, once=False):
                     raise RuntimeError("Evaluation worker exited unexpectedly")
                 atomic_json(root / "reports/replication/status.json", {"status": "one_shot_complete" if once else "running", "last_poll": time.time(),
                             "queue_depth": len(journal.rows("queued")), "failed_requests": len(journal.rows("failed")),
-                            "retrying_transfers": len(journal.rows("retry_transfer"))})
+                            "retrying_transfers": len(journal.rows("retry_transfer")),
+                            "paused_transfers": len(journal.rows("paused_transfer"))})
             except Exception as exc:
                 # Authentication values never form part of errors or structured logs.
                 atomic_json(root / "reports/replication/status.json", {"status": "failed", "time": time.time(), "error": f"{type(exc).__name__}: {exc}"})
