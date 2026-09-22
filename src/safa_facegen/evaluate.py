@@ -154,19 +154,22 @@ def distribution_metrics(generated: list[Path], real: list[Path], *, weights: Pa
 
 
 def face_metrics(paths: list[Path], invalid: set[int], *, detector_path: Path,
-                 output: Path, detector_size: int = 640, detector_threshold: float = 0.5,
+                 output: Path, detector_size: int = 256, detector_threshold: float = 0.5,
                  cpu_threads: int = 8) -> dict:
     if not detector_path.is_file():
         raise FileNotFoundError(f"Face detection ONNX must already exist: {detector_path}")
     import insightface
     import onnxruntime
+    from insightface.model_zoo.retinaface import RetinaFace
     options = onnxruntime.SessionOptions()
     options.intra_op_num_threads = cpu_threads
     options.inter_op_num_threads = 1
     # Direct ONNX path avoids FaceAnalysis model downloads and recognition-model loading.
-    detector = insightface.model_zoo.get_model(str(detector_path), providers=["CPUExecutionProvider"], sess_options=options)
-    if detector is None or not hasattr(detector, "detect"):
-        raise TypeError("The supplied ONNX is not an InsightFace face detector")
+    # InsightFace's model router does not forward sess_options. Bind the session
+    # explicitly so the recorded CPU thread limits apply to the real detector.
+    session = onnxruntime.InferenceSession(str(detector_path), sess_options=options,
+                                          providers=["CPUExecutionProvider"])
+    detector = RetinaFace(model_file=str(detector_path), session=session)
     detector.prepare(ctx_id=-1, input_size=(detector_size, detector_size), det_thresh=detector_threshold)
     counts = {"zero": 0, "single": 0, "multiple": 0, "nonfinite": len(invalid)}
     with (output / "face-records.jsonl").open("x", encoding="utf-8") as handle:
@@ -187,15 +190,16 @@ def face_metrics(paths: list[Path], invalid: set[int], *, detector_path: Path,
             "denominator_includes_blank_and_nonfinite": True,
             "detector": detector_path.name, "detector_sha256": evaluation_asset(detector_path)["sha256"],
             "detector_size": [detector_size, detector_size], "threshold": detector_threshold,
-            "cpu_threads": cpu_threads,
-            "providers": ["CPUExecutionProvider"], "insightface_version": _version("insightface")}
+            "cpu_threads": session.get_session_options().intra_op_num_threads,
+            "cpu_inter_threads": session.get_session_options().inter_op_num_threads,
+            "providers": session.get_providers(), "insightface_version": _version("insightface")}
 
 
 def evaluate(*, model_id: str, checkpoint: str | Path, dataset_manifest: str | Path,
              output: str | Path, inception_weights: str | Path, face_detector: str | Path,
              codec: str | None = None, image_root: str | Path | None = None,
              device: str = "cuda:0", batch_size: int = 16, seed: int = 42,
-             detector_size: int = 640, detector_threshold: float = 0.5,
+             detector_size: int = 256, detector_threshold: float = 0.5,
              cpu_threads: int = 8, ema_sha256: str | None = None,
              dataset_manifest_sha256: str | None = None) -> dict:
     if batch_size < 1 or cpu_threads < 1 or detector_size < 1 or not 0 < detector_threshold < 1:
@@ -420,7 +424,7 @@ def main() -> None:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--detector-size", type=int, default=640)
+    parser.add_argument("--detector-size", type=int, default=256)
     parser.add_argument("--detector-threshold", type=float, default=0.5)
     parser.add_argument("--cpu-threads", type=int, default=8)
     args = parser.parse_args()
