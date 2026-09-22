@@ -1,0 +1,12 @@
+# CUDA torch/torchvision are locked separately on each GPU host.
+omegaconf==2.3.0
+ml-collections==1.1.0
+safetensors==0.8.0
+torch-fidelity==0.4.0
+gdown==5.2.0
+paramiko==3.5.1
+numpy==1.26.4
+Pillow==12.2.0
+einops==0.8.2
+tqdm==4.67.3
+PyYAML==6.0.3

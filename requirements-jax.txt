@@ -1,0 +1,24 @@
+# Python 3.11 or 3.12, Linux x86_64; NVIDIA driver >= 580.
+# Dedicated JAX runtime; H100 reuses its installed CUDA libraries.
+jax[cuda13]==0.7.2
+flax==0.11.2
+optax==0.2.5
+orbax-checkpoint==0.11.26
+numpy==2.2.6
+safetensors==0.8.0
+psutil==7.0.0
+# CUDA package versions used by the H100 2026-09-22 GPU validation.
+nvidia-cublas==13.1.0.3
+nvidia-cuda-crt==13.4.92
+nvidia-cuda-cupti==13.0.85
+nvidia-cuda-nvcc==13.4.92
+nvidia-cuda-nvrtc==13.0.88
+nvidia-cuda-runtime==13.0.96
+nvidia-cudnn-cu13==9.15.1.9
+nvidia-cufft==12.0.0.61
+nvidia-cusolver==12.0.4.66
+nvidia-cusparse==12.6.3.3
+nvidia-nccl-cu13==2.28.9
+nvidia-nvjitlink==13.0.88
+nvidia-nvshmem-cu13==3.4.5
+nvidia-nvvm==13.4.92

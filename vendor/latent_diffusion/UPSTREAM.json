@@ -1,0 +1,9 @@
+{
+  "url": "https://github.com/CompVis/latent-diffusion",
+  "commit": "a506df5756472e2ebaf9078affdde2c4f1502cd4",
+  "adaptations": [
+    "Official Encoder Decoder and UNet retained; lightweight inference VQ wrapper avoids Lightning",
+    "Taming VectorQuantizer2 dependency fixed at 24268930bf1dce879235a7fddd0b2355b84d7ea6",
+    "Replace custom activation checkpoint backward with torch non-reentrant checkpoint for frozen input gradients and autocast support"
+  ]
+}

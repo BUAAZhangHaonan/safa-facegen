@@ -1,0 +1,88 @@
+{
+  "hq_stage_epoch_starts_at": 0,
+  "selected_legacy_meanflow": [
+    {
+      "canonical_id": "MeanFlow-B-4-1751ep-20260701T114714Z",
+      "model_name": "MeanFlow-B-4",
+      "host": "H100",
+      "source_path": "/home/apulis-dev/code/meanflow_e15_h100_bundle/artifacts/checkpoints/e15_meanflow_sit_b_face_mixed_h100_resume_2400ep/last.pt",
+      "source_bytes": 2106379290,
+      "completed_epochs": 1751,
+      "optimizer_steps": [
+        290957.0,
+        290957.0
+      ],
+      "history_optimizer_steps": null,
+      "sha256": "250122a50970b691368b62a70531a2c31baffd4d316915734b8c6b12865c39f5",
+      "sha256_verified": true,
+      "selected_state_key": "ema_model_state_dict",
+      "parent_lineage": {
+        "description": "Legacy adaptation; retain original training_config and complete checkpoint history without inferring cumulative epochs"
+      }
+    },
+    {
+      "canonical_id": "MeanFlow-L-2-0397ep-20260810T123950Z",
+      "model_name": "MeanFlow-L-2",
+      "host": "H100",
+      "source_path": "/home/apulis-dev/code/meanflow_e15_h100_bundle/artifacts/checkpoints/e16_meanflow_sit_l2_face_mixed_official_prior_h100/last.pt",
+      "source_bytes": 7355578513,
+      "completed_epochs": 397,
+      "optimizer_steps": [
+        92274.0,
+        92274.0
+      ],
+      "history_optimizer_steps": 310714,
+      "sha256": "0f955e4d0af95a646dac517f36fe4d52c0a543add7128fb815c39ac83e7531c7",
+      "sha256_verified": true,
+      "selected_state_key": "ema_model_state_dict",
+      "parent_lineage": {
+        "parent_checkpoint": "/home/apulis-dev/code/meanflow_e15_h100_bundle/artifacts/checkpoints/e16_meanflow_sit_l2_face_mixed_prior_h100/last.pt",
+        "parent_checkpoint_sha256": "7a2f06c90ae0fe72ebb890b141f99ce86cf81af093b3265fdbaafe7044794b5c",
+        "parent_epoch": 214,
+        "parent_optimizer_steps": 218440,
+        "optimizer_state_restored": false,
+        "reason": "official_recipe_transition"
+      }
+    },
+    {
+      "canonical_id": "MeanFlow-B-2-0240ep-20260816T161618Z",
+      "model_name": "MeanFlow-B-2",
+      "host": "RTX_Pro_6000",
+      "source_path": "/home/k100/projects/safa-facegen/artifacts/final/meanflow_b2_null_prior_best/checkpoint/epoch-0240.pt",
+      "source_bytes": 2101159697,
+      "completed_epochs": 240,
+      "optimizer_steps": [
+        93600.0
+      ],
+      "history_optimizer_steps": null,
+      "sha256": "778d6349243feed5193550fc5650a6e3b0f691aa6d24df1da9998f370fc104a6",
+      "sha256_verified": true,
+      "selected_state_key": "ema_state_dict",
+      "parent_lineage": {
+        "parent_path": "/home/k100/projects/safa-facegen/artifacts/face_pretraining_b2_null_prior/checkpoints/epoch-0900.pt",
+        "parent_sha256": "537ddb82c17c577a2774b4b10baf1a074670a6a64a280218cb61e47533fda1ed",
+        "parent_completed_epochs": 900,
+        "parent_currently_present": false,
+        "mode": "model weights only then exact EMA copy; optimizer/new-recipe epochs reset",
+        "epoch_semantics": "240 complete new-recipe epochs; excludes parent 900 and any older ancestry"
+      }
+    }
+  ],
+  "official_sources": {
+    "RectifiedFlow-NCSNpp": {
+      "repository": "https://github.com/gnobitab/RectifiedFlow",
+      "commit": "5a1fd4dd3ea7db764ce370a84ce35f9c8b15fde6",
+      "weights": "https://drive.google.com/file/d/1ryhuJGz75S35GEdWDLiq4XFrsbwPdHnF/view"
+    },
+    "Diffusion-LDM-UNet": {
+      "repository": "https://github.com/CompVis/latent-diffusion",
+      "commit": "a506df5756472e2ebaf9078affdde2c4f1502cd4",
+      "weights": "https://ommer-lab.com/files/latent-diffusion/ffhq.zip"
+    },
+    "LatentConsistency-LDM-UNet": {
+      "repository": "https://github.com/luosiallen/latent-consistency-model",
+      "commit": "a9ad79587cc8bd1e404ccd1a3056a3da969b2f62",
+      "weights": "user-approved project Diffusion EMA"
+    }
+  }
+}

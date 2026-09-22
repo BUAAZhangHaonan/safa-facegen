@@ -1,0 +1,15 @@
+{
+  "url": "https://github.com/luosiallen/latent-consistency-model",
+  "commit": "a9ad79587cc8bd1e404ccd1a3056a3da969b2f62",
+  "adaptations": [
+    "LCD math extracted verbatim",
+    "Unconditional FFHQ-LDM teacher adaptation; no text/CFG branch"
+  ],
+  "inference_scheduler_reference": "https://github.com/huggingface/diffusers/blob/v0.22.0/src/diffusers/schedulers/scheduling_lcm.py",
+  "inference_timesteps_4": [
+    999,
+    759,
+    519,
+    279
+  ]
+}

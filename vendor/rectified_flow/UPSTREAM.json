@@ -1,0 +1,14 @@
+{
+  "url": "https://github.com/gnobitab/RectifiedFlow",
+  "commit": "5a1fd4dd3ea7db764ce370a84ce35f9c8b15fde6",
+  "adaptations": [
+    "Relative imports for isolated package",
+    "Select official native tensor upfirdn2d on every device; remove eager CUDA extension compilation"
+  ],
+  "differentiable_solver": {
+    "source": "https://github.com/scipy/scipy/tree/v1.17.0/scipy/integrate/_ivp",
+    "method": "RK45/Dormand-Prince Torch translation",
+    "license": "SCIPY_LICENSE.txt",
+    "adaptation": "FP64 Torch state, FP32 neural field, SciPy tableau/error control/initial step/RMS norm/endpoint; accepted state updates retain autograd"
+  }
+}

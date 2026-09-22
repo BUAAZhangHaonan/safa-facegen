@@ -1,0 +1,44 @@
+{
+  "model_id": "MeanFlow-L-2",
+  "learning_rate": 0.0001,
+  "microbatch": 64,
+  "device_count": 4,
+  "required_world_size": 4,
+  "seed": 42,
+  "save_interval_seconds": 900,
+  "preview_interval_seconds": 1800,
+  "review_interval_seconds": 7200,
+  "limits": {
+    "gpu_gib": 72,
+    "memory_soft_gib": 192,
+    "memory_hard_gib": 224
+  },
+  "paths": {
+    "dataset_manifest": "data/hq256/manifest.json",
+    "latent_cache": "data/hq256/cache/meanflow/manifest.json",
+    "initial_checkpoint": "models/initialization/MeanFlow-L-2",
+    "codec": "models/codecs/SD-VAE-EMA",
+    "output": "runs/MeanFlow-L-2"
+  },
+  "max_recovery_failures": 2,
+  "precision": "fp32",
+  "adam_betas": [
+    0.9,
+    0.95
+  ],
+  "adam_eps": 1e-08,
+  "weight_decay": 0.0,
+  "ema_decay": 0.9999,
+  "time_sampling": {
+    "distribution": "logit_normal",
+    "mean": -0.4,
+    "std": 1.0
+  },
+  "data_proportion": 0.75,
+  "norm_p": 1.0,
+  "norm_eps": 0.01,
+  "null_label": 1000,
+  "guidance": "none",
+  "class_dropout_prob": 0.0,
+  "latent_scale": 0.18215
+}

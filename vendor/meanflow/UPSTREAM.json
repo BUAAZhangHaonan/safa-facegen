@@ -1,0 +1,15 @@
+{
+  "repository": "https://github.com/Gsunshine/meanflow",
+  "commit": "d70cb55d298ee03c53bf6da67bec281082e4e2d9",
+  "files": {
+    "LICENSE": "526cf2427583e3684cd9e647e8096555a9989105c2081cc2163ba30d9c66fb1a",
+    "meanflow.py": "b8dcee1033e6ba01de0019d14fad846a399d356d67e549ee311a5e19d2a7c3a4",
+    "models/models_dit.py": "a8c27c8bfde30da864dd698df341c30b4f7b8018bce597c32a31678a07573017",
+    "models/timm_models.py": "6bcf7c924ac2e03a3588aec32ca3380e206c6585310d09025b0717bf5970f7c5",
+    "models/torch_models.py": "05cbc06a459ab4dd4f8536e5f19a06fea18e47e595cfd0dcd591baa80442e3c7",
+    "configs/default.py": "2f6d4f9ce057ec8b0cbbb597562f06e418e19751172618f4e9c4e6d353e9a5e7",
+    "configs/run_b4.yml": "f56a95e5c3025294fd7d7a991f3477d68fa3d00d8232ae7847e7dbc984d32f80",
+    "utils/ema_util.py": "5da424ba254c60cbfbddbc0adf982867d80b0dd43fc6708d5fe8ab7b660b17c1",
+    "utils/ckpt_util.py": "d73abdb8e994186d6bbe455b700c021677a0085510479216455882cd3ce20e8c"
+  }
+}

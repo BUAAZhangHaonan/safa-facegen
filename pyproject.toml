@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "safa-facegen"
+version = "0.1.0"
+description = "Unconditional face generator pretraining and differentiable delivery"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26", "Pillow>=10", "safetensors>=0.4", "PyYAML>=6"]
+
+[project.scripts]
+safa-facegen = "safa_facegen.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
