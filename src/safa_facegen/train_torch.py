@@ -103,6 +103,71 @@ def _reduce_flag(value,device):
     return int(tensor.item())
 
 
+STOP_REQUEST_REASONS = frozenset({
+    "controller_signal", "user_approval", "host_memory", "gpu_memory", "controller_error"
+})
+
+
+def _stop_request_path(config,root,model_id):
+    value=config.get("stop_request_path")
+    if value is None:
+        return None
+    if not isinstance(value,str) or not value:
+        raise ValueError("stop_request_path must be an absolute controller request path")
+    path=Path(value)
+    expected=root/"runs"/"controller"/(model_id+".stop.json")
+    if not path.is_absolute() or path.resolve()!=expected:
+        raise ValueError(f"stop_request_path must resolve to {expected}")
+    return expected
+
+
+def _read_stop_request(path,model_id):
+    if path is None:
+        return None
+    if path.is_symlink():
+        raise ValueError("Controller stop request must not be a symlink")
+    try:
+        with path.open(encoding="utf-8") as handle:
+            text=handle.read(4097)
+    except FileNotFoundError:
+        return None
+    if len(text)>4096:
+        raise ValueError("Controller stop request exceeds 4096 characters")
+    request=json.loads(text)
+    if not isinstance(request,dict) or request.get("model_id")!=model_id:
+        raise ValueError(f"Controller stop request must belong to {model_id}")
+    reason=request.get("reason")
+    if not isinstance(reason,str) or reason not in STOP_REQUEST_REASONS:
+        raise ValueError(f"Unknown controller stop reason: {reason!r}")
+    created=request.get("created_at")
+    if not isinstance(created,str) or len(created)!=16:
+        raise ValueError("Controller stop created_at must use YYYYMMDDTHHMMSSZ")
+    datetime.strptime(created,"%Y%m%dT%H%M%SZ")
+    return {"model_id":model_id,"reason":reason,"created_at":created}
+
+
+def _synchronized_stop_request(path,model_id,rank,device):
+    # Only rank zero reads the file. Broadcast errors too, so no rank exits while
+    # its peers enter the next training collective.
+    message=None
+    if rank==0:
+        try:
+            request=_read_stop_request(path,model_id)
+            if request is not None:
+                message={"request":request}
+        except (OSError,ValueError,TypeError) as exc:
+            message={"error":f"{type(exc).__name__}: {exc}"}
+    if not _reduce_flag(message is not None,device):
+        return None
+    messages=[message]
+    if dist.is_initialized():
+        dist.broadcast_object_list(messages,src=0,device=device)
+    message=messages[0]
+    if "error" in message:
+        raise ValueError(f"Invalid controller stop request at {path}: {message['error']}")
+    return message["request"]
+
+
 def _recipe(config,paths,world):
     keys=("model_id","learning_rate","microbatch","gradient_accumulation_steps","precision",
           "ema_decay","weight_decay","adam_betas","gradient_clip","seed","num_workers","prefetch_factor")
@@ -149,6 +214,8 @@ def run(config,callbacks=None):
     config.update(overrides)
     model_id=config["model_id"]
     kind=family(model_id)
+    root=Path(config.get("project_root",Path(__file__).resolve().parents[2])).resolve()
+    stop_request_path=_stop_request_path(config,root,model_id)
     world=int(os.environ.get("WORLD_SIZE","1"))
     rank=int(os.environ.get("RANK","0"))
     local_rank=int(os.environ.get("LOCAL_RANK","0"))
@@ -165,7 +232,6 @@ def run(config,callbacks=None):
         dist.init_process_group("nccl" if device.type=="cuda" else "gloo")
     if config.get("required_world_size",4)!=world:
         raise ValueError(f"Configured world size {config.get('required_world_size',4)} differs from WORLD_SIZE={world}")
-    root=Path(config.get("project_root",Path(__file__).resolve().parents[2])).resolve()
     code_revision=config.get("code_commit") or git_commit(root)
     paths={key:str(_resolve(value,root)) for key,value in config["paths"].items() if value}
     output=Path(paths["output"]).resolve()
@@ -297,6 +363,7 @@ def run(config,callbacks=None):
                "review":float(config.get("review_interval_seconds",7200))}
     latest=None
     stop_reason=[None]
+    stop_without_save=[False]
 
     def release_prefetch():
         # Stop only this loader's own workers and release its queued host batches.
@@ -329,6 +396,7 @@ def run(config,callbacks=None):
             raise RuntimeError(f"Hard host-memory redline; checkpoint allocation prohibited: {memory_info}")
         if memory_level==1:
             stop_reason[0]="resource_limit"
+            stop_without_save[0]=True
             release_prefetch()
             publish("stop_requested",{"model_id":model_id,"reason":"memory_soft","new_checkpoint":False,**memory_info})
             return False
@@ -355,7 +423,8 @@ def run(config,callbacks=None):
             metadata={"model_id":model_id,"config":config,"progress":dict(progress),
                       "step":progress["step"],"samples_seen":progress["samples_seen"],
                       "dataset_size":len(dataset),"codec_sha256":recipe["codec_sha256"],
-                      "teacher_sha256":recipe["teacher_sha256"],"teacher":teacher_metadata,"code_commit":code_revision}
+                      "teacher_sha256":recipe["teacher_sha256"],"teacher":teacher_metadata,"code_commit":code_revision,
+                      "stop_reason":stop_reason[0] if reason=="stop_requested" else None}
             atomic_torch_save({"format":"safa-facegen-train-v1",**metadata,"recipe":recipe,
                 "model_state":net.state_dict(),"ema_state":ema.state_dict(),
                 "optimizer_state":optimizer.state_dict(),"rng_by_rank":rngs,
@@ -376,7 +445,8 @@ def run(config,callbacks=None):
                     "sha256":hashes["ema"],"state_sha256":hashes["state"],"state_role":"ema","hashes":hashes,
                     "ema_sha256":hashes["ema"],"step":progress["step"],"completed_epochs":progress["samples_seen"]//len(dataset),
                     "created_at_utc":datetime.now(timezone.utc).isoformat(),
-                    "samples_seen":progress["samples_seen"],"reason":reason,"model_id":model_id}
+                    "samples_seen":progress["samples_seen"],"reason":reason,"model_id":model_id,
+                    "stop_reason":metadata["stop_reason"]}
             atomic_json(output/(name+".json"),latest)
             publish("save",latest)
             for event in scheduled_events:
@@ -398,12 +468,16 @@ def run(config,callbacks=None):
         level=_reduce_flag(level,device)
         if level==2:
             raise RuntimeError(f"Hard host-memory redline; stop without allocating a new checkpoint: {info}")
-        stop=_reduce_flag(request_stop[0] or level==1,device)
-        if stop and rank==0:
-            publish("stop_requested",{**info,"model_id":model_id,"reason":"resource_limit" if level else "signal","new_checkpoint":not bool(level)})
+        controller_request=_synchronized_stop_request(stop_request_path,model_id,rank,device)
+        stop=_reduce_flag(request_stop[0] or controller_request is not None or level==1,device)
         if stop:
-            stop_reason[0]="resource_limit" if level else "signal"
-            if level:release_prefetch()
+            stop_reason[0]=(controller_request["reason"] if controller_request else
+                            "resource_limit" if level else "signal")
+            stop_without_save[0]=bool(level or stop_reason[0] in {"host_memory","gpu_memory"})
+            if rank==0:
+                publish("stop_requested",{**info,"model_id":model_id,"reason":stop_reason[0],
+                        "new_checkpoint":not stop_without_save[0],"controller_request":controller_request})
+            if stop_without_save[0]:release_prefetch()
         return bool(stop)
 
     try:
@@ -418,7 +492,7 @@ def run(config,callbacks=None):
                 config.get("max_hq_epochs") is not None and progress["samples_seen"]>=float(config["max_hq_epochs"])*len(dataset)):
                 return {"status":"complete",**progress}
             if needs_stop():
-                if stop_reason[0]!="resource_limit":save("stop_requested")
+                if not stop_without_save[0]:save("stop_requested")
                 return {"status":"stopped","reason":stop_reason[0],"resume_from_last_complete":True,**progress}
             epoch=progress["epoch"]
             sampler.set_epoch(epoch);dataset.set_epoch(epoch)
@@ -463,14 +537,15 @@ def run(config,callbacks=None):
                 completed=(config.get("max_steps") is not None and progress["step"]>=int(config["max_steps"])) or (
                     config.get("max_hq_epochs") is not None and progress["samples_seen"]>=float(config["max_hq_epochs"])*len(dataset))
                 stop=needs_stop()
-                if stop and stop_reason[0]=="resource_limit":
-                    return {"status":"stopped","reason":"resource_limit","resume_from_last_complete":True,**progress}
+                if stop and stop_without_save[0]:
+                    return {"status":"stopped","reason":stop_reason[0],"resume_from_last_complete":True,**progress}
                 if any(flags.values()) or completed or stop:
-                    if not save("complete" if completed else "stop_requested" if stop else "scheduled",
+                    if not save("stop_requested" if stop else "complete" if completed else "scheduled",
                                 [event for event in ("preview","review") if flags[event]]):
                         return {"status":"stopped","reason":"memory_soft","resume_from_last_complete":True,**progress}
                 if completed or stop:
-                    return {"status":"complete" if completed else "stopped",**progress}
+                    return {"status":"stopped" if stop else "complete",
+                            **({"reason":stop_reason[0]} if stop else {}),**progress}
             progress["epoch"]+=1
             progress["next_batch"]=0
             progress["samples_in_epoch_per_rank"]=0
