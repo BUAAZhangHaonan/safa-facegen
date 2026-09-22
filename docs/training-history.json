@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-22T13:00:57Z",
+    "recorded_at_utc": "2026-09-22T13:25:33.762037+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -506,13 +506,27 @@
       "resume_samples_seen": 17952,
       "resume_completed_HQ_epochs": 0,
       "resume_exact_HQ_exposure": 0.17952,
-      "latest_observed_at_utc": "2026-09-22T12:59:21Z",
-      "latest_observed_step": 170,
-      "latest_observed_samples_seen": 59840,
-      "latest_observed_loss": 0.1839846521615982,
-      "latest_observed_gradient_norm": 0.008952206932008266,
+      "latest_observed_at_utc": "2026-09-22T13:25:27+00:00",
+      "latest_observed_step": 2450,
+      "latest_observed_samples_seen": 859840,
+      "latest_observed_loss": 0.14430727064609528,
+      "latest_observed_gradient_norm": 0.008822299540042877,
       "latest_observation_is_a_complete_checkpoint": false,
-      "saved_timer_policy": "Absolute save/preview/review times resume from the complete checkpoint; step and sample counters continue."
+      "saved_timer_policy": "Absolute save/preview/review times resume from the complete checkpoint; step and sample counters continue.",
+      "latest_complete_checkpoint": {
+        "checkpoint_id": "Diffusion-LDM-UNet-0008ep-20260922T132344Z",
+        "optimizer_step": 2310,
+        "samples_seen": 810560,
+        "completed_HQ_epochs": 8,
+        "exact_HQ_exposure": 8.1056,
+        "saved_at_utc": "2026-09-22T13:23:53.274654+00:00",
+        "training_code_commit": "81096e7f3d5c2f8b8aa1dff7a1d5a96fe6ea94f3"
+      },
+      "consecutive_recovery_status": {
+        "status": "idle",
+        "recoveries_scheduled": 0,
+        "updated_at": "20260922T131033Z"
+      }
     },
     "interruptions": [
       {
@@ -557,15 +571,31 @@
         "step": 51,
         "samples_seen": 17952,
         "reason": "controller_signal"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0008ep-20260922T132344Z",
+        "step": 2310,
+        "samples_seen": 810560,
+        "reason": "scheduled"
       }
     ],
     "quality_materials": {
-      "status": "preview_EMA_transfer_in_progress",
+      "status": "preview_complete",
       "checkpoint_id": "Diffusion-LDM-UNet-0000ep-20260922T125344Z",
       "generation_host": "K100",
       "formal_review_samples": 1024,
       "formal_review_fixed_prefix": 256,
-      "approval_received": false
+      "approval_received": false,
+      "checkpoint_training_step": 1,
+      "checkpoint_samples_seen": 352,
+      "samples": 64,
+      "nonfinite_outputs": 0,
+      "seed": 42,
+      "preview_finished_at_utc": "2026-09-22T13:12:10.931201+00:00",
+      "metrics_status": "not_requested_for_preview",
+      "formal_review_status": "scheduled",
+      "report_path": "reports/evaluation/Diffusion-LDM-UNet-0000ep-20260922T125344Z/preview/summary.json",
+      "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0000ep-20260922T125344Z/preview/first-0064-contact-sheet.png"
     }
   }
 }
