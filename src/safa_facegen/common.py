@@ -6,6 +6,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import stat
 from pathlib import Path
 import subprocess
 import tempfile
@@ -99,6 +100,67 @@ def check_limits(limits):
     hard = float(limits.get("memory_hard_gib", 224)) * 2**30
     soft = float(limits.get("memory_soft_gib", 192)) * 2**30
     return ("hard" if used >= hard else "soft" if used >= soft else "ok"), info
+
+
+def release_file_cache(paths, root):
+    """Release clean pages of named project files without changing their contents."""
+    before = memory_bytes()
+    count = advised = 0
+    errors = []
+    for filename in dict.fromkeys(map(str, paths)):
+        original = Path(filename)
+        if original.is_symlink():
+            raise ValueError(f"Symlink in checkpoint cache path: {original}")
+        path = require_inside(original, root)
+        try:
+            fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+            try:
+                info = os.fstat(fd)
+                if not stat.S_ISREG(info.st_mode):
+                    raise ValueError(f"Cache release requires a regular file: {path}")
+                os.fsync(fd)
+                os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+                count += 1
+                advised += info.st_size
+            finally:
+                os.close(fd)
+        except FileNotFoundError:
+            # Retention can retire a completed state while its metadata remains.
+            continue
+        except OSError as exc:
+            errors.append({"path": str(path), "error": str(exc)})
+    return {"files_advised": count, "file_bytes_advised": advised,
+            "memory_before_bytes": before, "memory_after_bytes": memory_bytes(),
+            "errors": errors}
+
+
+def release_checkpoint_cache(root, model_id):
+    """Only completed checkpoints of this model are eligible for cache release."""
+    if model_id not in MODEL_IDS:
+        raise ValueError(f"Unknown model: {model_id}")
+    root = Path(root).resolve()
+    output = require_inside(root / "runs" / model_id, root)
+    paths = []
+    if model_id.startswith("MeanFlow-"):
+        for checkpoint in (output / "checkpoints").glob(model_id + "-*"):
+            if checkpoint.is_symlink():
+                raise ValueError(f"Symlink in checkpoint directory: {checkpoint}")
+            if (checkpoint / "COMPLETE.json").is_file():
+                paths.extend(p for p in checkpoint.rglob("*") if p.is_file())
+    else:
+        for metadata in output.glob(model_id + "-*.json"):
+            if metadata.name.endswith(".config.json"):
+                continue
+            record = json.loads(metadata.read_text())
+            if not record.get("complete"):
+                continue
+            for key in ("state_path", "ema_path"):
+                if record.get(key):
+                    path = root / record[key]
+                    if path.parent.resolve() != output:
+                        raise ValueError(f"Checkpoint path is outside its model directory: {path}")
+                    paths.append(path)
+    return release_file_cache(paths, root)
 
 
 def project_root():

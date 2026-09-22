@@ -24,7 +24,7 @@ from torch import distributed as dist
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler
 
-from .common import atomic_json, sha256_file, checkpoint_name, check_limits, git_commit, fsync_directory, append_event
+from .common import atomic_json, sha256_file, checkpoint_name, check_limits, git_commit, fsync_directory, append_event, release_file_cache
 from .data import HQDataset, CachedLatentDataset
 from .torch_models.models import family, load_backbone, LDM_ID,registered_ema_sha256
 from .torch_models.codec import read_checkpoint,registered_codec
@@ -447,6 +447,10 @@ def run(config,callbacks=None):
                 publish(event,latest)
             # Requests become durable before advancing the resumable pointer.
             atomic_json(run_dir/"last.json",latest)
+            # Serialization and transport hashing otherwise accumulate clean RAM
+            # pages for every retained checkpoint, even after Python frees tensors.
+            cache = release_file_cache((state_path, ema_path), root)
+            publish("checkpoint_cache_released", {"checkpoint_id": name, **cache})
         if world>1:
             dist.barrier()
         return True

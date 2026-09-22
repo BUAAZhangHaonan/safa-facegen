@@ -14,7 +14,7 @@ import signal
 import subprocess
 import time
 
-from .common import atomic_json, append_event, check_limits, git_commit, MODEL_IDS, project_root, sha256_file, utc_now, EXECUTION_PATHS
+from .common import atomic_json, append_event, check_limits, git_commit, MODEL_IDS, project_root, sha256_file, utc_now, EXECUTION_PATHS, release_checkpoint_cache
 from .retention import retire_states, timestamp as checkpoint_timestamp
 
 
@@ -629,6 +629,9 @@ def run_campaign(root, campaign_path):
                 state = latest_state(root, model_id)
                 recovery = settle_recovery(root, bounds, recovery, state, events)
                 config = apply_recovery_plan(root, bounds, state, recovery)
+                cache = release_checkpoint_cache(root, model_id)
+                append_event(events, "checkpoint_cache_released", model_id=model_id,
+                             reason="before_training_launch", **cache)
                 runtime = state_dir / (model_id + ".json")
                 ensure_no_existing_trainer(root)
                 prepare_stop_request(root, config)
@@ -651,7 +654,20 @@ def run_campaign(root, campaign_path):
                 peak_gpu = 0
                 peak_memory = 0
                 retention_checked = 0.0
+                cache_checked = time.monotonic()
                 while process.poll() is None:
+                    level, info = check_limits(config["limits"])
+                    peak_memory = max(peak_memory, info["memory_bytes"])
+                    if level == 'hard':
+                        reason = 'host_memory'
+                        stop_training(process, config, reason, hard=True)
+                        break
+                    if level == 'soft' or time.monotonic() - cache_checked >= 60:
+                        cache = release_checkpoint_cache(root, model_id)
+                        if cache['errors'] or cache['memory_before_bytes'] - cache['memory_after_bytes'] >= 2**20:
+                            append_event(events, "checkpoint_cache_released", model_id=model_id,
+                                         reason="periodic_completed_checkpoints", **cache)
+                        cache_checked = time.monotonic()
                     level, info = check_limits(config["limits"])
                     peak_memory = max(peak_memory, info["memory_bytes"])
                     if level == 'hard':
