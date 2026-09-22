@@ -38,6 +38,23 @@ class TransferPaused(Exception):
     """A durable partial transfer yielded its connection to a higher priority EMA."""
 
 
+def is_transport_error(exc: Exception) -> bool:
+    import paramiko
+
+    if isinstance(exc, (paramiko.AuthenticationException, paramiko.BadHostKeyException)):
+        return False
+    if isinstance(exc, paramiko.SSHException) and str(exc) == "Pinned SSH host key mismatch":
+        return False
+    return isinstance(exc, (EOFError, ConnectionError, TimeoutError, paramiko.SSHException)) or (
+        isinstance(exc, OSError) and (
+            exc.errno in (errno.EPIPE, errno.ECONNRESET, errno.ETIMEDOUT, errno.ENETUNREACH,
+                          errno.EHOSTUNREACH, errno.ECONNABORTED, errno.ENOTCONN, errno.ENETDOWN)
+            # Paramiko Transport emits this socket error without an errno.
+            or (exc.errno is None and str(exc).strip().lower() == "socket is closed")
+        )
+    )
+
+
 def remote_path(value: str) -> PurePosixPath:
     path = PurePosixPath(value)
     if ".." in path.parts:
@@ -576,6 +593,10 @@ def poll_requests(reader: RemoteReader, journal: Journal):
         except FileNotFoundError:
             continue
         except Exception as exc:
+            if is_transport_error(exc):
+                # The connection failed before any request content was available.
+                # Stop this connection; the outer loop will reconnect after its poll delay.
+                raise
             journal.reject(model, str(run / "requests.jsonl").encode(), f"{type(exc).__name__}: {exc}")
             continue
         for line in lines:
@@ -589,8 +610,6 @@ def poll_requests(reader: RemoteReader, journal: Journal):
 
 
 def transfer_pending(reader: RemoteReader, journal: Journal, root: Path):
-    import paramiko
-
     def waiting():
         rows = journal.rows("received") + journal.rows("retry_transfer") + journal.rows("paused_transfer")
         return sorted(rows, key=lambda item: (TRANSFER_PRIORITY[item["event"]],
@@ -686,8 +705,7 @@ def transfer_pending(reader: RemoteReader, journal: Journal, root: Path):
             request.pop("retry_after_unix", None)
             journal.update(row["id"], "paused_transfer", request=request, error=str(exc))
         except Exception as exc:
-            retry = isinstance(exc, (EOFError, ConnectionError, TimeoutError, paramiko.SSHException)) or (
-                isinstance(exc, OSError) and exc.errno in (errno.EPIPE, errno.ECONNRESET, errno.ETIMEDOUT, errno.ENETUNREACH, errno.EHOSTUNREACH))
+            retry = is_transport_error(exc)
             if retry:
                 request["transfer_attempts"] = int(request.get("transfer_attempts", 0)) + 1
                 request["retry_after_unix"] = time.time() + min(900, 30 * 2 ** min(request["transfer_attempts"] - 1, 5))
@@ -778,7 +796,12 @@ def _run(credentials: dict, config: dict, *, once=False):
                             "paused_transfers": len(journal.rows("paused_transfer"))})
             except Exception as exc:
                 # Authentication values never form part of errors or structured logs.
-                atomic_json(root / "reports/replication/status.json", {"status": "failed", "time": time.time(), "error": f"{type(exc).__name__}: {exc}"})
+                status = {"status": "connection_retry" if is_transport_error(exc) else "failed",
+                          "time": time.time(), "error": f"{type(exc).__name__}: {exc}",
+                          "failed_requests": len(journal.rows("failed"))}
+                if status["status"] == "connection_retry":
+                    status["retry_after_seconds"] = float(config.get("poll_seconds", 30))
+                atomic_json(root / "reports/replication/status.json", status)
                 if once:
                     raise
             if once:

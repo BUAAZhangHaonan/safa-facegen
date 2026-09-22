@@ -94,4 +94,4 @@ python -m safa_facegen.evaluate \
 
 评价目录拒绝覆盖。输出包含完整 PNG、`first-0256-contact-sheet.png`、生成与人脸检测逐条记录、参考数据记录、生成和参考 Inception 特征 mmap、均值/协方差及 `summary.json`。summary 复用 checkpoint 导出/传输时登记的唯一 EMA 身份和数据/评价权重来源，记录软件版本、采样协议和失败信息。评价权重从 `models/evaluation/assets.json` 读取登记身份并核对 stat；不重新扫描 checkpoint、固定参考图片和模型权重，不为每张输出 PNG 计算 SHA。任一必需指标失败，进程返回非零，保留已产生的证据。
 
-2026-09-22 在 K100 `.venv-torch`（Torch 2.11.0、torch-fidelity 0.4.0）已通过 CPU 合约检查：图像归一化、persistent workers 跨轮确定性翻转、两种 mmap 表示与哈希、跨 batch 相同初始及逐步噪声；已有官方 Inception 权重和 InsightFace ONNX 均完成真实前向调用。这些是接口与依赖验证，不是新训练模型的 1,024 张质量验收。
+2026-09-22 在 K100 `.venv-torch`（Torch 2.11.0、torch-fidelity 0.4.0）已通过 CPU 合约检查：图像归一化、persistent workers 跨轮确定性翻转、两种 mmap 表示与哈希、跨 batch 相同初始及逐步噪声；已有官方 Inception 权重和 InsightFace ONNX 均完成真实前向调用。新训练模型的质量审核使用对应 EMA 生成的 1,024 张样本，并单独保存评价材料。
