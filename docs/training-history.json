@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-22T13:51:30.291130+00:00",
+    "recorded_at_utc": "2026-09-22T14:12:09.568306+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -514,19 +514,21 @@
       "latest_observation_is_a_complete_checkpoint": false,
       "saved_timer_policy": "Absolute save/preview/review times resume from the complete checkpoint; step and sample counters continue.",
       "latest_complete_checkpoint": {
-        "checkpoint_id": "Diffusion-LDM-UNet-0012ep-20260922T133844Z",
-        "optimizer_step": 3633,
-        "samples_seen": 1274976,
-        "completed_HQ_epochs": 12,
-        "exact_HQ_exposure": 12.74976,
-        "saved_at_utc": "2026-09-22T13:38:59.285393+00:00",
+        "checkpoint_id": "Diffusion-LDM-UNet-0020ep-20260922T140553Z",
+        "optimizer_step": 5918,
+        "samples_seen": 2076736,
+        "completed_HQ_epochs": 20,
+        "exact_HQ_exposure": 20.76736,
+        "saved_at_utc": "2026-09-22T14:06:03.583425+00:00",
         "training_code_commit": "81096e7f3d5c2f8b8aa1dff7a1d5a96fe6ea94f3"
       },
       "consecutive_recovery_status": {
         "status": "idle",
         "recoveries_scheduled": 0,
         "updated_at": "20260922T131033Z"
-      }
+      },
+      "status": "paused_for_requested_configuration_change",
+      "paused_at_utc": "2026-09-22T14:06:03.583425+00:00"
     },
     "interruptions": [
       {
@@ -589,6 +591,12 @@
         "step": 3633,
         "samples_seen": 1274976,
         "reason": "scheduled"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0020ep-20260922T140553Z",
+        "step": 5918,
+        "samples_seen": 2076736,
+        "reason": "stop_requested"
       }
     ],
     "quality_materials": {
@@ -627,6 +635,30 @@
         "formal_review_status": "scheduled",
         "report_path": "reports/evaluation/Diffusion-LDM-UNet-0000ep-20260922T125344Z/preview/summary.json",
         "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0000ep-20260922T125344Z/preview/first-0064-contact-sheet.png"
+      }
+    ],
+    "configuration_changes": [
+      {
+        "requested_at_utc": "2026-09-22T14:12:09.568306+00:00",
+        "reason": "User selected explicit per-GPU batches and latest complete Diffusion state for resume",
+        "per_gpu_microbatch": {
+          "Diffusion-LDM-UNet": 128,
+          "LatentConsistency-LDM-UNet": 128,
+          "RectifiedFlow-NCSNpp": 24,
+          "MeanFlow-B-4": 1280,
+          "MeanFlow-B-2": 256,
+          "MeanFlow-L-2": 96
+        },
+        "gradient_accumulation_steps": 1,
+        "world_size": 4,
+        "learning_rates_unchanged": true,
+        "adam_parameters_unchanged": true,
+        "ema_decay_unchanged": true,
+        "resume_checkpoint": "Diffusion-LDM-UNet-0020ep-20260922T140553Z",
+        "resume_step": 5918,
+        "resume_samples_seen": 2076736,
+        "preserve_optimizer_ema_rng_data_cursor": true,
+        "failure_recovery_budget_changed": false
       }
     ]
   }

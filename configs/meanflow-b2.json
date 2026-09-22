@@ -1,7 +1,7 @@
 {
   "model_id": "MeanFlow-B-2",
   "learning_rate": 0.0001,
-  "microbatch": 64,
+  "microbatch": 256,
   "device_count": 4,
   "required_world_size": 4,
   "seed": 42,

@@ -1,7 +1,7 @@
 {
   "model_id": "LatentConsistency-LDM-UNet",
   "learning_rate": 1e-05,
-  "microbatch": 4,
+  "microbatch": 128,
   "gradient_accumulation_steps": 1,
   "required_world_size": 4,
   "precision": "bf16",

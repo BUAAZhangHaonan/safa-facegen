@@ -204,8 +204,6 @@ def all_finite(net, optimizer=None, ema=None):
 
 def run(config,callbacks=None):
     config=json.loads(json.dumps(config))
-    if config.get("calibration"):
-        config["validation_scope"]=True
     overrides=config.get("recovery_overrides",{})
     if set(overrides)-{"learning_rate","microbatch","precision","num_workers","prefetch_factor"}:
         raise ValueError("Unsupported recovery_overrides key")
@@ -386,10 +384,6 @@ def run(config,callbacks=None):
 
     def save(reason,scheduled_events=()):
         nonlocal latest
-        # Calibration includes one full state/EMA serialization after optimizer
-        # allocation, so its measured resource peak covers the real save path.
-        if config.get("calibration") and reason!="complete":
-            return True
         memory_status,memory_info=check_limits(config["limits"])
         memory_level=_reduce_flag({"ok":0,"soft":1,"hard":2}[memory_status],device)
         if memory_level==2:
@@ -481,11 +475,14 @@ def run(config,callbacks=None):
         return bool(stop)
 
     try:
+        configuration_change = config.get("runtime_change_reason") == "configured_microbatch_changed"
         if overrides and rank==0:
-            publish("recovery_overrides",{"model_id":model_id,"overrides":overrides,"resume":resume,
+            publish("configuration_changed" if configuration_change else "recovery_overrides",
+                    {"model_id":model_id,"overrides":overrides,"resume":resume,
                     "epoch":progress["epoch"],"next_batch":progress["next_batch"],"recipe":recipe})
         if not resume or overrides:
-            if not save("recovery" if overrides else "initialization"):
+            reason = "configuration_change" if configuration_change else "recovery" if overrides else "initialization"
+            if not save(reason):
                 return {"status":"stopped","reason":"memory_soft","resume_from_last_complete":True,**progress}
         while True:
             if (config.get("max_steps") is not None and progress["step"]>=int(config["max_steps"])) or (

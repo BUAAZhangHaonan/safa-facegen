@@ -19,18 +19,6 @@ EXECUTION_PATHS = ('src', 'vendor', 'configs', 'requirements', 'requirements.txt
                    'requirements-jax.txt', 'pyproject.toml')
 
 
-def model_execution_paths(model_id):
-    common = ('src/safa_facegen/__init__.py', 'src/safa_facegen/common.py',
-              'src/safa_facegen/controller.py', 'src/safa_facegen/calibrate.py',
-              'src/safa_facegen/data.py', 'src/safa_facegen/cache.py',
-              'src/safa_facegen/generator.py', 'configs', 'requirements',
-              'requirements.txt', 'requirements-jax.txt', 'pyproject.toml')
-    if model_id.startswith('MeanFlow-'):
-        return common + ('src/safa_facegen/meanflow', 'vendor/meanflow')
-    return common + ('src/safa_facegen/train_torch.py', 'src/safa_facegen/torch_models',
-                     'vendor/rectified_flow', 'vendor/latent_diffusion', 'vendor/latent_consistency')
-
-
 def utc_now():
     return dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
@@ -91,48 +79,6 @@ def git_commit(root):
     return subprocess.check_output(
         ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
     ).strip()
-
-
-def validation_identity(root, config):
-    """Reuse Git revision and registered metadata without rescanning asset contents."""
-    root = Path(root).resolve()
-    paths = config.get('paths', {})
-    artifacts = {}
-    artifact_keys = ('dataset_manifest', 'latent_cache', 'codec') if config.get('model_id') == 'LatentConsistency-LDM-UNet' else ('dataset_manifest', 'latent_cache', 'codec', 'initial_checkpoint')
-    for key in artifact_keys:
-        if not paths.get(key):
-            continue
-        path = Path(paths[key])
-        if not path.is_absolute():
-            path = root / path
-        info = path.stat()
-        artifacts[key] = {'path': str(path.relative_to(root)) if root in path.parents else str(path),
-                          'bytes': info.st_size if path.is_file() else None,
-                          'mtime_ns': info.st_mtime_ns}
-    keys = ('model_id', 'learning_rate', 'gradient_accumulation_steps', 'precision', 'ema_decay',
-            'adam_betas', 'weight_decay', 'gradient_clip', 'seed', 'sampling', 'required_world_size')
-    return {'code_commit': git_commit(root), 'artifacts': artifacts,
-            'teacher_model_id': 'Diffusion-LDM-UNet' if config.get('model_id') == 'LatentConsistency-LDM-UNet' else None,
-            'recipe': {key: config.get(key) for key in keys}}
-
-
-def same_validated_implementation(root, previous, current):
-    if not isinstance(previous, dict):
-        return False
-    if {k: v for k, v in previous.items() if k != 'code_commit'} != {
-            k: v for k, v in current.items() if k != 'code_commit'}:
-        return False
-    if previous.get('code_commit') == current['code_commit']:
-        return True
-    # Compare the code used by this model. Changes to documentation or transfer
-    # workers do not require repeating its optimizer/resume run. Both exact
-    # revisions remain recorded for provenance.
-    revision = previous.get('code_commit', '')
-    if len(revision) != 40 or any(c not in '0123456789abcdef' for c in revision):
-        return False
-    return subprocess.run(['git', '-C', str(root), 'diff', '--quiet', revision,
-                           current['code_commit'], '--', *model_execution_paths(current['recipe']['model_id'])],
-                          capture_output=True).returncode == 0
 
 
 def memory_bytes():

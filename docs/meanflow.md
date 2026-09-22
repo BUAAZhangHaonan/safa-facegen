@@ -35,7 +35,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -m safa_facegen.meanflow.trainer \
 示例旧文件名仅展示参数形式；实际使用注册表里的原文件路径。实施者将配置中
 `paths.initial_checkpoint` 设为转换生成的目录。B/2、L/2 对应配置已提供。
 `--max-steps` 用于有限步性能/恢复验证，也会写完整检查点；`--microbatch`
-用于正式启动前的显存标定。续训默认使用保存的 microbatch，包括已记录的恢复调整。
+用于明确指定每设备 batch。续训默认使用保存的 microbatch，包括已记录的恢复调整。
 
 ## 严格转换与推理
 
@@ -80,7 +80,7 @@ shuffle 为 `(seed,sampler_epoch)` 确定的 permutation；flip 使用统一
 一进程 pmap 四张卡；官方 FP32 JVP/目标不变。lr=1e-4，Adam β=(0.9,0.95)，
 eps=1e-8，weight decay=0，EMA=0.9999；logit-normal μ=-0.4/σ=1，75% r=t，
 adaptive norm p=1/eps=0.01，固定 NULL，关闭 guidance 和 class dropout。
-microbatch 是每设备图像数；初值 64 用于标定，正式值以实测配置为准。
+microbatch 是每设备图像数；B/4、B/2、L/2 分别使用 1280、256、96，四卡有效 batch 分别为 5120、1024、384。学习率、Adam 参数和 EMA 系数保持上述配方。
 三份配置显式记录上述固定配方，包括 fp32、Adam eps、NULL index、latent scale
 及 class dropout。启动时与实现使用的固定值逐项核对；缺少字段或改变固定配方会失败。
 完整有效配置随每个 checkpoint 保存，学习率的自动调整另记录在状态和元数据中。
@@ -112,38 +112,8 @@ valid samples、OOM/无效步数、当前 batch、周期时刻。恢复时严格
 请求，包含 codec、seed、step 对应检查点。K100 消费这些请求执行真实解码和评价。
 训练中不加载 VAE/Inception GPU，不把 50k RGB 评估图留在 H100 RAM。
 
-## 验证
+## 运行检查
 
-实施验收通过临时脚本测试实际旧实现与转换输出、JVP、raw/EMA 分别折叠；检查 Torch↔Flax 布局往返、
-官方 JAX 数值/JVP、冻结参数下输入梯度，以及包含 Adam/EMA/RNG 的保存恢复后下一步
-一致。小模型验证不替代生产权重的三规格实测与真实 VAE 图像验收。测试结果由运行时
-生成 `selftest.json`，没有结果文件不能视为通过。
+正式启动读取模型配置和已登记资产，要求四张 H100。输入、loss、梯度和更新后的参数执行有限值检查；保存完整优化器、EMA、随机状态、样本位置和事件时间。资源限制和异常恢复继续执行项目规定。
 
-实际生产权重分别核对 raw、EMA 的输出、JVP 和输入梯度。
-训练验收必须在四卡预约后运行：实际 HQ cache 训练两步、独立进程恢复
-一步，另从相同初始权重与 seed 连续运行三步，对照 params、EMA、Adam、RNG、lr、step
-全部叶节点以及第三步 loss。随后关闭 JAX 进程，以 PyTorch 和真实 VAE 检查 RGB 输出
-及输入梯度。对照记录逐组最大绝对误差与完全相等标记，整数/RNG 必须完全相等。
-验证记录写入 `reports/validation/<模型名>/training.json`，包含执行源码、训练配方
-和数据/codec/初始权重的 `validation_identity`。验证期间这些文件变化会生成
-`stale_source` 状态，控制器不得用它授权正式训练。验证临时权重由统一清理流程处理。
-
-专用验收脚本仅保存在 ignored 临时目录，验收完成后删除，不进入 Git。大文件哈希只在
-旧权重迁移、新 EMA 导出、传输完整性及完整训练状态保存/恢复时计算；训练启动不重复
-扫描整个 latent cache、初始化权重或 EMA。缓存构建/传输负责其一次完整性检查。
-
-batch 标定仍实际写入完整训练状态和 EMA，以覆盖保存峰值；这些临时产物不计算
-状态/EMA 内容哈希，不进入复制请求队列，也不能恢复。真实断点续训验收显式设置
-`resume_validation=True`，保留完整保存/恢复检查，同样不进入复制队列。
-
-2026-09-22 的环境检查发现 K100 CPU 上 JAX 0.7.2 的小矩阵乘法计算异常；换用
-0.8.3 后矩阵乘法正常，但独立卷积测试仍失败。该结果仅定位到所测 CPU 运行环境，
-尚不能归因于特定硬件或依赖。它不作为 H100 的验收证据。H100 运行时在加载大权重前
-逐设备对照 NumPy 检查矩阵乘法与 stride-4 卷积，失败即退出。训练入口严格要求 GPU，
-不会用虚拟 CPU 设备替代四张 H100。
-
-H100 的 JAX 0.7.2 CPU 和 GPU0 数值基础测试已通过。GPU0 小模型官方输出与
-PyTorch 输出最大绝对误差为 2.38e-7，JVP 为 1.19e-7；完整 Adam/EMA/RNG
-保存恢复后的下一步所有状态完全相等，损坏状态文件被拒绝。三种实际旧权重的
-raw/EMA 输出、JVP 和输入梯度迁移检查也已通过。这些记录不替代三种规格的
-实际四卡训练及真实 VAE 导出验收。
+临时迁移、冒烟测试和最大 batch 搜索产物在完成检查后删除；正式启动不依赖这些文件。迁移来源保存在 `docs/initializations.json` 及正式初始化资产的元数据中。新训练阶段与完整恢复状态记录在 `docs/training-history.json`。

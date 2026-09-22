@@ -14,7 +14,7 @@ import signal
 import subprocess
 import time
 
-from .common import atomic_json, append_event, check_limits, git_commit, MODEL_IDS, project_root, sha256_file, utc_now, validation_identity, same_validated_implementation, EXECUTION_PATHS
+from .common import atomic_json, append_event, check_limits, git_commit, MODEL_IDS, project_root, sha256_file, utc_now, EXECUTION_PATHS
 from .retention import retire_states, timestamp as checkpoint_timestamp
 
 
@@ -41,6 +41,7 @@ def load_model_config(root, campaign, model_id):
         config[key] = copy.deepcopy(campaign[key])
     config["max_recovery_failures"] = campaign["max_consecutive_recovery_failures"]
     config["required_world_size"] = 4
+    config["configured_microbatch"] = config["microbatch"]
     config.pop("max_steps", None)
     config.pop("max_epochs", None)
     config.pop("max_hq_epochs", None)
@@ -105,20 +106,15 @@ def gpu_snapshot(*, events=None):
 
 def verify_launch(root, config, *, events=None):
     model_id = config["model_id"]
-    identity = validation_identity(root, config)
-    for receipt in ("training", "batch"):
-        path = root / "reports/validation" / model_id / (receipt + ".json")
-        value = read_json(path)
-        if value.get("status") != "passed":
-            raise ValueError(f"Required validation has not passed: {path}")
-        if value.get("model_id") != model_id:
-            raise ValueError(f"Validation identity mismatch: {path}")
-        if not same_validated_implementation(root, value.get('validation_identity'), identity):
-            raise ValueError(f'Validation does not cover the current sources, recipe, and data: {path}')
-        if receipt == "batch":
-            config["microbatch"] = int(value["microbatch"])
-            if value["peak_gpu_gib"] > config["limits"]["gpu_gib"] or value["peak_memory_gib"] >= config["limits"]["memory_soft_gib"]:
-                raise ValueError("Profile exceeds configured resource limit")
+    if model_id not in MODEL_IDS or config.get("required_world_size") != 4:
+        raise ValueError("Launch requires a registered model and four GPUs")
+    if type(config.get("microbatch")) is not int or config["microbatch"] < 1:
+        raise ValueError("Configured microbatch must be a positive integer")
+    if config.get("gradient_accumulation_steps", 1) != 1:
+        raise ValueError("The approved training recipe uses one gradient accumulation step")
+    rate = config.get("learning_rate")
+    if type(rate) not in (int, float) or not math.isfinite(rate) or rate <= 0:
+        raise ValueError("Learning rate must be finite and positive")
     for key in ("dataset_manifest", "initial_checkpoint", "codec"):
         value = config["paths"].get(key)
         if value and not Path(value).exists():
@@ -196,8 +192,11 @@ def restore_torch_runtime(root, config, state):
         return value
 
     batch = integer(saved.get('microbatch'), 1, 'microbatch')
-    if batch > integer(config.get('microbatch'), 1, 'calibrated microbatch'):
-        raise ValueError('Saved Torch microbatch exceeds the validated calibration')
+    requested_batch = integer(config.get('microbatch'), 1, 'configured microbatch')
+    previous_requested = integer(saved.get('configured_microbatch', batch), 1, 'previous configured microbatch')
+    batch_changed = requested_batch != previous_requested
+    if not batch_changed and batch > requested_batch:
+        raise ValueError('Saved Torch microbatch exceeds the configured target')
     rate, original_rate = saved.get('learning_rate'), config.get('learning_rate')
     for value in (rate, original_rate):
         if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
@@ -213,6 +212,11 @@ def restore_torch_runtime(root, config, state):
     result.update(microbatch=batch, learning_rate=rate, precision=precision,
                   num_workers=workers, prefetch_factor=prefetch)
     result.pop('recovery_overrides', None)
+    result.pop('runtime_change_reason', None)
+    if batch_changed and batch != requested_batch:
+        result['microbatch'] = requested_batch
+        result['recovery_overrides'] = {'microbatch': requested_batch}
+        result['runtime_change_reason'] = 'configured_microbatch_changed'
     result['paths']['resume'] = str(state_path)
     return result
 
@@ -289,6 +293,7 @@ def log_tail(path, size=32000, start=0):
 
 def recovery_config(config, state, reason):
     result = copy.deepcopy(config)
+    result.pop('runtime_change_reason', None)
     changes = {}
     is_meanflow = result['model_id'].startswith('MeanFlow-')
     previous_batch = int(result['microbatch'])
@@ -341,7 +346,7 @@ def validate_runtime_parameters(parameters, bounds):
         if key in parameters and (type(parameters[key]) is not int or parameters[key] < minimum):
             raise ValueError(f'Invalid persisted recovery {key}')
     if parameters['microbatch'] > bounds['microbatch']:
-        raise ValueError('Recovery microbatch exceeds the validated calibration')
+        raise ValueError('Recovery microbatch exceeds the configured target')
     rate = parameters['learning_rate']
     if type(rate) not in (int, float) or not math.isfinite(rate) or rate <= 0:
         raise ValueError('Invalid persisted recovery learning rate')
@@ -508,6 +513,7 @@ def apply_recovery_plan(root, bounds, state, record):
         raise ValueError('A newer checkpoint has an unexpected persisted recovery recipe')
     config.update(desired)
     config.pop('recovery_overrides', None)
+    config.pop('runtime_change_reason', None)
     if state and changes:
         config['recovery_overrides'] = changes
     return config

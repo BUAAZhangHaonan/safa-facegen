@@ -36,7 +36,7 @@ export SAFA_FACEGEN_ROOT="$PWD"
 .venv-torch/bin/python -m safa_facegen.controller --campaign configs/campaign.json
 ```
 
-控制器需要对应模型已经通过训练恢复验证和batch标定。它每次仅启动一个四卡任务，顺序为 Diffusion、LCM、RF、MeanFlow B/4、B/2、L/2。正式完成通过人工图像验收决定；等待审核期间继续训练当前模型。
+控制器使用正式模型配置中的每设备 batch：Diffusion 128、LCM 128、RF 24、MeanFlow B/4 1280、B/2 256、L/2 96；四卡梯度累积为1，学习率和EMA系数保持各模型配方。模型已完成实际训练与恢复检查，临时测试文件在使用后删除。它每次仅启动一个四卡任务，顺序为 Diffusion、LCM、RF、MeanFlow B/4、B/2、L/2。正式完成通过人工图像验收决定；等待审核期间继续训练当前模型。
 
 ## 检查点与评价
 
