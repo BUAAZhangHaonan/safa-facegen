@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-22T14:12:09.568306+00:00",
+    "recorded_at_utc": "2026-09-22T14:19:36.865787+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -492,43 +492,43 @@
     },
     "active_training": {
       "model_id": "Diffusion-LDM-UNet",
-      "training_code_commit": "81096e7f3d5c2f8b8aa1dff7a1d5a96fe6ea94f3",
-      "controller_started_at_utc": "2026-09-22T12:57:35Z",
+      "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611",
+      "controller_started_at_utc": "2026-09-22T14:16:55+00:00",
       "world_size": 4,
-      "microbatch": 88,
-      "effective_batch": 352,
+      "microbatch": 128,
+      "effective_batch": 512,
       "learning_rate": 1e-05,
       "precision": "bf16",
       "num_workers_per_rank": 4,
       "prefetch_factor": 2,
-      "resume_checkpoint": "Diffusion-LDM-UNet-0000ep-20260922T125519Z",
-      "resume_optimizer_step": 51,
-      "resume_samples_seen": 17952,
-      "resume_completed_HQ_epochs": 0,
-      "resume_exact_HQ_exposure": 0.17952,
-      "latest_observed_at_utc": "2026-09-22T13:51:27+00:00",
-      "latest_observed_step": 4730,
-      "latest_observed_samples_seen": 1659840,
-      "latest_observed_loss": 0.11995108425617218,
-      "latest_observed_gradient_norm": 0.00838147196918726,
+      "resume_checkpoint": "Diffusion-LDM-UNet-0020ep-20260922T140553Z",
+      "resume_optimizer_step": 5918,
+      "resume_samples_seen": 2076736,
+      "resume_completed_HQ_epochs": 20,
+      "resume_exact_HQ_exposure": 20.76736,
+      "latest_observed_at_utc": "2026-09-22T14:19:35+00:00",
+      "latest_observed_step": 6030,
+      "latest_observed_samples_seen": 2133792,
+      "latest_observed_loss": 0.1687200516462326,
+      "latest_observed_gradient_norm": 0.007754349149763584,
       "latest_observation_is_a_complete_checkpoint": false,
       "saved_timer_policy": "Absolute save/preview/review times resume from the complete checkpoint; step and sample counters continue.",
       "latest_complete_checkpoint": {
-        "checkpoint_id": "Diffusion-LDM-UNet-0020ep-20260922T140553Z",
+        "checkpoint_id": "Diffusion-LDM-UNet-0020ep-20260922T141730Z",
         "optimizer_step": 5918,
         "samples_seen": 2076736,
         "completed_HQ_epochs": 20,
         "exact_HQ_exposure": 20.76736,
-        "saved_at_utc": "2026-09-22T14:06:03.583425+00:00",
-        "training_code_commit": "81096e7f3d5c2f8b8aa1dff7a1d5a96fe6ea94f3"
+        "saved_at_utc": "2026-09-22T14:17:43.243124+00:00",
+        "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611"
       },
       "consecutive_recovery_status": {
         "status": "idle",
         "recoveries_scheduled": 0,
         "updated_at": "20260922T131033Z"
       },
-      "status": "paused_for_requested_configuration_change",
-      "paused_at_utc": "2026-09-22T14:06:03.583425+00:00"
+      "status": "training",
+      "configured_microbatch": 128
     },
     "interruptions": [
       {
@@ -593,10 +593,28 @@
         "reason": "scheduled"
       },
       {
+        "checkpoint_id": "Diffusion-LDM-UNet-0017ep-20260922T135344Z",
+        "step": 4924,
+        "samples_seen": 1727808,
+        "reason": "scheduled"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0020ep-20260922T140502Z",
+        "step": 5875,
+        "samples_seen": 2061600,
+        "reason": "scheduled"
+      },
+      {
         "checkpoint_id": "Diffusion-LDM-UNet-0020ep-20260922T140553Z",
         "step": 5918,
         "samples_seen": 2076736,
         "reason": "stop_requested"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0020ep-20260922T141730Z",
+        "step": 5918,
+        "samples_seen": 2076736,
+        "reason": "configuration_change"
       }
     ],
     "quality_materials": {
@@ -658,7 +676,53 @@
         "resume_step": 5918,
         "resume_samples_seen": 2076736,
         "preserve_optimizer_ema_rng_data_cursor": true,
-        "failure_recovery_budget_changed": false
+        "failure_recovery_budget_changed": false,
+        "status": "applied",
+        "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611",
+        "applied_at_utc": "2026-09-22T14:16:55+00:00",
+        "first_complete_checkpoint": "Diffusion-LDM-UNet-0020ep-20260922T141730Z"
+      }
+    ],
+    "previous_training_stages": [
+      {
+        "model_id": "Diffusion-LDM-UNet",
+        "training_code_commit": "81096e7f3d5c2f8b8aa1dff7a1d5a96fe6ea94f3",
+        "controller_started_at_utc": "2026-09-22T12:57:35Z",
+        "world_size": 4,
+        "microbatch": 88,
+        "effective_batch": 352,
+        "learning_rate": 1e-05,
+        "precision": "bf16",
+        "num_workers_per_rank": 4,
+        "prefetch_factor": 2,
+        "resume_checkpoint": "Diffusion-LDM-UNet-0000ep-20260922T125519Z",
+        "resume_optimizer_step": 51,
+        "resume_samples_seen": 17952,
+        "resume_completed_HQ_epochs": 0,
+        "resume_exact_HQ_exposure": 0.17952,
+        "latest_observed_at_utc": "2026-09-22T14:05:47+00:00",
+        "latest_observed_step": 5910,
+        "latest_observed_samples_seen": 2073920,
+        "latest_observed_loss": 0.13226071000099182,
+        "latest_observed_gradient_norm": 0.010824986733496189,
+        "latest_observation_is_a_complete_checkpoint": false,
+        "saved_timer_policy": "Absolute save/preview/review times resume from the complete checkpoint; step and sample counters continue.",
+        "latest_complete_checkpoint": {
+          "checkpoint_id": "Diffusion-LDM-UNet-0020ep-20260922T140553Z",
+          "optimizer_step": 5918,
+          "samples_seen": 2076736,
+          "completed_HQ_epochs": 20,
+          "exact_HQ_exposure": 20.76736,
+          "saved_at_utc": "2026-09-22T14:06:03.583425+00:00",
+          "training_code_commit": "81096e7f3d5c2f8b8aa1dff7a1d5a96fe6ea94f3"
+        },
+        "consecutive_recovery_status": {
+          "status": "idle",
+          "recoveries_scheduled": 0,
+          "updated_at": "20260922T131033Z"
+        },
+        "status": "completed_by_requested_configuration_change",
+        "paused_at_utc": "2026-09-22T14:06:03.583425+00:00"
       }
     ]
   }
