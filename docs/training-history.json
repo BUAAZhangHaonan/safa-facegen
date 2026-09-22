@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-22T16:03:19.822645+00:00",
+    "recorded_at_utc": "2026-09-22T16:26:38.864665+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -506,20 +506,20 @@
       "resume_samples_seen": 2076736,
       "resume_completed_HQ_epochs": 20,
       "resume_exact_HQ_exposure": 20.76736,
-      "latest_observed_at_utc": "2026-09-22T16:03:16+00:00",
-      "latest_observed_step": 12340,
-      "latest_observed_samples_seen": 5353248,
-      "latest_observed_loss": 0.17163881659507751,
-      "latest_observed_gradient_norm": 0.009575078263878822,
+      "latest_observed_at_utc": "2026-09-22T16:26:33+00:00",
+      "latest_observed_step": 13710,
+      "latest_observed_samples_seen": 6052224,
+      "latest_observed_loss": 0.16866034269332886,
+      "latest_observed_gradient_norm": 0.008979312144219875,
       "latest_observation_is_a_complete_checkpoint": false,
       "saved_timer_policy": "Absolute save/preview/review times resume from the complete checkpoint; step and sample counters continue.",
       "latest_complete_checkpoint": {
-        "checkpoint_id": "Diffusion-LDM-UNet-0050ep-20260922T155347Z",
-        "optimizer_step": 11776,
-        "samples_seen": 5065536,
-        "completed_HQ_epochs": 50,
-        "exact_HQ_exposure": 50.65536,
-        "saved_at_utc": "2026-09-22T15:53:58.105936+00:00",
+        "checkpoint_id": "Diffusion-LDM-UNet-0059ep-20260922T162347Z",
+        "optimizer_step": 13546,
+        "samples_seen": 5968608,
+        "completed_HQ_epochs": 59,
+        "exact_HQ_exposure": 59.68608,
+        "saved_at_utc": "2026-09-22T16:23:58.372188+00:00",
         "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611"
       },
       "consecutive_recovery_status": {
@@ -530,9 +530,9 @@
       "status": "training",
       "configured_microbatch": 128,
       "resource_observation": {
-        "observed_at_utc": "2026-09-22T16:03:15+00:00",
+        "observed_at_utc": "2026-09-22T16:26:34+00:00",
         "peak_gpu_gib": 54.6728515625,
-        "peak_container_memory_gib": 134.5750961303711,
+        "peak_container_memory_gib": 150.01438522338867,
         "recovery_attempt": 0
       }
     },
@@ -672,6 +672,30 @@
         "samples_seen": 5065536,
         "reason": "scheduled",
         "saved_at_utc": "2026-09-22T15:53:58.105936+00:00",
+        "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0054ep-20260922T160503Z",
+        "step": 12453,
+        "samples_seen": 5410752,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-22T16:05:13.752923+00:00",
+        "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0058ep-20260922T162003Z",
+        "step": 13342,
+        "samples_seen": 5864512,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-22T16:20:14.475962+00:00",
+        "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0059ep-20260922T162347Z",
+        "step": 13546,
+        "samples_seen": 5968608,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-22T16:23:58.372188+00:00",
         "training_code_commit": "08be4b7cd6ef016d7d20d14452caae4db1e3b611"
       }
     ],
