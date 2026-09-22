@@ -69,6 +69,15 @@ def process_environment(root):
                HF_HOME=str(root / ".cache/huggingface"), TORCH_HOME=str(root / ".cache/torch"),
                HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", JAX_COMPILATION_CACHE_DIR=str(root / ".cache/jax"),
                PYTHONUNBUFFERED="1")
+    for key, relative in {
+        'CUDA_CACHE_PATH': '.cache/cuda', 'TRITON_CACHE_DIR': '.cache/triton',
+        'TORCHINDUCTOR_CACHE_DIR': '.cache/torchinductor', 'TORCH_EXTENSIONS_DIR': '.cache/torch_extensions',
+        'PYTHONPYCACHEPREFIX': '.cache/python', 'XDG_CONFIG_HOME': '.cache/config',
+        'XDG_DATA_HOME': '.cache/share', 'MPLCONFIGDIR': '.cache/matplotlib',
+    }.items():
+        path = root / relative
+        path.mkdir(parents=True, exist_ok=True)
+        env[key] = str(path)
     return env
 
 
