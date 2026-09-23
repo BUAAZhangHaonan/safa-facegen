@@ -198,8 +198,8 @@ class RemoteReader:
     def download(self, record: dict, destination: Path):
         source = self.checked(record["source"])
         before = self.sftp.stat(str(source))
-        if (before.st_size, before.st_mtime) != (record["bytes"], record["mtime"]):
-            raise ValueError("Remote source changed before transfer")
+        if before.st_size != record["bytes"]:
+            raise ValueError("Remote source size changed before transfer")
         destination.parent.mkdir(parents=True, exist_ok=True)
         progress_key = (str(destination), str(source), record["sha256"], record["bytes"], record["mtime"])
         digest, total = hashlib.sha256(), 0
@@ -243,8 +243,16 @@ class RemoteReader:
                 if info.st_size == total:
                     self.partial_digests[progress_key] = {"stat": (info.st_size, info.st_mtime_ns, info.st_ctime_ns), "digest": digest.copy()}
         after = self.sftp.stat(str(source))
-        if total != record["bytes"] or digest.hexdigest() != record["sha256"] or (after.st_size, after.st_mtime) != (before.st_size, before.st_mtime):
-            raise ValueError("Transferred file SHA256/size/source-stability check failed")
+        if total != record["bytes"] or after.st_size != record["bytes"]:
+            raise ValueError("Transferred file size differs from committed source")
+        if digest.hexdigest() != record["sha256"]:
+            raise ValueError("Transferred content differs from committed source digest")
+        # The source filesystem can refresh mtime after publication. The committed
+        # digest and exact byte count establish the immutable content identity.
+        if after.st_mtime != record["mtime"]:
+            print(json.dumps({"event": "source_mtime_changed_content_verified",
+                              "source": str(source), "recorded_mtime": record["mtime"],
+                              "observed_mtime": after.st_mtime}), flush=True)
         self.partial_digests.pop(progress_key, None)
         fsync_directory(destination.parent)
 
