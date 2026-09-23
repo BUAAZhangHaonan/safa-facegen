@@ -1,5 +1,12 @@
 {
-  "model_order": ["Diffusion-LDM-UNet", "LatentConsistency-LDM-UNet", "RectifiedFlow-NCSNpp", "MeanFlow-B-4", "MeanFlow-B-2", "MeanFlow-L-2"],
+  "model_order": [
+    "Diffusion-LDM-UNet",
+    "LatentConsistency-LDM-UNet",
+    "RectifiedFlow-NCSNpp",
+    "MeanFlow-B-4",
+    "MeanFlow-B-2",
+    "MeanFlow-L-2"
+  ],
   "model_configs": {
     "Diffusion-LDM-UNet": "configs/diffusion.json",
     "LatentConsistency-LDM-UNet": "configs/latent_consistency.json",
@@ -8,8 +15,17 @@
     "MeanFlow-B-2": "configs/meanflow-b2.json",
     "MeanFlow-L-2": "configs/meanflow-l2.json"
   },
-  "gpu_ids": [0, 1, 2, 3],
-  "limits": {"gpu_gib": 72, "memory_soft_gib": 192, "memory_hard_gib": 224},
+  "gpu_ids": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "limits": {
+    "gpu_gib": 72,
+    "memory_soft_gib": 242,
+    "memory_hard_gib": 243
+  },
   "save_interval_seconds": 900,
   "preview_interval_seconds": 1800,
   "review_interval_seconds": 7200,

@@ -28,8 +28,8 @@
   },
   "limits": {
     "gpu_gib": 72,
-    "memory_soft_gib": 192,
-    "memory_hard_gib": 224
+    "memory_soft_gib": 242,
+    "memory_hard_gib": 243
   },
   "sampling": {
     "ode_tol": 1e-05
