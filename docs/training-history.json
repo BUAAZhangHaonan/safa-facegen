@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-23T04:43:05.444390+00:00",
+    "recorded_at_utc": "2026-09-23T06:53:43.362146+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -516,19 +516,19 @@
       "resume_completed_HQ_epochs": 114,
       "resume_exact_HQ_exposure": 114.71168,
       "preserve_optimizer_ema_rng_data_cursor": true,
-      "latest_observed_at_utc": "2026-09-23T04:43:05.444390+00:00",
-      "latest_observed_step": 24400,
-      "latest_observed_samples_seen": 11506144,
-      "latest_observed_loss": 0.15708550810813904,
-      "latest_observed_gradient_norm": 0.008798346854746342,
+      "latest_observed_at_utc": "2026-09-23T06:53:43.362146+00:00",
+      "latest_observed_step": 32450,
+      "latest_observed_samples_seen": 15613312,
+      "latest_observed_loss": 0.15147075057029724,
+      "latest_observed_gradient_norm": 0.008415155112743378,
       "latest_observation_is_a_complete_checkpoint": false,
       "latest_complete_checkpoint": {
-        "checkpoint_id": "Diffusion-LDM-UNet-0114ep-20260923T044143Z",
-        "optimizer_step": 24332,
-        "samples_seen": 11471680,
-        "completed_HQ_epochs": 114,
-        "exact_HQ_exposure": 114.7168,
-        "saved_at_utc": "2026-09-23T04:41:54.427634+00:00",
+        "checkpoint_id": "Diffusion-LDM-UNet-0152ep-20260923T064155Z",
+        "optimizer_step": 31763,
+        "samples_seen": 15262976,
+        "completed_HQ_epochs": 152,
+        "exact_HQ_exposure": 152.62976,
+        "saved_at_utc": "2026-09-23T06:42:05.601791+00:00",
         "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
         "num_workers_per_rank": 2,
         "prefetch_factor": 1
@@ -543,12 +543,12 @@
         "updated_at": "20260923T044107Z"
       },
       "logged_progress_covered_by_complete_checkpoint": false,
-      "unsaved_optimizer_steps_after_latest_complete": 68,
+      "unsaved_optimizer_steps_after_latest_complete": 687,
       "saved_timer_policy": "Absolute save/preview/review times resume from the complete checkpoint; step and sample counters continue.",
       "resource_observation": {
-        "observed_at_utc": "2026-09-23T04:43:05.444390+00:00",
+        "observed_at_utc": "2026-09-23T06:53:43.362146+00:00",
         "peak_gpu_gib": 54.6728515625,
-        "container_memory_gib": 44.77022933959961,
+        "container_memory_gib": 44.90299606323242,
         "peak_container_memory_gib": 57.24467849731445,
         "recovery_attempt": 0
       }
@@ -888,6 +888,78 @@
         "samples_seen": 11471680,
         "reason": "scheduled",
         "saved_at_utc": "2026-09-23T04:41:54.427634+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0119ep-20260923T045644Z",
+        "step": 25235,
+        "samples_seen": 11932256,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-23T04:56:52.307513+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0124ep-20260923T051143Z",
+        "step": 26170,
+        "samples_seen": 12409216,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-23T05:11:53.699312+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0128ep-20260923T052643Z",
+        "step": 27103,
+        "samples_seen": 12885504,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-23T05:26:54.200911+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0133ep-20260923T054144Z",
+        "step": 28037,
+        "samples_seen": 13361952,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-23T05:41:54.131153+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0138ep-20260923T055644Z",
+        "step": 28973,
+        "samples_seen": 13839424,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-23T05:56:54.209678+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0143ep-20260923T061144Z",
+        "step": 29909,
+        "samples_seen": 14316896,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-23T06:11:56.954752+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0147ep-20260923T062645Z",
+        "step": 30842,
+        "samples_seen": 14793184,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-23T06:26:55.570557+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0152ep-20260923T064143Z",
+        "step": 31762,
+        "samples_seen": 15262464,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-23T06:41:54.531462+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0152ep-20260923T064155Z",
+        "step": 31763,
+        "samples_seen": 15262976,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-23T06:42:05.601791+00:00",
         "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
       }
     ],
@@ -1518,6 +1590,74 @@
         "training_restarted": true,
         "resume_checkpoint": "Diffusion-LDM-UNet-0114ep-20260922T192429Z",
         "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "at_utc": "2026-09-23T06:47:19.485252+00:00",
+        "model_id": "Diffusion-LDM-UNet",
+        "checkpoint_id": "Diffusion-LDM-UNet-0114ep-20260923T044143Z",
+        "action": "reuse_completed_preview_replica_for_same_immutable_EMA",
+        "previous_status": "failed",
+        "previous_error": "ValueError: Transferred file SHA256/size/source-stability check failed",
+        "status": "evaluating",
+        "identity_verified_using": "existing transport receipt and unchanged local file metadata; same identity as completed preview",
+        "training_interrupted": false
+      }
+    ],
+    "pending_quality_reviews": [
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0152ep-20260923T064143Z",
+        "event": "review",
+        "status": "copying",
+        "error": null,
+        "recovery_history": []
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0114ep-20260923T044143Z",
+        "event": "review",
+        "status": "evaluating",
+        "error": null,
+        "recovery_history": [
+          {
+            "at_unix": 1790146039.485252,
+            "previous_status": "failed",
+            "previous_error": "ValueError: Transferred file SHA256/size/source-stability check failed",
+            "action": "reuse_completed_preview_replica_for_same_immutable_EMA",
+            "verified_replica": "/home/k100/projects/safa-facegen/models/replicas/Diffusion-LDM-UNet/ema/Diffusion-LDM-UNet-0114ep-20260923T044143Z",
+            "new_hash_scan": false
+          }
+        ]
+      }
+    ],
+    "visual_quality_observations": [
+      {
+        "observed_at_utc": "2026-09-23T06:53:43.362146+00:00",
+        "checkpoint_id": "Diffusion-LDM-UNet-0143ep-20260923T061144Z",
+        "state_role": "ema",
+        "checkpoint_training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
+        "optimizer_step": 29909,
+        "samples_seen": 14316896,
+        "HQ_exposure": 143.16896,
+        "sample_count": 64,
+        "filtered_samples": 0,
+        "seed": 42,
+        "sampling": {
+          "method": "DDIM",
+          "steps": 200,
+          "eta": 1.0
+        },
+        "preview_nonfinite": 0,
+        "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0143ep-20260923T061144Z/preview/first-0064-contact-sheet.png",
+        "visual_observation": "Most faces have coherent overall structure; some samples retain merged or irregular teeth, soft eye detail, and partial background people. All 64 preview samples retained.",
+        "convergence_assessment": "Quality convergence is not established. The latest preview has no FID/KID or face-detection metrics; completed 90-epoch review remains the latest full metric observation. Continue current model pending explicit user image acceptance.",
+        "recent_training_loss_window": {
+          "logged_observations": 100,
+          "first_step": 31460,
+          "last_step": 32450,
+          "mean": 0.15674826718866824,
+          "minimum": 0.11023963987827301,
+          "maximum": 0.20761892199516296
+        },
+        "approval_received": false
       }
     ]
   }
