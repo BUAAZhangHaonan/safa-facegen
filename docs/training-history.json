@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-09-22",
+  "recorded_at": "2026-09-24T07:25:40.268943+00:00",
   "phase": "historical_initialization_and_HQ_pretraining",
   "scope": "The records array retains historical log statistics. HQ stages record actual production training, committed checkpoints, interruptions, and explicit image acceptance.",
   "selected_weight_provenance": "initializations.json",
@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-24T03:28:31.780103+00:00",
+    "recorded_at_utc": "2026-09-24T07:25:40.268943+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -492,7 +492,7 @@
     },
     "active_training": {
       "model_id": "Diffusion-LDM-UNet",
-      "status": "unknown_due_to_ssh_tunnel_unavailable",
+      "status": "training",
       "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
       "controller_started_at_utc": "2026-09-23T04:41:07+00:00",
       "controller_pid": 681019,
@@ -516,24 +516,24 @@
       "resume_completed_HQ_epochs": 114,
       "resume_exact_HQ_exposure": 114.71168,
       "preserve_optimizer_ema_rng_data_cursor": true,
-      "latest_observed_at_utc": "2026-09-24T03:18:28+00:00",
-      "latest_observed_step": 106180,
-      "latest_observed_samples_seen": 53230720,
-      "latest_observed_loss": 0.11283643543720245,
-      "latest_observed_gradient_norm": 0.008795687928795815,
+      "latest_observed_at_utc": "2026-09-24T07:03:56+00:00",
+      "latest_observed_step": 119710,
+      "latest_observed_samples_seen": 60133792,
+      "latest_observed_loss": 0.14856445789337158,
+      "latest_observed_gradient_norm": 0.010057501494884491,
       "latest_observation_is_a_complete_checkpoint": false,
       "latest_complete_checkpoint": {
-        "checkpoint_id": "Diffusion-LDM-UNet-0530ep-20260924T031222Z",
-        "optimizer_step": 105805,
-        "samples_seen": 53039424,
-        "completed_HQ_epochs": 530,
-        "exact_HQ_exposure": 530.39424,
-        "saved_at_utc": "2026-09-24T03:12:32.790620+00:00",
+        "checkpoint_id": "Diffusion-LDM-UNet-0599ep-20260924T065726Z",
+        "optimizer_step": 119331,
+        "samples_seen": 59940448,
+        "completed_HQ_epochs": 599,
+        "exact_HQ_exposure": 599.40448,
+        "saved_at_utc": "2026-09-24T06:57:35.289173+00:00",
         "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
         "num_workers_per_rank": 2,
         "prefetch_factor": 1,
-        "verification_observed_at_utc": "2026-09-24T03:18:35.644129+00:00",
-        "source_files_currently_accessible": false
+        "verification_observed_at_utc": "2026-09-24T07:04:04.023256+00:00",
+        "source_files_currently_accessible": true
       },
       "consecutive_recovery_status": {
         "schema_version": 1,
@@ -545,23 +545,21 @@
         "updated_at": "20260923T044107Z"
       },
       "logged_progress_covered_by_complete_checkpoint": false,
-      "unsaved_optimizer_steps_after_latest_complete": 375,
+      "unsaved_optimizer_steps_after_latest_complete": 379,
       "saved_timer_policy": "Absolute save/preview/review times resume from the complete checkpoint; step and sample counters continue.",
       "resource_observation": {
-        "observed_at_utc": "2026-09-24T03:18:35.644129+00:00",
+        "observed_at_utc": "2026-09-24T07:04:04.023256+00:00",
         "peak_gpu_gib": 54.6728515625,
-        "container_memory_gib": 46.491981506347656,
+        "container_memory_gib": 45.886146545410156,
         "peak_container_memory_gib": 57.24467849731445,
         "recovery_attempt": 0
       },
-      "current_process_state_verified": false,
+      "current_process_state_verified": true,
       "connectivity_observation": {
-        "observed_at_utc": "2026-09-24T03:28:31.780103+00:00",
-        "status": "unavailable_after_temporary_restoration",
-        "reverse_port_listening": false,
-        "training_last_verified_at_utc": "2026-09-24T03:18:28+00:00",
-        "training_stopped_confirmed": false,
-        "resource_usage_currently_verified": false
+        "observed_at_utc": "2026-09-24T07:04:04.023256+00:00",
+        "status": "restored",
+        "training_last_verified_at_utc": "2026-09-24T07:03:56+00:00",
+        "resource_usage_currently_verified": true
       }
     },
     "interruptions": [
@@ -1734,23 +1732,159 @@
         "reason": "scheduled",
         "saved_at_utc": "2026-09-24T03:12:32.790620+00:00",
         "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0535ep-20260924T032723Z",
+        "step": 106717,
+        "samples_seen": 53504608,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T03:27:33.316179+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0539ep-20260924T034223Z",
+        "step": 107647,
+        "samples_seen": 53979360,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T03:42:30.814157+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0544ep-20260924T035723Z",
+        "step": 108545,
+        "samples_seen": 54437376,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T03:57:33.465476+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0548ep-20260924T041224Z",
+        "step": 109436,
+        "samples_seen": 54892160,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T04:12:34.400038+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0553ep-20260924T042724Z",
+        "step": 110373,
+        "samples_seen": 55370144,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T04:27:34.975413+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0558ep-20260924T044158Z",
+        "step": 111282,
+        "samples_seen": 55833792,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T04:42:08.344025+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0558ep-20260924T044224Z",
+        "step": 111299,
+        "samples_seen": 55842496,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T04:42:34.875963+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0563ep-20260924T045724Z",
+        "step": 112225,
+        "samples_seen": 56314848,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T04:57:35.377499+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0567ep-20260924T051225Z",
+        "step": 113140,
+        "samples_seen": 56781920,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T05:12:35.317114+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0572ep-20260924T052725Z",
+        "step": 114067,
+        "samples_seen": 57254784,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T05:27:36.527847+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0576ep-20260924T054226Z",
+        "step": 114878,
+        "samples_seen": 57668608,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T05:42:35.907968+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0580ep-20260924T055727Z",
+        "step": 115721,
+        "samples_seen": 58098816,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T05:57:37.075402+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0585ep-20260924T061226Z",
+        "step": 116605,
+        "samples_seen": 58549664,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T06:12:36.863439+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0590ep-20260924T062726Z",
+        "step": 117519,
+        "samples_seen": 59015872,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T06:27:48.918791+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0594ep-20260924T064158Z",
+        "step": 118373,
+        "samples_seen": 59451712,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T06:42:06.543495+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0594ep-20260924T064226Z",
+        "step": 118394,
+        "samples_seen": 59462464,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T06:42:37.318426+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0599ep-20260924T065726Z",
+        "step": 119331,
+        "samples_seen": 59940448,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T06:57:35.289173+00:00",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351"
       }
     ],
     "quality_materials": {
       "status": "review_complete",
-      "checkpoint_id": "Diffusion-LDM-UNet-0484ep-20260924T004156Z",
+      "checkpoint_id": "Diffusion-LDM-UNet-0594ep-20260924T064158Z",
       "generation_host": "K100",
       "approval_received": false,
       "formal_review_status": "awaiting_explicit_user_image_acceptance",
       "model_id": "Diffusion-LDM-UNet",
       "state_role": "ema",
       "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
-      "evaluation_code_commit": "e13556d41f4341b835ed209a3aea71908b252888",
-      "checkpoint_training_step": 96777,
-      "samples_seen": 48433280,
-      "completed_HQ_epochs": 484,
-      "exact_HQ_exposure": 484.3328,
-      "checkpoint_saved_at_utc": "2026-09-24T00:42:05.343606+00:00",
+      "evaluation_code_commit": "ba3e0e48d36d94aa13646cb1c4eea9f5a63dc139",
+      "checkpoint_training_step": 118373,
+      "samples_seen": 59451712,
+      "completed_HQ_epochs": 594,
+      "exact_HQ_exposure": 594.51712,
+      "checkpoint_saved_at_utc": "2026-09-24T06:42:06.543495+00:00",
       "microbatch": 128,
       "effective_batch": 512,
       "world_size": 4,
@@ -1760,7 +1894,7 @@
       "prefetch_factor": 1,
       "stage_started_at_utc": "2026-09-23T04:41:07+00:00",
       "stage_resume_step": 24331,
-      "stage_elapsed_seconds": 72058.343606,
+      "stage_elapsed_seconds": 93659.543495,
       "stage_recovery_count": 0,
       "previous_stage_recoveries": "Two host-memory recovery attempts exhausted on 2026-09-22; user explicitly authorized resume and memory limit increase on 2026-09-23.",
       "memory_limits_gib": {
@@ -1816,10 +1950,10 @@
         "status": "complete",
         "samples": 1024,
         "zero": 0,
-        "single": 1014,
-        "multiple": 10,
+        "single": 1016,
+        "multiple": 8,
         "nonfinite": 0,
-        "single_face_rate": 0.990234375,
+        "single_face_rate": 0.9921875,
         "denominator_includes_blank_and_nonfinite": true,
         "detector": "det_10g.onnx",
         "detector_size": [
@@ -1844,16 +1978,16 @@
         "kid_subsets": 100,
         "kid_subset_size": 1000,
         "rng_seed": 42,
-        "frechet_inception_distance": 34.28077731770816,
-        "kernel_inception_distance_mean": 0.002717426023523526,
-        "kernel_inception_distance_std": 6.122716151480686e-05
+        "frechet_inception_distance": 34.12984908251423,
+        "kernel_inception_distance_mean": 0.0026308885985985996,
+        "kernel_inception_distance_std": 6.18956955738783e-05
       },
-      "evaluation_started_at_utc": "2026-09-24T00:58:22.872133+00:00",
-      "evaluation_finished_at_utc": "2026-09-24T01:16:22.519635+00:00",
-      "report_path": "reports/evaluation/Diffusion-LDM-UNet-0484ep-20260924T004156Z/review/summary.json",
-      "training_record_path": "reports/evaluation/Diffusion-LDM-UNet-0484ep-20260924T004156Z/review/training-record.json",
-      "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0484ep-20260924T004156Z/review/first-0256-contact-sheet.png",
-      "image_package_path": "reports/evaluation/Diffusion-LDM-UNet-0484ep-20260924T004156Z/review/samples-1024.zip"
+      "evaluation_started_at_utc": "2026-09-24T06:57:11.742253+00:00",
+      "evaluation_finished_at_utc": "2026-09-24T07:15:17.056567+00:00",
+      "report_path": "reports/evaluation/Diffusion-LDM-UNet-0594ep-20260924T064158Z/review/summary.json",
+      "training_record_path": "reports/evaluation/Diffusion-LDM-UNet-0594ep-20260924T064158Z/review/training-record.json",
+      "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0594ep-20260924T064158Z/review/first-0256-contact-sheet.png",
+      "image_package_path": "reports/evaluation/Diffusion-LDM-UNet-0594ep-20260924T064158Z/review/samples-1024.zip"
     },
     "quality_materials_history": [
       {
@@ -3445,6 +3579,363 @@
         "training_record_path": "reports/evaluation/Diffusion-LDM-UNet-0447ep-20260923T224155Z/review/training-record.json",
         "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0447ep-20260923T224155Z/review/first-0256-contact-sheet.png",
         "image_package_path": "reports/evaluation/Diffusion-LDM-UNet-0447ep-20260923T224155Z/review/samples-1024.zip"
+      },
+      {
+        "status": "review_complete",
+        "checkpoint_id": "Diffusion-LDM-UNet-0484ep-20260924T004156Z",
+        "generation_host": "K100",
+        "approval_received": false,
+        "formal_review_status": "awaiting_explicit_user_image_acceptance",
+        "model_id": "Diffusion-LDM-UNet",
+        "state_role": "ema",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
+        "evaluation_code_commit": "e13556d41f4341b835ed209a3aea71908b252888",
+        "checkpoint_training_step": 96777,
+        "samples_seen": 48433280,
+        "completed_HQ_epochs": 484,
+        "exact_HQ_exposure": 484.3328,
+        "checkpoint_saved_at_utc": "2026-09-24T00:42:05.343606+00:00",
+        "microbatch": 128,
+        "effective_batch": 512,
+        "world_size": 4,
+        "learning_rate": 1e-05,
+        "precision": "bf16",
+        "num_workers_per_rank": 2,
+        "prefetch_factor": 1,
+        "stage_started_at_utc": "2026-09-23T04:41:07+00:00",
+        "stage_resume_step": 24331,
+        "stage_elapsed_seconds": 72058.343606,
+        "stage_recovery_count": 0,
+        "previous_stage_recoveries": "Two host-memory recovery attempts exhausted on 2026-09-22; user explicitly authorized resume and memory limit increase on 2026-09-23.",
+        "memory_limits_gib": {
+          "soft": 242,
+          "hard": 243
+        },
+        "sampling": {
+          "method": "DDIM",
+          "steps": 200,
+          "eta": 1.0,
+          "seed": 42,
+          "seed_rule": "42 + sample_index",
+          "resolution": [
+            256,
+            256
+          ]
+        },
+        "reference_set": {
+          "source": "registered 100000-image HQ training manifest",
+          "selection": "NumPy RandomState(42), 1024 records without replacement",
+          "relationship_to_training": "subset of HQ training data; not an independent holdout"
+        },
+        "human_approval": false,
+        "formal_review_samples": 1024,
+        "formal_review_fixed_prefix": 256,
+        "samples": 1024,
+        "seed": 42,
+        "noise_protocol": {
+          "kind": "per_sample_cpu_float32_torch_randn",
+          "seed_rule": "seed + sample_index",
+          "noise_shape": [
+            3,
+            64,
+            64
+          ],
+          "step_noise_count": 200,
+          "step_noise_shape": [
+            3,
+            64,
+            64
+          ],
+          "initial_then_step_noises_in_same_rng_stream": true
+        },
+        "generation": {
+          "status": "complete",
+          "samples": 1024,
+          "nonfinite": 0,
+          "blank_spatial_std_lt1": 0,
+          "out_of_range_before_png": 0,
+          "filtered_samples": 0
+        },
+        "face_detection": {
+          "status": "complete",
+          "samples": 1024,
+          "zero": 0,
+          "single": 1014,
+          "multiple": 10,
+          "nonfinite": 0,
+          "single_face_rate": 0.990234375,
+          "denominator_includes_blank_and_nonfinite": true,
+          "detector": "det_10g.onnx",
+          "detector_size": [
+            256,
+            256
+          ],
+          "threshold": 0.5,
+          "cpu_threads": 8,
+          "cpu_inter_threads": 1,
+          "providers": [
+            "CPUExecutionProvider"
+          ],
+          "insightface_version": "0.7.3"
+        },
+        "distribution": {
+          "status": "complete",
+          "num_generated": 1024,
+          "num_real": 1024,
+          "feature_extractor": "torch-fidelity inception-v3-compat",
+          "feature_dimension": 2048,
+          "torch_fidelity_version": "0.4.0",
+          "kid_subsets": 100,
+          "kid_subset_size": 1000,
+          "rng_seed": 42,
+          "frechet_inception_distance": 34.28077731770816,
+          "kernel_inception_distance_mean": 0.002717426023523526,
+          "kernel_inception_distance_std": 6.122716151480686e-05
+        },
+        "evaluation_started_at_utc": "2026-09-24T00:58:22.872133+00:00",
+        "evaluation_finished_at_utc": "2026-09-24T01:16:22.519635+00:00",
+        "report_path": "reports/evaluation/Diffusion-LDM-UNet-0484ep-20260924T004156Z/review/summary.json",
+        "training_record_path": "reports/evaluation/Diffusion-LDM-UNet-0484ep-20260924T004156Z/review/training-record.json",
+        "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0484ep-20260924T004156Z/review/first-0256-contact-sheet.png",
+        "image_package_path": "reports/evaluation/Diffusion-LDM-UNet-0484ep-20260924T004156Z/review/samples-1024.zip"
+      },
+      {
+        "status": "review_complete",
+        "checkpoint_id": "Diffusion-LDM-UNet-0521ep-20260924T024157Z",
+        "generation_host": "K100",
+        "approval_received": false,
+        "formal_review_status": "awaiting_explicit_user_image_acceptance",
+        "model_id": "Diffusion-LDM-UNet",
+        "state_role": "ema",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
+        "evaluation_code_commit": "ba3e0e48d36d94aa13646cb1c4eea9f5a63dc139",
+        "checkpoint_training_step": 103977,
+        "samples_seen": 52106656,
+        "completed_HQ_epochs": 521,
+        "exact_HQ_exposure": 521.06656,
+        "checkpoint_saved_at_utc": "2026-09-24T02:42:07.311136+00:00",
+        "microbatch": 128,
+        "effective_batch": 512,
+        "world_size": 4,
+        "learning_rate": 1e-05,
+        "precision": "bf16",
+        "num_workers_per_rank": 2,
+        "prefetch_factor": 1,
+        "stage_started_at_utc": "2026-09-23T04:41:07+00:00",
+        "stage_resume_step": 24331,
+        "stage_elapsed_seconds": 79260.311136,
+        "stage_recovery_count": 0,
+        "previous_stage_recoveries": "Two host-memory recovery attempts exhausted on 2026-09-22; user explicitly authorized resume and memory limit increase on 2026-09-23.",
+        "memory_limits_gib": {
+          "soft": 242,
+          "hard": 243
+        },
+        "sampling": {
+          "method": "DDIM",
+          "steps": 200,
+          "eta": 1.0,
+          "seed": 42,
+          "seed_rule": "42 + sample_index",
+          "resolution": [
+            256,
+            256
+          ]
+        },
+        "reference_set": {
+          "source": "registered 100000-image HQ training manifest",
+          "selection": "NumPy RandomState(42), 1024 records without replacement",
+          "relationship_to_training": "subset of HQ training data; not an independent holdout"
+        },
+        "human_approval": false,
+        "formal_review_samples": 1024,
+        "formal_review_fixed_prefix": 256,
+        "samples": 1024,
+        "seed": 42,
+        "noise_protocol": {
+          "kind": "per_sample_cpu_float32_torch_randn",
+          "seed_rule": "seed + sample_index",
+          "noise_shape": [
+            3,
+            64,
+            64
+          ],
+          "step_noise_count": 200,
+          "step_noise_shape": [
+            3,
+            64,
+            64
+          ],
+          "initial_then_step_noises_in_same_rng_stream": true
+        },
+        "generation": {
+          "status": "complete",
+          "samples": 1024,
+          "nonfinite": 0,
+          "blank_spatial_std_lt1": 0,
+          "out_of_range_before_png": 0,
+          "filtered_samples": 0
+        },
+        "face_detection": {
+          "status": "complete",
+          "samples": 1024,
+          "zero": 0,
+          "single": 1014,
+          "multiple": 10,
+          "nonfinite": 0,
+          "single_face_rate": 0.990234375,
+          "denominator_includes_blank_and_nonfinite": true,
+          "detector": "det_10g.onnx",
+          "detector_size": [
+            256,
+            256
+          ],
+          "threshold": 0.5,
+          "cpu_threads": 8,
+          "cpu_inter_threads": 1,
+          "providers": [
+            "CPUExecutionProvider"
+          ],
+          "insightface_version": "0.7.3"
+        },
+        "distribution": {
+          "status": "complete",
+          "num_generated": 1024,
+          "num_real": 1024,
+          "feature_extractor": "torch-fidelity inception-v3-compat",
+          "feature_dimension": 2048,
+          "torch_fidelity_version": "0.4.0",
+          "kid_subsets": 100,
+          "kid_subset_size": 1000,
+          "rng_seed": 42,
+          "frechet_inception_distance": 34.258580868100694,
+          "kernel_inception_distance_mean": 0.0026320425100100266,
+          "kernel_inception_distance_std": 5.961595476244105e-05
+        },
+        "evaluation_started_at_utc": "2026-09-24T05:54:39.405189+00:00",
+        "evaluation_finished_at_utc": "2026-09-24T06:12:50.927257+00:00",
+        "report_path": "reports/evaluation/Diffusion-LDM-UNet-0521ep-20260924T024157Z/review/summary.json",
+        "training_record_path": "reports/evaluation/Diffusion-LDM-UNet-0521ep-20260924T024157Z/review/training-record.json",
+        "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0521ep-20260924T024157Z/review/first-0256-contact-sheet.png",
+        "image_package_path": "reports/evaluation/Diffusion-LDM-UNet-0521ep-20260924T024157Z/review/samples-1024.zip"
+      },
+      {
+        "status": "review_complete",
+        "checkpoint_id": "Diffusion-LDM-UNet-0558ep-20260924T044158Z",
+        "generation_host": "K100",
+        "approval_received": false,
+        "formal_review_status": "awaiting_explicit_user_image_acceptance",
+        "model_id": "Diffusion-LDM-UNet",
+        "state_role": "ema",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
+        "evaluation_code_commit": "ba3e0e48d36d94aa13646cb1c4eea9f5a63dc139",
+        "checkpoint_training_step": 111282,
+        "samples_seen": 55833792,
+        "completed_HQ_epochs": 558,
+        "exact_HQ_exposure": 558.33792,
+        "checkpoint_saved_at_utc": "2026-09-24T04:42:08.344025+00:00",
+        "microbatch": 128,
+        "effective_batch": 512,
+        "world_size": 4,
+        "learning_rate": 1e-05,
+        "precision": "bf16",
+        "num_workers_per_rank": 2,
+        "prefetch_factor": 1,
+        "stage_started_at_utc": "2026-09-23T04:41:07+00:00",
+        "stage_resume_step": 24331,
+        "stage_elapsed_seconds": 86461.344025,
+        "stage_recovery_count": 0,
+        "previous_stage_recoveries": "Two host-memory recovery attempts exhausted on 2026-09-22; user explicitly authorized resume and memory limit increase on 2026-09-23.",
+        "memory_limits_gib": {
+          "soft": 242,
+          "hard": 243
+        },
+        "sampling": {
+          "method": "DDIM",
+          "steps": 200,
+          "eta": 1.0,
+          "seed": 42,
+          "seed_rule": "42 + sample_index",
+          "resolution": [
+            256,
+            256
+          ]
+        },
+        "reference_set": {
+          "source": "registered 100000-image HQ training manifest",
+          "selection": "NumPy RandomState(42), 1024 records without replacement",
+          "relationship_to_training": "subset of HQ training data; not an independent holdout"
+        },
+        "human_approval": false,
+        "formal_review_samples": 1024,
+        "formal_review_fixed_prefix": 256,
+        "samples": 1024,
+        "seed": 42,
+        "noise_protocol": {
+          "kind": "per_sample_cpu_float32_torch_randn",
+          "seed_rule": "seed + sample_index",
+          "noise_shape": [
+            3,
+            64,
+            64
+          ],
+          "step_noise_count": 200,
+          "step_noise_shape": [
+            3,
+            64,
+            64
+          ],
+          "initial_then_step_noises_in_same_rng_stream": true
+        },
+        "generation": {
+          "status": "complete",
+          "samples": 1024,
+          "nonfinite": 0,
+          "blank_spatial_std_lt1": 0,
+          "out_of_range_before_png": 0,
+          "filtered_samples": 0
+        },
+        "face_detection": {
+          "status": "complete",
+          "samples": 1024,
+          "zero": 0,
+          "single": 1016,
+          "multiple": 8,
+          "nonfinite": 0,
+          "single_face_rate": 0.9921875,
+          "denominator_includes_blank_and_nonfinite": true,
+          "detector": "det_10g.onnx",
+          "detector_size": [
+            256,
+            256
+          ],
+          "threshold": 0.5,
+          "cpu_threads": 8,
+          "cpu_inter_threads": 1,
+          "providers": [
+            "CPUExecutionProvider"
+          ],
+          "insightface_version": "0.7.3"
+        },
+        "distribution": {
+          "status": "complete",
+          "num_generated": 1024,
+          "num_real": 1024,
+          "feature_extractor": "torch-fidelity inception-v3-compat",
+          "feature_dimension": 2048,
+          "torch_fidelity_version": "0.4.0",
+          "kid_subsets": 100,
+          "kid_subset_size": 1000,
+          "rng_seed": 42,
+          "frechet_inception_distance": 34.074214041533764,
+          "kernel_inception_distance_mean": 0.002656875357857831,
+          "kernel_inception_distance_std": 6.169484409328612e-05
+        },
+        "evaluation_started_at_utc": "2026-09-24T06:12:51.010805+00:00",
+        "evaluation_finished_at_utc": "2026-09-24T06:30:51.746722+00:00",
+        "report_path": "reports/evaluation/Diffusion-LDM-UNet-0558ep-20260924T044158Z/review/summary.json",
+        "training_record_path": "reports/evaluation/Diffusion-LDM-UNet-0558ep-20260924T044158Z/review/training-record.json",
+        "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0558ep-20260924T044158Z/review/first-0256-contact-sheet.png",
+        "image_package_path": "reports/evaluation/Diffusion-LDM-UNet-0558ep-20260924T044158Z/review/samples-1024.zip"
       }
     ],
     "configuration_changes": [
@@ -3737,15 +4228,28 @@
         "training_current_state": "unknown",
         "training_restart_performed": false,
         "h100_repository_sync": "pending_connectivity_restore"
-      }
-    ],
-    "pending_quality_reviews": [
+      },
       {
-        "checkpoint_id": "Diffusion-LDM-UNet-0521ep-20260924T024157Z",
-        "status": "retry_transfer",
-        "error": "Damaged SFTP session; resume after SSH tunnel recovery"
+        "at_utc": "2026-09-24T07:04:04.023256+00:00",
+        "model_id": "Diffusion-LDM-UNet",
+        "action": "verify_restored_ssh_and_recovered_review_queue",
+        "training_status": "training",
+        "controller_pid": 681019,
+        "trainer_pid": 681054,
+        "same_processes_as_before_connectivity_loss": true,
+        "training_restart_performed": false,
+        "training_parameters_changed": false,
+        "recovery_attempt": 0,
+        "latest_complete_checkpoint": "Diffusion-LDM-UNet-0599ep-20260924T065726Z",
+        "completed_reviews": [
+          "Diffusion-LDM-UNet-0521ep-20260924T024157Z",
+          "Diffusion-LDM-UNet-0558ep-20260924T044158Z"
+        ],
+        "k100_replication": "Existing worker 204268 completed previously interrupted review transfers; next review evaluating. Two full-state save transfers remain queued for retry. SQLite job states are current; connection status file retains an earlier retry timestamp.",
+        "h100_repository_sync": "Record synchronization resumed after connectivity restoration"
       }
     ],
+    "pending_quality_reviews": [],
     "visual_quality_observations": [
       {
         "observed_at_utc": "2026-09-23T06:53:43.362146+00:00",
@@ -4015,6 +4519,70 @@
         "visual_observation": "The conspicuous patterned forehead artifact at row 2 column 5 and severe mouth distortion at row 2 column 7 persist. Inconsistent fine facial detail and partial background faces remain. All 64 samples retained.",
         "convergence_assessment": "Stable high-quality convergence remains unestablished. The 484-epoch full review shows slightly lower FID and slightly higher KID than 447 epochs. Visible defects persist. Current H100 training state cannot be established because the SSH reverse tunnel is unavailable; no training restart or model switch was performed.",
         "latest_completed_review": "Diffusion-LDM-UNet-0484ep-20260924T004156Z",
+        "approval_received": false
+      },
+      {
+        "observed_at_utc": "2026-09-24T07:04:04.023256+00:00",
+        "checkpoint_id": "Diffusion-LDM-UNet-0558ep-20260924T044158Z",
+        "state_role": "ema",
+        "optimizer_step": 111282,
+        "samples_seen": 55833792,
+        "sample_count": 256,
+        "filtered_samples": 0,
+        "seed": 42,
+        "sampling": {
+          "method": "DDIM",
+          "steps": 200,
+          "eta": 1.0,
+          "seed": 42,
+          "seed_rule": "42 + sample_index",
+          "resolution": [
+            256,
+            256
+          ]
+        },
+        "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0558ep-20260924T044158Z/review/first-0256-contact-sheet.png",
+        "visual_observation": "Most faces have recognizable facial structure and detailed hair. The first row retains a conspicuous patterned forehead artifact at column 13 and severe mouth distortion at column 15. Inconsistent teeth and eye detail, partial background faces, and some softened faces remain. All 256 fixed-prefix images retained.",
+        "convergence_assessment": "Recent FID declined from 34.2808 at 484 epochs to 34.2586 at 521 and 34.0742 at 558; KID fluctuated from 0.0027174 to 0.0026320 and 0.0026569. Persistent visible defects and small metric changes do not establish stable high-quality convergence. Continue authorized training pending explicit user image acceptance.",
+        "latest_completed_review": "Diffusion-LDM-UNet-0558ep-20260924T044158Z",
+        "recent_training_loss_window": {
+          "count": 100,
+          "first_step": 118720,
+          "last_step": 119710,
+          "mean": 0.1543350561708212
+        },
+        "approval_received": false
+      },
+      {
+        "observed_at_utc": "2026-09-24T07:25:40.268943+00:00",
+        "checkpoint_id": "Diffusion-LDM-UNet-0594ep-20260924T064158Z",
+        "state_role": "ema",
+        "optimizer_step": 118373,
+        "samples_seen": 59451712,
+        "sample_count": 256,
+        "filtered_samples": 0,
+        "seed": 42,
+        "sampling": {
+          "method": "DDIM",
+          "steps": 200,
+          "eta": 1.0,
+          "seed": 42,
+          "seed_rule": "42 + sample_index",
+          "resolution": [
+            256,
+            256
+          ]
+        },
+        "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0594ep-20260924T064158Z/review/first-0256-contact-sheet.png",
+        "visual_observation": "Most faces have recognizable facial structure and detailed hair. The first row retains a conspicuous patterned forehead artifact at column 13 and severe mouth distortion at column 15. Inconsistent teeth and eye detail, partial background faces, and some softened faces remain. All 256 fixed-prefix images retained.",
+        "convergence_assessment": "At 594 epochs FID is 34.1298 and KID is 0.0026309; the preceding 558-epoch review has FID 34.0742 and KID 0.0026569. Small metric fluctuations and persistent first-row forehead and mouth artifacts indicate a quality plateau. Stable high-quality convergence remains unestablished. Continue authorized training pending explicit user image acceptance.",
+        "latest_completed_review": "Diffusion-LDM-UNet-0594ep-20260924T064158Z",
+        "recent_training_loss_window": {
+          "count": 100,
+          "first_step": 118720,
+          "last_step": 119710,
+          "mean": 0.1543350561708212
+        },
         "approval_received": false
       }
     ]
