@@ -7,7 +7,8 @@ import re
 import shutil
 import time
 
-from .common import MODEL_IDS, append_event, atomic_json, require_inside, utc_now
+from .common import MODEL_IDS, atomic_json, require_inside, utc_now
+from .bounded_stage import append_event, validate_journal
 
 
 def timestamp(identity, model):
@@ -22,11 +23,13 @@ def read(path):
     return json.loads(Path(path).read_text(encoding='utf-8'))
 
 
-def retire_states(root, model):
+def retire_states(root, model, protected_identities=()):
     root = Path(root).resolve()
     if model not in MODEL_IDS:
         raise ValueError(model)
     run = root / 'runs' / model
+    validate_journal(root / 'runs/controller/events.jsonl')
+    validate_journal(run / 'requests.jsonl')
     transfer_file = root / 'reports/replication/active-transfer.json'
     pointer = run / ('latest.json' if model.startswith('MeanFlow-') else 'last.json')
     if not pointer.exists() or not transfer_file.exists():
@@ -35,7 +38,7 @@ def retire_states(root, model):
     # A stale worker status gives no permission to retire a possibly active read.
     if time.time() - transfer['updated_at_unix'] > 180:
         return []
-    protected = {item['identity'] for item in transfer.get('retrying', []) if item['model_id'] == model}
+    protected = set(protected_identities) | {item['identity'] for item in transfer.get('retrying', []) if item['model_id'] == model}
     if transfer.get('model_id') == model and transfer.get('status') == 'active':
         protected.add(transfer['identity'])
     latest = read(pointer)

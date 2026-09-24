@@ -14,8 +14,9 @@ import signal
 import subprocess
 import time
 
-from .common import atomic_json, append_event, check_limits, git_commit, MODEL_IDS, project_root, sha256_file, utc_now, EXECUTION_PATHS, release_checkpoint_cache
+from .common import atomic_json, check_limits, git_commit, MODEL_IDS, project_root, sha256_file, utc_now, EXECUTION_PATHS, release_checkpoint_cache
 from .retention import retire_states, timestamp as checkpoint_timestamp
+from .bounded_stage import prepare_launch as prepare_bounded_launch, finish_if_budget_met, protected_identities, validate_stage, guard_campaign, append_event, validate_journal
 
 
 def read_json(path):
@@ -266,11 +267,59 @@ def prepare_stop_request(root, config):
         config['stop_request_path'] = str(path)
 
 
+def hard_stop_tree(process):
+    """Stop only this launcher's descendants, including elastic rank sessions."""
+    def identity(pid):
+        try:
+            fields = (Path('/proc') / str(pid) / 'stat').read_text().rsplit(')', 1)[1].split()
+            return int(fields[1]), int(fields[19])  # parent PID, process start ticks
+        except (FileNotFoundError, ProcessLookupError, PermissionError):
+            return None
+
+    def send(pid, started, sig):
+        current = identity(pid)
+        if current is not None and current[1] == started:
+            try:
+                os.kill(pid, sig)
+            except ProcessLookupError:
+                pass
+
+    anchor = identity(process.pid)
+    if anchor is None:
+        return
+    owned = {process.pid: anchor[1]}
+    # Freeze each discovered process before rescanning so workers cannot keep
+    # creating DataLoader children while their launcher is being terminated.
+    send(process.pid, anchor[1], signal.SIGSTOP)
+    try:
+        while True:
+            found = {}
+            for entry in Path('/proc').iterdir():
+                if not entry.name.isdigit():
+                    continue
+                pid = int(entry.name)
+                current = identity(pid)
+                if current is not None and current[0] in owned and pid not in owned:
+                    parent = identity(current[0])
+                    if parent is not None and parent[1] == owned[current[0]]:
+                        found[pid] = current[1]
+            if not found:
+                break
+            for pid, started in found.items():
+                send(pid, started, signal.SIGSTOP)
+            owned.update(found)
+    finally:
+        # Children can have PGIDs different from torchrun's PGID. Killing just
+        # the launcher group leaves those ranks alive and still holding GPUs.
+        for pid, started in reversed(list(owned.items())):
+            send(pid, started, signal.SIGKILL)
+
+
 def stop_training(process, config, reason, *, hard=False):
     if process.poll() is not None:
         return
     if hard:
-        os.killpg(process.pid, signal.SIGKILL)
+        hard_stop_tree(process)
     elif config['model_id'].startswith('MeanFlow-'):
         os.kill(process.pid, signal.SIGTERM)
     else:
@@ -593,6 +642,7 @@ def ensure_no_existing_trainer(root):
 def run_campaign(root, campaign_path):
     root = Path(root).resolve()
     campaign = read_json(campaign_path)
+    validate_stage(campaign)
     state_dir = root / "runs/controller"
     state_dir.mkdir(parents=True, exist_ok=True)
     lock = (state_dir / "controller.lock").open("a")
@@ -600,6 +650,10 @@ def run_campaign(root, campaign_path):
     for name in ("tmp", "logs/training", "runs/approvals", "models/formal"):
         (root / name).mkdir(parents=True, exist_ok=True)
     events = state_dir / "events.jsonl"
+    validate_journal(events)
+    for model_id in campaign["model_order"]:
+        validate_journal(root / "runs" / model_id / "events.jsonl")
+        validate_journal(root / "runs" / model_id / "requests.jsonl")
     revision = git_commit(root)
     subprocess.run(['git', '-C', str(root), 'diff', '--exit-code', '--quiet', 'HEAD', '--',
                     *EXECUTION_PATHS], check=True)
@@ -611,8 +665,12 @@ def run_campaign(root, campaign_path):
     signal.signal(signal.SIGINT, request_stop)
     process = None
     try:
+        guard_campaign(root, campaign)
         for model_id in campaign["model_order"]:
             if read_approval(root, model_id):
+                if campaign.get("bounded_stage") is not None:
+                    atomic_json(state_dir / "status.json", {"status": "bounded_stage_explicitly_approved", "model_id": model_id, "time": utc_now(), "next_model_started": False})
+                    return
                 continue
             config = load_model_config(root, campaign, model_id)
             if model_id == "LatentConsistency-LDM-UNet":
@@ -629,6 +687,10 @@ def run_campaign(root, campaign_path):
                 state = latest_state(root, model_id)
                 recovery = settle_recovery(root, bounds, recovery, state, events)
                 config = apply_recovery_plan(root, bounds, state, recovery)
+                ensure_no_existing_trainer(root)
+                config = prepare_bounded_launch(root, campaign, config, state, recovery)
+                if finish_if_budget_met(root, campaign, state, config, events):
+                    return
                 cache = release_checkpoint_cache(root, model_id)
                 append_event(events, "checkpoint_cache_released", model_id=model_id,
                              reason="before_training_launch", **cache)
@@ -682,7 +744,7 @@ def run_campaign(root, campaign_path):
                     approval = read_approval(root, model_id)
                     completed = latest_state(root, model_id)
                     if time.monotonic() - retention_checked > 60:
-                        retire_states(root, model_id)
+                        retire_states(root, model_id, protected_identities=protected_identities(campaign))
                         retention_checked = time.monotonic()
                     recovery = settle_recovery(root, bounds, recovery, completed, events)
                     if stop_requested[0] or approval:
@@ -710,7 +772,13 @@ def run_campaign(root, campaign_path):
                 if approval:
                     atomic_json(root / "models/formal" / (model_id + ".json"), approval)
                     append_event(events, "model_approved", model_id=model_id, approval=approval, exit_code=exit_code)
+                    if campaign.get("bounded_stage") is not None:
+                        atomic_json(state_dir / "status.json", {"status": "bounded_stage_explicitly_approved", "model_id": model_id, "time": utc_now(), "next_model_started": False})
+                        return
                     break
+                if (exit_code == 0 and reason is None and
+                        finish_if_budget_met(root, campaign, latest_state(root, model_id), config, events)):
+                    return
                 if reason is None:
                     if "gpu_memory_stop" in tail:
                         reason = "gpu_memory"

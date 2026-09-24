@@ -24,11 +24,12 @@ from torch import distributed as dist
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler
 
-from .common import atomic_json, sha256_file, checkpoint_name, check_limits, git_commit, fsync_directory, append_event, release_file_cache
+from .common import atomic_json, sha256_file, checkpoint_name, check_limits, git_commit, fsync_directory, release_file_cache
 from .data import HQDataset, CachedLatentDataset
 from .torch_models.models import family, load_backbone, LDM_ID,registered_ema_sha256
 from .torch_models.codec import read_checkpoint,registered_codec
 from .torch_models.objectives import TrainingObjective
+from .bounded_stage import validate_training_resume, guard_trainer_launch, append_event, validate_journal
 
 
 class ResumableDistributedSampler(DistributedSampler):
@@ -213,6 +214,9 @@ def run(config,callbacks=None):
     model_id=config["model_id"]
     kind=family(model_id)
     root=Path(config.get("project_root",Path(__file__).resolve().parents[2])).resolve()
+    validate_journal(root/"runs"/model_id/"events.jsonl")
+    validate_journal(root/"runs"/model_id/"requests.jsonl")
+    guard_trainer_launch(config, root)
     stop_request_path=_stop_request_path(config,root,model_id)
     world=int(os.environ.get("WORLD_SIZE","1"))
     rank=int(os.environ.get("RANK","0"))
@@ -327,6 +331,7 @@ def run(config,callbacks=None):
         payload=read_checkpoint(resume)
         if payload.get("format")!="safa-facegen-train-v1":
             raise ValueError("Resume requires a complete training checkpoint")
+        validate_training_resume(config, payload, root)
         previous_recipe=payload["recipe"]
         differences={key for key in set(previous_recipe)|set(recipe) if previous_recipe.get(key)!=recipe.get(key)}
         if differences-set(overrides):
@@ -431,7 +436,7 @@ def run(config,callbacks=None):
             atomic_json(config_path,config)
             # Production exports are hashed once for transport. Temporary numerical
             # acceptance checkpoints are compared directly and are never replicated.
-            hashes={"ema":None,"state":None,"config":None} if config.get("validation_scope") else {
+            hashes={"ema":None,"state":None,"config":sha256_file(config_path)} if config.get("validation_scope") else {
                 "ema":sha256_file(ema_path),"state":sha256_file(state_path),"config":sha256_file(config_path)}
             latest={"checkpoint_id":name,"identity":name,"root":str(root),"complete":True,
                     "checkpoint":str(state_path.relative_to(root)),"state_path":str(state_path.relative_to(root)),
@@ -479,7 +484,7 @@ def run(config,callbacks=None):
         return bool(stop)
 
     try:
-        configuration_change = config.get("runtime_change_reason") == "configured_microbatch_changed"
+        configuration_change = config.get("runtime_change_reason") in {"configured_microbatch_changed", "bounded_stage_started"}
         if overrides and rank==0:
             publish("configuration_changed" if configuration_change else "recovery_overrides",
                     {"model_id":model_id,"overrides":overrides,"resume":resume,

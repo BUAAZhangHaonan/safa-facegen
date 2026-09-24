@@ -4863,7 +4863,7 @@
     "pending_quality_reviews": [
       {
         "checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
-        "status": "requested",
+        "status": "diagnostic_images_and_metrics_complete_source_replica_transfer_pending",
         "purpose": "stopped_original_recipe_latest_ema"
       }
     ],
@@ -5280,6 +5280,104 @@
         },
         "approval_received": false
       }
-    ]
+    ],
+    "plateau_diagnostics": {
+      "status": "initial_quality_diagnostics_complete_additional_seed_pending",
+      "source_checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+      "source_optimizer_step": 147178,
+      "source_samples_seen": 74148128,
+      "source_training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
+      "quality_approved": false,
+      "formal_bounded_training_started": false,
+      "generation_numeric_settings": {
+        "precision": "fp32",
+        "cuda_matmul_tf32": false,
+        "cudnn_tf32": false,
+        "batch_size": 8
+      },
+      "historical_precision_note": "Historical evaluation did not explicitly disable cuDNN TF32. Preserve its original FID-1024 curve; these diagnostic values use explicitly recorded numeric settings and are not substituted into the old curve.",
+      "reference_note": "The same registered seed42 training-set reference and cached 1024 features are reused. The 10000-image reference is also from the training dataset.",
+      "results": [
+        {
+          "condition": "official-ddim200-eta1-seed42",
+          "status": "complete",
+          "samples": 1024,
+          "nonfinite": 0,
+          "blank": 0,
+          "filtered_samples": 0,
+          "single_face": 1014,
+          "multiple_faces": 10,
+          "zero_faces": 0,
+          "FID_1024": 36.511030037306284,
+          "KID": 0.006221507952952936,
+          "reference_count": 1024,
+          "reference_seed": 42,
+          "generated_seed": 42,
+          "report_directory": "/home/k100/projects/safa-facegen/reports/plateau/Diffusion-LDM-UNet-0741ep-20260924T143627Z/official-ddim200-eta1-seed42"
+        },
+        {
+          "condition": "latest-ddim200-eta1-seed42",
+          "status": "complete",
+          "samples": 1024,
+          "nonfinite": 0,
+          "blank": 0,
+          "filtered_samples": 0,
+          "single_face": 1014,
+          "multiple_faces": 10,
+          "zero_faces": 0,
+          "FID_1024": 33.88762791742704,
+          "KID": 0.0026539802327327465,
+          "reference_count": 1024,
+          "reference_seed": 42,
+          "generated_seed": 42,
+          "report_directory": "/home/k100/projects/safa-facegen/reports/plateau/Diffusion-LDM-UNet-0741ep-20260924T143627Z/latest-ddim200-eta1-seed42"
+        },
+        {
+          "condition": "codec-reconstruction-1024",
+          "status": "complete",
+          "samples": 1024,
+          "nonfinite": 0,
+          "blank": 0,
+          "filtered_samples": 0,
+          "single_face": 991,
+          "multiple_faces": 33,
+          "zero_faces": 0,
+          "FID_1024": 7.04837444152264,
+          "KID": 0.00048403513513513465,
+          "reference_count": 1024,
+          "reference_seed": 42,
+          "generated_seed": 42,
+          "report_directory": "/home/k100/projects/safa-facegen/reports/plateau/Diffusion-LDM-UNet-0741ep-20260924T143627Z/codec-reconstruction-1024"
+        }
+      ],
+      "sampler_screening": {
+        "samples_per_setting": 256,
+        "settings": [
+          {
+            "steps": 200,
+            "eta": 1
+          },
+          {
+            "steps": 200,
+            "eta": 0
+          },
+          {
+            "steps": 200,
+            "eta": 0.5
+          },
+          {
+            "steps": 500,
+            "eta": 1
+          }
+        ],
+        "additional_candidate": {
+          "steps": 500,
+          "eta": 1,
+          "status": "extending_existing_images_and_confirming_new_seed"
+        },
+        "official_sampling_changed": false
+      },
+      "conclusion": "The unchanged recipe remains practically plateaued. Mixed-domain continuation improves distribution fit versus official initialization; no clear anatomical-quality improvement has been established. Candidate preservation does not grant image approval or LCM teacher approval."
+    }
   }
 }
