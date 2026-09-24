@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-24T17:51:36.533638+00:00",
+    "recorded_at_utc": "2026-09-24T18:12:30.596235+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -527,23 +527,23 @@
       "trainer_pid": 1828826,
       "num_workers_per_rank": 2,
       "prefetch_factor": 1,
-      "latest_observed_at_utc": "2026-09-24T17:51:36.533638+00:00",
-      "latest_observed_step": 147310,
-      "latest_observed_samples_seen": 74215360,
-      "latest_observed_loss": 0.14517872035503387,
-      "latest_observed_gradient_norm": 0.01124743651598692,
+      "latest_observed_at_utc": "2026-09-24T18:12:30.596235+00:00",
+      "latest_observed_step": 148520,
+      "latest_observed_samples_seen": 74832768,
+      "latest_observed_loss": 0.13590750098228455,
+      "latest_observed_gradient_norm": 0.009882456623017788,
       "latest_observation_is_a_complete_checkpoint": false,
       "latest_optimizer_learning_rate": 3e-06,
       "latest_complete_checkpoint": {
-        "checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T174908Z",
-        "optimizer_step": 147179,
-        "samples_seen": 74148640,
-        "exact_HQ_exposure": 741.4864,
-        "saved_at_utc": "2026-09-24T17:49:18.839243+00:00",
+        "checkpoint_id": "Diffusion-LDM-UNet-0745ep-20260924T180409Z",
+        "optimizer_step": 148044,
+        "samples_seen": 74590112,
+        "exact_HQ_exposure": 745.90112,
+        "saved_at_utc": "2026-09-24T18:04:20.462168+00:00",
         "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
         "reason": "scheduled"
       },
-      "unsaved_optimizer_steps_after_latest_complete": 131,
+      "unsaved_optimizer_steps_after_latest_complete": 476,
       "observed_peak_gpu_gib": 54.6728515625,
       "observed_peak_memory_gib": 52.72121810913086,
       "recovery_attempt": 0
@@ -2094,6 +2094,15 @@
         "samples_seen": 74148640,
         "reason": "scheduled",
         "saved_at_utc": "2026-09-24T17:49:18.839243+00:00",
+        "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
+        "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0745ep-20260924T180409Z",
+        "step": 148044,
+        "samples_seen": 74590112,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T18:04:20.462168+00:00",
         "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
         "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z"
       }
@@ -5632,6 +5641,27 @@
         "official_initialization_retained": true,
         "restore_exercised_on_K100": false
       }
+    },
+    "dispatch_policy": {
+      "authorized_at_utc": "2026-09-24T18:12:30.596235+00:00",
+      "authorization": "User permits continuing or switching models according to actual results and requires avoiding idle H100 GPUs.",
+      "current_bounded_budget_unchanged": true,
+      "next_model": "RectifiedFlow-NCSNpp",
+      "next_initialization": "official_CelebA-HQ_EMA",
+      "next_microbatch": 24,
+      "next_effective_batch": 96,
+      "next_learning_rate": 2e-05,
+      "automatic_handoff_after_complete_state_and_final_review_request": true,
+      "wait_for_quality_approval_before_next_independent_model": false,
+      "model_quality_approval_remains_explicit": true,
+      "lcm_requires_explicit_teacher_approval": true,
+      "independent_model_order": [
+        "RectifiedFlow-NCSNpp",
+        "MeanFlow-B-4",
+        "MeanFlow-B-2",
+        "MeanFlow-L-2"
+      ],
+      "handoff_plan": "runs/controller/Diffusion-to-RectifiedFlow-handoff.json"
     }
   }
 }
