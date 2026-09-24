@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-24T03:18:35.644129+00:00",
+    "recorded_at_utc": "2026-09-24T03:28:31.780103+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -492,7 +492,7 @@
     },
     "active_training": {
       "model_id": "Diffusion-LDM-UNet",
-      "status": "training",
+      "status": "unknown_due_to_ssh_tunnel_unavailable",
       "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
       "controller_started_at_utc": "2026-09-23T04:41:07+00:00",
       "controller_pid": 681019,
@@ -533,7 +533,7 @@
         "num_workers_per_rank": 2,
         "prefetch_factor": 1,
         "verification_observed_at_utc": "2026-09-24T03:18:35.644129+00:00",
-        "source_files_currently_accessible": true
+        "source_files_currently_accessible": false
       },
       "consecutive_recovery_status": {
         "schema_version": 1,
@@ -554,13 +554,14 @@
         "peak_container_memory_gib": 57.24467849731445,
         "recovery_attempt": 0
       },
-      "current_process_state_verified": true,
+      "current_process_state_verified": false,
       "connectivity_observation": {
-        "observed_at_utc": "2026-09-24T03:18:35.644129+00:00",
-        "status": "restored",
-        "training_process_verified": true,
-        "same_controller_and_trainer_pids": true,
-        "restart_performed": false
+        "observed_at_utc": "2026-09-24T03:28:31.780103+00:00",
+        "status": "unavailable_after_temporary_restoration",
+        "reverse_port_listening": false,
+        "training_last_verified_at_utc": "2026-09-24T03:18:28+00:00",
+        "training_stopped_confirmed": false,
+        "resource_usage_currently_verified": false
       }
     },
     "interruptions": [
@@ -3724,13 +3725,25 @@
         "latest_complete_checkpoint": "Diffusion-LDM-UNet-0530ep-20260924T031222Z",
         "k100_replication": "New requests received; latest review transfer active",
         "h100_repository_sync": "Connectivity restored; record synchronization resumed"
+      },
+      {
+        "at_utc": "2026-09-24T03:28:31.780103+00:00",
+        "model_id": "Diffusion-LDM-UNet",
+        "action": "recover_replication_requests_after_repeated_tunnel_loss",
+        "cause": "Reverse tunnel listener disappeared again after temporary restoration. Damaged SFTP sessions were misclassified as terminal transfer errors.",
+        "affected_requests": 5,
+        "request_status": "retry_transfer",
+        "implementation_change": "Treat the specific Paramiko SFTPError Garbage packet received as a transport failure; reconnect and resume existing partial files. Authentication and content-identity failures remain terminal.",
+        "training_current_state": "unknown",
+        "training_restart_performed": false,
+        "h100_repository_sync": "pending_connectivity_restore"
       }
     ],
     "pending_quality_reviews": [
       {
         "checkpoint_id": "Diffusion-LDM-UNet-0521ep-20260924T024157Z",
-        "status": "copying",
-        "error": null
+        "status": "retry_transfer",
+        "error": "Damaged SFTP session; resume after SSH tunnel recovery"
       }
     ],
     "visual_quality_observations": [

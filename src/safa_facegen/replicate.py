@@ -45,6 +45,9 @@ def is_transport_error(exc: Exception) -> bool:
         return False
     if isinstance(exc, paramiko.SSHException) and str(exc) == "Pinned SSH host key mismatch":
         return False
+    if isinstance(exc, paramiko.SFTPError) and str(exc).strip() == "Garbage packet received":
+        # Discard the damaged SFTP connection and resume the partial transfer.
+        return True
     return isinstance(exc, (EOFError, ConnectionError, TimeoutError, paramiko.SSHException)) or (
         isinstance(exc, OSError) and (
             exc.errno in (errno.EPIPE, errno.ECONNRESET, errno.ETIMEDOUT, errno.ENETUNREACH,
