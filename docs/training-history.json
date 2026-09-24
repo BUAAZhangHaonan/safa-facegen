@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-24T18:12:30.596235+00:00",
+    "recorded_at_utc": "2026-09-24T19:55:51.769344+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -527,26 +527,35 @@
       "trainer_pid": 1828826,
       "num_workers_per_rank": 2,
       "prefetch_factor": 1,
-      "latest_observed_at_utc": "2026-09-24T18:12:30.596235+00:00",
-      "latest_observed_step": 148520,
-      "latest_observed_samples_seen": 74832768,
-      "latest_observed_loss": 0.13590750098228455,
-      "latest_observed_gradient_norm": 0.009882456623017788,
+      "latest_observed_at_utc": "2026-09-24T19:55:51.769344+00:00",
+      "latest_observed_step": 154660,
+      "latest_observed_samples_seen": 77965536,
+      "latest_observed_loss": 0.16742166876792908,
+      "latest_observed_gradient_norm": 0.00974650215357542,
       "latest_observation_is_a_complete_checkpoint": false,
       "latest_optimizer_learning_rate": 3e-06,
       "latest_complete_checkpoint": {
-        "checkpoint_id": "Diffusion-LDM-UNet-0745ep-20260924T180409Z",
-        "optimizer_step": 148044,
-        "samples_seen": 74590112,
-        "exact_HQ_exposure": 745.90112,
-        "saved_at_utc": "2026-09-24T18:04:20.462168+00:00",
+        "checkpoint_id": "Diffusion-LDM-UNet-0777ep-20260924T194921Z",
+        "optimizer_step": 154263,
+        "samples_seen": 77762976,
+        "exact_HQ_exposure": 777.62976,
+        "saved_at_utc": "2026-09-24T19:49:31.791645+00:00",
         "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
         "reason": "scheduled"
       },
-      "unsaved_optimizer_steps_after_latest_complete": 476,
+      "unsaved_optimizer_steps_after_latest_complete": 397,
       "observed_peak_gpu_gib": 54.6728515625,
       "observed_peak_memory_gib": 52.72121810913086,
-      "recovery_attempt": 0
+      "recovery_attempt": 0,
+      "replication_observation": {
+        "observed_at_utc": "2026-09-24T19:55:51.769344+00:00",
+        "K100_latest_complete_restore": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+        "K100_latest_complete_restore_step": 147178,
+        "newer_state_transfer_pending": true,
+        "priority_transfer": "Diffusion-LDM-UNet-0777ep-20260924T194909Z-review",
+        "worker_active": true,
+        "note": "The 745-epoch full-state transfer is paused for prioritized EMA review transfer; its partial file is retained. The protected source full state remains available on K100."
+      }
     },
     "interruptions": [
       {
@@ -2105,42 +2114,115 @@
         "saved_at_utc": "2026-09-24T18:04:20.462168+00:00",
         "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
         "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0750ep-20260924T181908Z",
+        "step": 148905,
+        "samples_seen": 75029184,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T18:19:18.900311+00:00",
+        "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
+        "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0754ep-20260924T183409Z",
+        "step": 149777,
+        "samples_seen": 75474240,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T18:34:19.857210+00:00",
+        "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
+        "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0759ep-20260924T184921Z",
+        "step": 150673,
+        "samples_seen": 75931232,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T18:49:31.274760+00:00",
+        "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
+        "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0763ep-20260924T190422Z",
+        "step": 151564,
+        "samples_seen": 76386016,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T19:04:33.643000+00:00",
+        "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
+        "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0768ep-20260924T191921Z",
+        "step": 152489,
+        "samples_seen": 76857856,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T19:19:44.710321+00:00",
+        "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
+        "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0772ep-20260924T193422Z",
+        "step": 153354,
+        "samples_seen": 77299328,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T19:34:32.529731+00:00",
+        "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
+        "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0777ep-20260924T194909Z",
+        "step": 154259,
+        "samples_seen": 77760928,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T19:49:17.454373+00:00",
+        "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
+        "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z"
+      },
+      {
+        "checkpoint_id": "Diffusion-LDM-UNet-0777ep-20260924T194921Z",
+        "step": 154263,
+        "samples_seen": 77762976,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-24T19:49:31.791645+00:00",
+        "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
+        "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z"
       }
     ],
     "quality_materials": {
       "status": "review_complete",
-      "checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+      "checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T174908Z",
       "model_id": "Diffusion-LDM-UNet",
       "state_role": "ema",
-      "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
-      "checkpoint_training_step": 147178,
-      "samples_seen": 74148128,
+      "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
+      "checkpoint_training_step": 147179,
+      "samples_seen": 74148640,
       "completed_HQ_epochs": 741,
-      "exact_HQ_exposure": 741.48128,
-      "checkpoint_saved_at_utc": "2026-09-24T14:36:37.293063+00:00",
-      "generation_host": "H100",
+      "exact_HQ_exposure": 741.4864,
+      "checkpoint_saved_at_utc": "2026-09-24T17:49:18.839243+00:00",
+      "generation_host": "K100",
       "evaluation_host": "K100",
-      "published_at_utc": "2026-09-24T17:36:04.105425+00:00",
+      "published_at_utc": "2026-09-24T18:24:05.982096+00:00",
       "formal_review_samples": 1024,
       "formal_review_fixed_prefix": 256,
       "microbatch": 128,
       "world_size": 4,
       "effective_batch": 512,
-      "learning_rate": 1e-05,
+      "learning_rate": 3e-06,
       "precision": "bf16",
       "sampling": {
+        "method": "DDIM",
         "steps": 200,
         "eta": 1.0,
-        "ode_tol": 1e-05,
-        "bf16": false,
-        "checkpoint_sampling": false
+        "seed": 42,
+        "batch_size": 8,
+        "bf16": false
       },
       "generation_numeric_settings": {
         "dtype": "fp32",
         "cuda_matmul_allow_tf32": false,
-        "cudnn_allow_tf32": false
+        "cudnn_allow_tf32": true
       },
-      "historical_numeric_protocol_note": "The diagnostic generator explicitly disabled TF32; historical formal evaluations used the default cudnn TF32 setting. Small metric changes across those runs cannot be attributed solely to training.",
+      "historical_numeric_protocol_note": "This review follows the historical formal default cuDNN TF32-enabled protocol. The stopped-source diagnostic explicitly disabled TF32. Their small metric difference cannot establish training benefit.",
       "noise_protocol": {
         "kind": "per_sample_cpu_float32_torch_randn",
         "seed_rule": "seed + sample_index",
@@ -2168,32 +2250,57 @@
         "samples": 1024,
         "nonfinite": 0,
         "blank_spatial_std_lt1": 0,
-        "out_of_range_before_png": null,
-        "out_of_range_note": "The diagnostic source did not record unclamped tensor range; no value is inferred from PNG.",
+        "out_of_range_before_png": 0,
         "filtered_samples": 0
       },
       "face_detection": {
+        "status": "complete",
         "samples": 1024,
+        "zero": 0,
         "single": 1014,
         "multiple": 10,
-        "zero": 0,
-        "nonfinite": 0
+        "nonfinite": 0,
+        "single_face_rate": 0.990234375,
+        "denominator_includes_blank_and_nonfinite": true,
+        "detector": "det_10g.onnx",
+        "detector_size": [
+          256,
+          256
+        ],
+        "threshold": 0.5,
+        "cpu_threads": 8,
+        "cpu_inter_threads": 1,
+        "providers": [
+          "CPUExecutionProvider"
+        ],
+        "insightface_version": "0.7.3"
       },
       "distribution": {
+        "status": "complete",
         "num_generated": 1024,
         "num_real": 1024,
-        "frechet_inception_distance": 33.88762791742704,
-        "kernel_inception_distance_mean": 0.0026539802327327465,
-        "kernel_inception_distance_std": 5.9855722831037994e-05,
+        "feature_extractor": "torch-fidelity inception-v3-compat",
+        "feature_dimension": 2048,
+        "torch_fidelity_version": "0.4.0",
+        "kid_subsets": 100,
+        "kid_subset_size": 1000,
+        "rng_seed": 42,
+        "frechet_inception_distance": 33.88003994796611,
+        "kernel_inception_distance_mean": 0.0026552408933933824,
+        "kernel_inception_distance_std": 5.965342904126098e-05,
         "kid_std_is_independent_confidence_interval": false
       },
-      "report_directory": "reports/evaluation/Diffusion-LDM-UNet-0741ep-20260924T143627Z/review",
+      "report_directory": "reports/evaluation/Diffusion-LDM-UNet-0741ep-20260924T174908Z/review",
       "approval_received": false,
       "formal_review_status": "awaiting_explicit_user_image_acceptance",
-      "new_generation_for_publication": false,
-      "metrics_recomputed_for_publication": false,
-      "stage_status": "original_recipe_stopped",
-      "stage_stop_does_not_grant_approval": true
+      "new_generation_for_publication": true,
+      "metrics_recomputed_for_publication": true,
+      "stage_status": "training_bounded",
+      "stage_stop_does_not_grant_approval": true,
+      "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z",
+      "optimizer_updates_since_bounded_source": 1,
+      "stage_recovery_count": 0,
+      "training_benefit_assessment": "This checkpoint is only one optimizer update after the bounded source and primarily serves as the formal-protocol starting review; it does not establish low-learning-rate improvement."
     },
     "quality_materials_history": [
       {
@@ -4618,6 +4725,94 @@
         "training_record_path": "reports/evaluation/Diffusion-LDM-UNet-0706ep-20260924T124200Z/review/training-record.json",
         "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0706ep-20260924T124200Z/review/first-0256-contact-sheet.png",
         "image_package_path": "reports/evaluation/Diffusion-LDM-UNet-0706ep-20260924T124200Z/review/samples-1024.zip"
+      },
+      {
+        "status": "review_complete",
+        "checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+        "model_id": "Diffusion-LDM-UNet",
+        "state_role": "ema",
+        "training_code_commit": "e9fd419a6a2abb8412993e4d3333f00437f33351",
+        "checkpoint_training_step": 147178,
+        "samples_seen": 74148128,
+        "completed_HQ_epochs": 741,
+        "exact_HQ_exposure": 741.48128,
+        "checkpoint_saved_at_utc": "2026-09-24T14:36:37.293063+00:00",
+        "generation_host": "H100",
+        "evaluation_host": "K100",
+        "published_at_utc": "2026-09-24T17:36:04.105425+00:00",
+        "formal_review_samples": 1024,
+        "formal_review_fixed_prefix": 256,
+        "microbatch": 128,
+        "world_size": 4,
+        "effective_batch": 512,
+        "learning_rate": 1e-05,
+        "precision": "bf16",
+        "sampling": {
+          "steps": 200,
+          "eta": 1.0,
+          "ode_tol": 1e-05,
+          "bf16": false,
+          "checkpoint_sampling": false
+        },
+        "generation_numeric_settings": {
+          "dtype": "fp32",
+          "cuda_matmul_allow_tf32": false,
+          "cudnn_allow_tf32": false
+        },
+        "historical_numeric_protocol_note": "The diagnostic generator explicitly disabled TF32; historical formal evaluations used the default cudnn TF32 setting. Small metric changes across those runs cannot be attributed solely to training.",
+        "noise_protocol": {
+          "kind": "per_sample_cpu_float32_torch_randn",
+          "seed_rule": "seed + sample_index",
+          "noise_shape": [
+            3,
+            64,
+            64
+          ],
+          "step_noise_count": 200,
+          "step_noise_shape": [
+            3,
+            64,
+            64
+          ],
+          "initial_then_step_noises_in_same_rng_stream": true
+        },
+        "reference_set": {
+          "count": 1024,
+          "selection_seed": 42,
+          "source": "registered HQ training manifest",
+          "relationship_to_training": "training-set reference"
+        },
+        "generation": {
+          "status": "complete",
+          "samples": 1024,
+          "nonfinite": 0,
+          "blank_spatial_std_lt1": 0,
+          "out_of_range_before_png": null,
+          "out_of_range_note": "The diagnostic source did not record unclamped tensor range; no value is inferred from PNG.",
+          "filtered_samples": 0
+        },
+        "face_detection": {
+          "samples": 1024,
+          "single": 1014,
+          "multiple": 10,
+          "zero": 0,
+          "nonfinite": 0
+        },
+        "distribution": {
+          "num_generated": 1024,
+          "num_real": 1024,
+          "frechet_inception_distance": 33.88762791742704,
+          "kernel_inception_distance_mean": 0.0026539802327327465,
+          "kernel_inception_distance_std": 5.9855722831037994e-05,
+          "kid_std_is_independent_confidence_interval": false
+        },
+        "report_directory": "reports/evaluation/Diffusion-LDM-UNet-0741ep-20260924T143627Z/review",
+        "approval_received": false,
+        "formal_review_status": "awaiting_explicit_user_image_acceptance",
+        "new_generation_for_publication": false,
+        "metrics_recomputed_for_publication": false,
+        "stage_status": "original_recipe_stopped",
+        "stage_stop_does_not_grant_approval": true
       }
     ],
     "configuration_changes": [
@@ -5052,10 +5247,12 @@
     ],
     "pending_quality_reviews": [
       {
-        "checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T174908Z",
-        "status": "requested",
-        "purpose": "bounded_stage_first_scheduled_review",
-        "checkpoint_step": 147179
+        "checkpoint_id": "Diffusion-LDM-UNet-0777ep-20260924T194909Z",
+        "status": "copying_to_K100",
+        "checkpoint_step": 154259,
+        "samples_seen": 77760928,
+        "observed_at_utc": "2026-09-24T19:55:51.769344+00:00",
+        "purpose": "scheduled_two_hour_review"
       }
     ],
     "visual_quality_observations": [
@@ -5468,6 +5665,33 @@
           "first_step": 140330,
           "last_step": 141320,
           "mean": 0.1564299815893173
+        },
+        "approval_received": false
+      },
+      {
+        "observed_at_utc": "2026-09-24T19:55:51.769344+00:00",
+        "checkpoint_id": "Diffusion-LDM-UNet-0768ep-20260924T191921Z",
+        "state_role": "ema",
+        "optimizer_step": 152489,
+        "samples_seen": 76857856,
+        "sample_count": 64,
+        "filtered_samples": 0,
+        "seed": 42,
+        "sampling": {
+          "method": "DDIM",
+          "steps": 200,
+          "eta": 1.0
+        },
+        "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0768ep-20260924T191921Z/preview/first-0064-contact-sheet.png",
+        "latest_completed_review": "Diffusion-LDM-UNet-0741ep-20260924T174908Z",
+        "completed_review_prefix_inspected": 256,
+        "visual_observation": "The fixed 256-image first-update review and latest 64-image preview were inspected. Eye, teeth and mouth detail artifacts, softened facial detail and partial background faces persist. Fixed indices 12 and 14 remain for review, with expression, dentition and occlusion considered before assigning defects. No samples were filtered; no calibrated severe-defect rate is inferred from contact sheets.",
+        "convergence_assessment": "No convincing overall quality improvement is established. The complete review is only one tail update; the 768-epoch preview is 5311 tail updates and has no distribution metrics. The original-recipe plateau assessment remains; the authorized unique bounded stage continues within the unchanged absolute stop of 177178.",
+        "recent_training_loss_window": {
+          "count": 100,
+          "first_step": 153670,
+          "last_step": 154660,
+          "mean": 0.1575119861215353
         },
         "approval_received": false
       }
