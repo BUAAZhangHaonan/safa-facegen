@@ -181,7 +181,8 @@ class Generator(nn.Module):
                 self.last_ode_nfe=0
                 def velocity(t, state):
                     self.last_ode_nfe+=1
-                    labels = torch.full((state.shape[0],),float(t)*999.,device=state.device,dtype=torch.float32)
+                    # Match upstream: round t to FP32 before scaling its label.
+                    labels = torch.full((state.shape[0],),float(t),device=state.device,dtype=torch.float32)*999.
                     return self._predict(state.float(), labels).double()
                 x = integrate(velocity,x.double(),rtol=self.ode_tol,atol=self.ode_tol).float()
                 return x.clamp(-1, 1)
