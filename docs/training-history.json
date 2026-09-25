@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-25T10:13:17.622720+00:00",
+    "recorded_at_utc": "2026-09-25T12:00:54.305165+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -518,19 +518,37 @@
         "guidance": "none"
       },
       "approval_received": false,
-      "latest_observed_at_utc": "2026-09-25T10:11:33.381766+00:00",
-      "latest_observed_step": 19,
-      "latest_observed_samples_seen": 97280,
-      "latest_observed_loss": 0.9999963641166687,
-      "latest_observed_gradient_norm": 0.049507346004247665,
+      "latest_observed_at_utc": "2026-09-25T12:00:56.294074+00:00",
+      "latest_observed_step": 11505,
+      "latest_observed_samples_seen": 57525600,
+      "latest_observed_loss": 0.9999963045120239,
+      "latest_observed_gradient_norm": 0.042328592389822006,
       "latest_observation_is_a_complete_checkpoint": false,
-      "latest_complete_checkpoint": null,
-      "unsaved_optimizer_steps_after_latest_complete": 19,
-      "observed_peak_gpu_gib": 68.8251953125,
-      "observed_peak_memory_gib": 56.01477813720703,
+      "latest_complete_checkpoint": {
+        "checkpoint_id": "MeanFlow-B-4-0547ep-20260925T115553739521Z",
+        "optimizer_step": 10956,
+        "samples_seen": 54781920,
+        "exact_HQ_exposure": 547.8192,
+        "saved_at_utc": "2026-09-25T11:56:04.627330+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf",
+        "reason": "scheduled"
+      },
+      "unsaved_optimizer_steps_after_latest_complete": 549,
+      "observed_peak_gpu_gib": 68.8369140625,
+      "observed_peak_memory_gib": 66.26235961914062,
       "recovery_attempt": 0,
       "scheduling_policy": "Use actual quality trends and resource/failure evidence to continue or gracefully switch to the next independent MeanFlow model; quality approval remains explicit. Do not continue a demonstrated plateau indefinitely.",
-      "initialization_retained": true
+      "initialization_retained": true,
+      "latest_optimizer_learning_rate": 9.999999747378752e-05,
+      "rejected_updates": 0,
+      "oom_events": 0,
+      "K100_replication": {
+        "observed_at_utc": "2026-09-25T12:00:51.959335+00:00",
+        "latest_restore_pointer_present": false,
+        "copying_checkpoint": "MeanFlow-B-4-0471ep-20260925T114053443667Z",
+        "preview_status": "queued",
+        "note": "Worker is evaluating RF final EMA; no MeanFlow preview has completed. Keep partial transfers and active worker."
+      }
     },
     "interruptions": [
       {
@@ -2746,22 +2764,85 @@
         "reason": "stop_requested",
         "saved_at_utc": "2026-09-25T10:08:59.105097+00:00",
         "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-0073ep-20260925T102554692405Z",
+        "step": 1471,
+        "samples_seen": 7356320,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T10:26:00.912126+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-0151ep-20260925T104052945321Z",
+        "step": 3038,
+        "samples_seen": 15192160,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T10:40:59.938002+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-0225ep-20260925T105553320721Z",
+        "step": 4517,
+        "samples_seen": 22587040,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T10:55:58.299245+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-0306ep-20260925T111053194989Z",
+        "step": 6125,
+        "samples_seen": 30625600,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T11:10:59.749309+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-0388ep-20260925T112553462890Z",
+        "step": 7776,
+        "samples_seen": 38881920,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T11:25:58.906774+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-0471ep-20260925T114053443667Z",
+        "step": 9436,
+        "samples_seen": 47181920,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T11:41:00.120284+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-0547ep-20260925T115553739521Z",
+        "step": 10956,
+        "samples_seen": 54781920,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T11:56:04.627330+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
       }
     ],
     "quality_materials": {
       "status": "complete",
-      "checkpoint_id": "RectifiedFlow-NCSNpp-0020ep-20260925T080520Z",
+      "checkpoint_id": "RectifiedFlow-NCSNpp-0027ep-20260925T100521Z",
       "model_id": "RectifiedFlow-NCSNpp",
       "state_role": "ema",
       "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd",
-      "checkpoint_training_step": 21635,
-      "samples_seen": 2076320,
-      "completed_HQ_epochs": 20,
-      "exact_HQ_exposure": 20.7632,
-      "checkpoint_saved_at_utc": "2026-09-25T08:05:23.429822+00:00",
+      "checkpoint_training_step": 28687,
+      "samples_seen": 2753088,
+      "completed_HQ_epochs": 27,
+      "exact_HQ_exposure": 27.53088,
+      "checkpoint_saved_at_utc": "2026-09-25T10:05:24.205821+00:00",
       "generation_host": "K100",
       "evaluation_host": "K100",
-      "published_at_utc": "2026-09-25T10:13:17.622720+00:00",
+      "published_at_utc": "2026-09-25T12:00:54.305165+00:00",
       "formal_review_samples": 1024,
       "formal_review_fixed_prefix": 256,
       "microbatch": 24,
@@ -2843,24 +2924,25 @@
         "kid_subsets": 100,
         "kid_subset_size": 1000,
         "rng_seed": 42,
-        "frechet_inception_distance": 51.212126883824226,
-        "kernel_inception_distance_mean": 0.015914535873373336,
-        "kernel_inception_distance_std": 0.00017804336514016945
+        "frechet_inception_distance": 50.758022943180265,
+        "kernel_inception_distance_mean": 0.015134432044544512,
+        "kernel_inception_distance_std": 0.0001644041089418383
       },
-      "report_directory": "reports/evaluation/RectifiedFlow-NCSNpp-0020ep-20260925T080520Z/review",
+      "report_directory": "reports/evaluation/RectifiedFlow-NCSNpp-0027ep-20260925T100521Z/review",
       "approval_received": false,
       "formal_review_status": "complete",
       "new_generation_for_publication": false,
       "metrics_recomputed_for_publication": false,
       "review_kind": "scheduled_two_hour_review",
-      "contact_sheet_path": "reports/evaluation/RectifiedFlow-NCSNpp-0020ep-20260925T080520Z/review/first-0256-contact-sheet.png",
-      "training_record_path": "reports/evaluation/RectifiedFlow-NCSNpp-0020ep-20260925T080520Z/review/training-record.json",
+      "contact_sheet_path": "reports/evaluation/RectifiedFlow-NCSNpp-0027ep-20260925T100521Z/review/first-0256-contact-sheet.png",
+      "training_record_path": "reports/evaluation/RectifiedFlow-NCSNpp-0027ep-20260925T100521Z/review/training-record.json",
       "stage_started_at_utc": "2026-09-25T02:04:55+00:00",
-      "stage_elapsed_seconds": 21628.429822,
-      "review_started_at_utc": "2026-09-25T08:10:07.469979+00:00",
-      "review_finished_at_utc": "2026-09-25T09:44:21.048503+00:00",
+      "stage_elapsed_seconds": 28829.205821,
+      "review_started_at_utc": "2026-09-25T10:09:38.895802+00:00",
+      "review_finished_at_utc": "2026-09-25T12:00:37.572783+00:00",
       "stage_recovery_count": 0,
-      "kid_std_is_independent_confidence_interval": false
+      "kid_std_is_independent_confidence_interval": false,
+      "checkpoint_is_final_stage_state": false
     },
     "quality_materials_history": [
       {
@@ -6548,6 +6630,120 @@
         "review_finished_at_utc": "2026-09-25T08:03:04.754911+00:00",
         "stage_recovery_count": 0,
         "kid_std_is_independent_confidence_interval": false
+      },
+      {
+        "status": "complete",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0020ep-20260925T080520Z",
+        "model_id": "RectifiedFlow-NCSNpp",
+        "state_role": "ema",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd",
+        "checkpoint_training_step": 21635,
+        "samples_seen": 2076320,
+        "completed_HQ_epochs": 20,
+        "exact_HQ_exposure": 20.7632,
+        "checkpoint_saved_at_utc": "2026-09-25T08:05:23.429822+00:00",
+        "generation_host": "K100",
+        "evaluation_host": "K100",
+        "published_at_utc": "2026-09-25T10:13:17.622720+00:00",
+        "formal_review_samples": 1024,
+        "formal_review_fixed_prefix": 256,
+        "microbatch": 24,
+        "world_size": 4,
+        "effective_batch": 96,
+        "learning_rate": 2e-05,
+        "precision": "bf16",
+        "ema_decay": 0.999,
+        "initialization": "models/initialization/RectifiedFlow-NCSNpp-CelebAHQ-official.pth",
+        "sampling": {
+          "method": "Dormand-Prince ODE",
+          "ode_tol": 1e-05,
+          "seed": 42,
+          "seed_rule": "42 + sample_index",
+          "resolution": [
+            256,
+            256
+          ]
+        },
+        "noise_protocol": {
+          "kind": "per_sample_cpu_float32_torch_randn",
+          "seed_rule": "seed + sample_index",
+          "noise_shape": [
+            3,
+            256,
+            256
+          ],
+          "step_noise_count": 0,
+          "step_noise_shape": [
+            3,
+            256,
+            256
+          ],
+          "initial_then_step_noises_in_same_rng_stream": true
+        },
+        "reference_set": {
+          "count": 1024,
+          "selection_seed": 42,
+          "source": "registered HQ training manifest",
+          "relationship_to_training": "training-set reference"
+        },
+        "generation": {
+          "status": "complete",
+          "samples": 1024,
+          "nonfinite": 0,
+          "blank_spatial_std_lt1": 0,
+          "out_of_range_before_png": 0,
+          "filtered_samples": 0
+        },
+        "face_detection": {
+          "status": "complete",
+          "samples": 1024,
+          "zero": 0,
+          "single": 1024,
+          "multiple": 0,
+          "nonfinite": 0,
+          "single_face_rate": 1.0,
+          "denominator_includes_blank_and_nonfinite": true,
+          "detector": "det_10g.onnx",
+          "detector_size": [
+            256,
+            256
+          ],
+          "threshold": 0.5,
+          "cpu_threads": 8,
+          "cpu_inter_threads": 1,
+          "providers": [
+            "CPUExecutionProvider"
+          ],
+          "insightface_version": "0.7.3"
+        },
+        "distribution": {
+          "status": "complete",
+          "num_generated": 1024,
+          "num_real": 1024,
+          "feature_extractor": "torch-fidelity inception-v3-compat",
+          "feature_dimension": 2048,
+          "torch_fidelity_version": "0.4.0",
+          "kid_subsets": 100,
+          "kid_subset_size": 1000,
+          "rng_seed": 42,
+          "frechet_inception_distance": 51.212126883824226,
+          "kernel_inception_distance_mean": 0.015914535873373336,
+          "kernel_inception_distance_std": 0.00017804336514016945
+        },
+        "report_directory": "reports/evaluation/RectifiedFlow-NCSNpp-0020ep-20260925T080520Z/review",
+        "approval_received": false,
+        "formal_review_status": "complete",
+        "new_generation_for_publication": false,
+        "metrics_recomputed_for_publication": false,
+        "review_kind": "scheduled_two_hour_review",
+        "contact_sheet_path": "reports/evaluation/RectifiedFlow-NCSNpp-0020ep-20260925T080520Z/review/first-0256-contact-sheet.png",
+        "training_record_path": "reports/evaluation/RectifiedFlow-NCSNpp-0020ep-20260925T080520Z/review/training-record.json",
+        "stage_started_at_utc": "2026-09-25T02:04:55+00:00",
+        "stage_elapsed_seconds": 21628.429822,
+        "review_started_at_utc": "2026-09-25T08:10:07.469979+00:00",
+        "review_finished_at_utc": "2026-09-25T09:44:21.048503+00:00",
+        "stage_recovery_count": 0,
+        "kid_std_is_independent_confidence_interval": false
       }
     ],
     "configuration_changes": [
@@ -6942,7 +7138,13 @@
         "scheduling_policy": "Use actual quality trends and resource/failure evidence to continue or gracefully switch to the next independent MeanFlow model; quality approval remains explicit. Do not continue a demonstrated plateau indefinitely.",
         "stopped_at_utc": "2026-09-25T10:09:05+00:00",
         "stop_decision": "Three matched RF reviews at 7/13/20 HQ epochs have successively worsening FID and KID and persistent visual artifacts. Graceful stop and independent-model dispatch under user scheduling authorization. No quality approval.",
-        "final_review_request": "RectifiedFlow-NCSNpp-0027ep-20260925T100856Z-review"
+        "final_review_request": "RectifiedFlow-NCSNpp-0027ep-20260925T100856Z-review",
+        "final_state_replication": {
+          "observed_at_utc": "2026-09-25T12:00:51.959335+00:00",
+          "checkpoint_id": "RectifiedFlow-NCSNpp-0027ep-20260925T100856Z",
+          "status": "transport_verified",
+          "K100_restore_exercised": false
+        }
       }
     ],
     "operational_actions": [
@@ -7156,13 +7358,8 @@
     "pending_quality_reviews": [
       {
         "checkpoint_id": "RectifiedFlow-NCSNpp-0027ep-20260925T100856Z",
-        "status": "copying",
-        "observed_at_utc": "2026-09-25T10:13:17.622720+00:00"
-      },
-      {
-        "checkpoint_id": "RectifiedFlow-NCSNpp-0027ep-20260925T100521Z",
         "status": "evaluating",
-        "observed_at_utc": "2026-09-25T10:13:17.622720+00:00"
+        "observed_at_utc": "2026-09-25T12:00:51.959335+00:00"
       }
     ],
     "visual_quality_observations": [
@@ -7836,6 +8033,21 @@
         "convergence_assessment": "Matched 7/13/20-epoch FID and KID worsen successively. Stop the current RF recipe and preserve candidates; cause and architectural optimum are unestablished. Switch to the authorized independent MeanFlow-B-4 training.",
         "severe_minor_defect_counts": "not_measured",
         "approval_received": false
+      },
+      {
+        "observed_at_utc": "2026-09-25T12:00:54.305165+00:00",
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0027ep-20260925T100521Z",
+        "optimizer_step": 28687,
+        "samples_seen": 2753088,
+        "sample_count": 256,
+        "filtered_samples": 0,
+        "seed": 42,
+        "contact_sheet_path": "reports/evaluation/RectifiedFlow-NCSNpp-0027ep-20260925T100521Z/review/first-0256-contact-sheet.png",
+        "visual_observation": "Fixed 256-image sheet retains color/texture contamination, face/background blending and irregular local facial detail in some images. There is no clear overall visual improvement over earlier reviews. Natural expressions, dentition, costume and occlusion are not automatically severe defects.",
+        "convergence_assessment": "FID and KID decline slightly from the 20-epoch review but remain worse than the 7-epoch result. Current RF recipe remains stopped; no architectural optimum or formal acceptance is established.",
+        "severe_minor_defect_counts": "not_measured",
+        "approval_received": false
       }
     ],
     "plateau_diagnostics": {
@@ -8038,7 +8250,7 @@
         "output_directory": "reports/plateau/Diffusion-LDM-UNet-tail-20260924T172143Z-final-evaluation",
         "training_updates_added": 0,
         "approval_received": false,
-        "observed_at_utc": "2026-09-25T10:01:03.206111+00:00",
+        "observed_at_utc": "2026-09-25T12:00:51.959335+00:00",
         "final_formal_review_complete": true,
         "source_10000_samples_written": 10000,
         "final_10000_generation_started": true,
@@ -8105,7 +8317,7 @@
           "registered_file_sizes_and_mtimes_match": true,
           "K100_restore_exercised": false
         },
-        "final_10000_samples_written": 896,
+        "final_10000_samples_written": 3712,
         "source_10000_result": {
           "status": "complete",
           "num_generated": 10000,
