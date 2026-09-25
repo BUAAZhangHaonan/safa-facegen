@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-25T05:58:08.194174+00:00",
+    "recorded_at_utc": "2026-09-25T08:00:55.941067+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -517,25 +517,25 @@
       "approval_received": false,
       "num_workers_per_rank": 4,
       "prefetch_factor": 2,
-      "latest_observed_at_utc": "2026-09-25T05:58:08.194174+00:00",
-      "latest_observed_step": 14050,
-      "latest_observed_samples_seen": 1348384,
-      "latest_observed_loss": 0.09858674556016922,
-      "latest_observed_gradient_norm": 0.008052108809351921,
+      "latest_observed_at_utc": "2026-09-25T08:00:55.941067+00:00",
+      "latest_observed_step": 21420,
+      "latest_observed_samples_seen": 2055680,
+      "latest_observed_loss": 0.07635972648859024,
+      "latest_observed_gradient_norm": 0.18225161731243134,
       "latest_observation_is_a_complete_checkpoint": false,
       "latest_optimizer_learning_rate": 2e-05,
       "latest_complete_checkpoint": {
-        "checkpoint_id": "RectifiedFlow-NCSNpp-0013ep-20260925T055025Z",
-        "optimizer_step": 13573,
-        "samples_seen": 1302592,
-        "exact_HQ_exposure": 13.02592,
-        "saved_at_utc": "2026-09-25T05:50:30.289793+00:00",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0019ep-20260925T075026Z",
+        "optimizer_step": 20808,
+        "samples_seen": 1996960,
+        "exact_HQ_exposure": 19.9696,
+        "saved_at_utc": "2026-09-25T07:50:29.046180+00:00",
         "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd",
         "reason": "scheduled"
       },
-      "unsaved_optimizer_steps_after_latest_complete": 477,
+      "unsaved_optimizer_steps_after_latest_complete": 612,
       "observed_peak_gpu_gib": 62.7158203125,
-      "observed_peak_memory_gib": 57.46882629394531,
+      "observed_peak_memory_gib": 57.90962219238281,
       "recovery_attempt": 0,
       "scheduling_policy": "Use actual quality trends and resource/failure evidence to continue or gracefully switch to the next independent MeanFlow model; quality approval remains explicit. Do not continue a demonstrated plateau indefinitely."
     },
@@ -2582,56 +2582,135 @@
         "reason": "scheduled",
         "saved_at_utc": "2026-09-25T05:50:30.289793+00:00",
         "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0013ep-20260925T060519Z",
+        "step": 14494,
+        "samples_seen": 1391008,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T06:05:22.664748+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0013ep-20260925T060525Z",
+        "step": 14497,
+        "samples_seen": 1391296,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T06:05:41.754255+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0014ep-20260925T062026Z",
+        "step": 15351,
+        "samples_seen": 1473248,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T06:20:29.164625+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0015ep-20260925T063525Z",
+        "step": 16289,
+        "samples_seen": 1563264,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T06:35:38.505285+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0016ep-20260925T065026Z",
+        "step": 17197,
+        "samples_seen": 1650400,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T06:50:28.877462+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0017ep-20260925T070525Z",
+        "step": 18126,
+        "samples_seen": 1739552,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T07:05:28.929338+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0018ep-20260925T072038Z",
+        "step": 19020,
+        "samples_seen": 1825344,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T07:20:41.313993+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0019ep-20260925T073526Z",
+        "step": 19913,
+        "samples_seen": 1911040,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T07:35:40.328032+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0019ep-20260925T075026Z",
+        "step": 20808,
+        "samples_seen": 1996960,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T07:50:29.046180+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
       }
     ],
     "quality_materials": {
-      "status": "review_complete",
-      "checkpoint_id": "Diffusion-LDM-UNet-0894ep-20260925T020440Z",
-      "model_id": "Diffusion-LDM-UNet",
+      "status": "complete",
+      "checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+      "model_id": "RectifiedFlow-NCSNpp",
       "state_role": "ema",
-      "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
-      "checkpoint_training_step": 177178,
-      "samples_seen": 89454272,
-      "completed_HQ_epochs": 894,
-      "exact_HQ_exposure": 894.54272,
-      "checkpoint_saved_at_utc": "2026-09-25T02:04:50.092767+00:00",
+      "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd",
+      "checkpoint_training_step": 7309,
+      "samples_seen": 701440,
+      "completed_HQ_epochs": 7,
+      "exact_HQ_exposure": 7.0144,
+      "checkpoint_saved_at_utc": "2026-09-25T04:05:21.599219+00:00",
       "generation_host": "K100",
       "evaluation_host": "K100",
-      "published_at_utc": "2026-09-25T02:41:36.916143+00:00",
+      "published_at_utc": "2026-09-25T08:00:55.941067+00:00",
       "formal_review_samples": 1024,
       "formal_review_fixed_prefix": 256,
-      "microbatch": 128,
+      "microbatch": 24,
       "world_size": 4,
-      "effective_batch": 512,
-      "learning_rate": 3e-06,
+      "effective_batch": 96,
+      "learning_rate": 2e-05,
       "precision": "bf16",
+      "ema_decay": 0.999,
+      "initialization": "models/initialization/RectifiedFlow-NCSNpp-CelebAHQ-official.pth",
       "sampling": {
-        "method": "DDIM",
-        "steps": 200,
-        "eta": 1.0,
+        "method": "Dormand-Prince ODE",
+        "ode_tol": 1e-05,
         "seed": 42,
-        "batch_size": 8,
-        "bf16": false
+        "seed_rule": "42 + sample_index",
+        "resolution": [
+          256,
+          256
+        ]
       },
-      "generation_numeric_settings": {
-        "dtype": "fp32",
-        "cuda_matmul_allow_tf32": false,
-        "cudnn_allow_tf32": true
-      },
-      "historical_numeric_protocol_note": "This review follows the historical formal default cuDNN TF32-enabled protocol. The stopped-source diagnostic explicitly disabled TF32. Their small metric difference cannot establish training benefit.",
       "noise_protocol": {
         "kind": "per_sample_cpu_float32_torch_randn",
         "seed_rule": "seed + sample_index",
         "noise_shape": [
           3,
-          64,
-          64
+          256,
+          256
         ],
-        "step_noise_count": 200,
+        "step_noise_count": 0,
         "step_noise_shape": [
           3,
-          64,
-          64
+          256,
+          256
         ],
         "initial_then_step_noises_in_same_rng_stream": true
       },
@@ -2653,10 +2732,10 @@
         "status": "complete",
         "samples": 1024,
         "zero": 0,
-        "single": 1014,
-        "multiple": 10,
+        "single": 1024,
+        "multiple": 0,
         "nonfinite": 0,
-        "single_face_rate": 0.990234375,
+        "single_face_rate": 1.0,
         "denominator_includes_blank_and_nonfinite": true,
         "detector": "det_10g.onnx",
         "detector_size": [
@@ -2681,27 +2760,24 @@
         "kid_subsets": 100,
         "kid_subset_size": 1000,
         "rng_seed": 42,
-        "frechet_inception_distance": 34.47864627298122,
-        "kernel_inception_distance_mean": 0.0030321017317317266,
-        "kernel_inception_distance_std": 6.825692318834767e-05,
-        "kid_std_is_independent_confidence_interval": false
+        "frechet_inception_distance": 48.41918559400847,
+        "kernel_inception_distance_mean": 0.01238089729229229,
+        "kernel_inception_distance_std": 0.00014316117266623262
       },
-      "report_directory": "reports/evaluation/Diffusion-LDM-UNet-0894ep-20260925T020440Z/review",
+      "report_directory": "reports/evaluation/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z/review",
       "approval_received": false,
-      "formal_review_status": "awaiting_explicit_user_image_acceptance",
-      "new_generation_for_publication": true,
-      "metrics_recomputed_for_publication": true,
-      "stage_status": "bounded_training_complete_pending_large_sample_evaluation",
-      "stage_stop_does_not_grant_approval": true,
-      "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z",
-      "optimizer_updates_since_bounded_source": 30000,
+      "formal_review_status": "complete",
+      "new_generation_for_publication": false,
+      "metrics_recomputed_for_publication": false,
+      "review_kind": "scheduled_two_hour_review",
+      "contact_sheet_path": "reports/evaluation/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z/review/first-0256-contact-sheet.png",
+      "training_record_path": "reports/evaluation/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z/review/training-record.json",
+      "stage_started_at_utc": "2026-09-25T02:04:55+00:00",
+      "stage_elapsed_seconds": 7226.599219,
+      "review_started_at_utc": "2026-09-25T04:10:02.818128+00:00",
+      "review_finished_at_utc": "2026-09-25T06:03:10.964179+00:00",
       "stage_recovery_count": 0,
-      "training_benefit_assessment": "The completed tail has no demonstrated practical gain. The final formal review has higher FID and KID than the first-update formal baseline. Fresh-seed diagnostics also favor the source checkpoint. Retain the source as a provisional candidate; the matched 10k comparison is still running. No user approval or further Diffusion training is implied.",
-      "stage_elapsed_seconds": 29777.402959,
-      "stage_started_at_utc": "2026-09-24T17:48:32.689808+00:00",
-      "review_kind": "bounded_stage_final_review",
-      "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0894ep-20260925T020440Z/review/first-0256-contact-sheet.png",
-      "training_record_path": "reports/evaluation/Diffusion-LDM-UNet-0894ep-20260925T020440Z/review/training-record.json"
+      "kid_std_is_independent_confidence_interval": false
     },
     "quality_materials_history": [
       {
@@ -6042,6 +6118,125 @@
         "review_kind": "scheduled_two_hour_review",
         "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0889ep-20260925T014911Z/review/first-0256-contact-sheet.png",
         "training_record_path": "reports/evaluation/Diffusion-LDM-UNet-0889ep-20260925T014911Z/review/training-record.json"
+      },
+      {
+        "status": "review_complete",
+        "checkpoint_id": "Diffusion-LDM-UNet-0894ep-20260925T020440Z",
+        "model_id": "Diffusion-LDM-UNet",
+        "state_role": "ema",
+        "training_code_commit": "1528f9a040207599177c82fa3b21288921dcaf45",
+        "checkpoint_training_step": 177178,
+        "samples_seen": 89454272,
+        "completed_HQ_epochs": 894,
+        "exact_HQ_exposure": 894.54272,
+        "checkpoint_saved_at_utc": "2026-09-25T02:04:50.092767+00:00",
+        "generation_host": "K100",
+        "evaluation_host": "K100",
+        "published_at_utc": "2026-09-25T02:41:36.916143+00:00",
+        "formal_review_samples": 1024,
+        "formal_review_fixed_prefix": 256,
+        "microbatch": 128,
+        "world_size": 4,
+        "effective_batch": 512,
+        "learning_rate": 3e-06,
+        "precision": "bf16",
+        "sampling": {
+          "method": "DDIM",
+          "steps": 200,
+          "eta": 1.0,
+          "seed": 42,
+          "batch_size": 8,
+          "bf16": false
+        },
+        "generation_numeric_settings": {
+          "dtype": "fp32",
+          "cuda_matmul_allow_tf32": false,
+          "cudnn_allow_tf32": true
+        },
+        "historical_numeric_protocol_note": "This review follows the historical formal default cuDNN TF32-enabled protocol. The stopped-source diagnostic explicitly disabled TF32. Their small metric difference cannot establish training benefit.",
+        "noise_protocol": {
+          "kind": "per_sample_cpu_float32_torch_randn",
+          "seed_rule": "seed + sample_index",
+          "noise_shape": [
+            3,
+            64,
+            64
+          ],
+          "step_noise_count": 200,
+          "step_noise_shape": [
+            3,
+            64,
+            64
+          ],
+          "initial_then_step_noises_in_same_rng_stream": true
+        },
+        "reference_set": {
+          "count": 1024,
+          "selection_seed": 42,
+          "source": "registered HQ training manifest",
+          "relationship_to_training": "training-set reference"
+        },
+        "generation": {
+          "status": "complete",
+          "samples": 1024,
+          "nonfinite": 0,
+          "blank_spatial_std_lt1": 0,
+          "out_of_range_before_png": 0,
+          "filtered_samples": 0
+        },
+        "face_detection": {
+          "status": "complete",
+          "samples": 1024,
+          "zero": 0,
+          "single": 1014,
+          "multiple": 10,
+          "nonfinite": 0,
+          "single_face_rate": 0.990234375,
+          "denominator_includes_blank_and_nonfinite": true,
+          "detector": "det_10g.onnx",
+          "detector_size": [
+            256,
+            256
+          ],
+          "threshold": 0.5,
+          "cpu_threads": 8,
+          "cpu_inter_threads": 1,
+          "providers": [
+            "CPUExecutionProvider"
+          ],
+          "insightface_version": "0.7.3"
+        },
+        "distribution": {
+          "status": "complete",
+          "num_generated": 1024,
+          "num_real": 1024,
+          "feature_extractor": "torch-fidelity inception-v3-compat",
+          "feature_dimension": 2048,
+          "torch_fidelity_version": "0.4.0",
+          "kid_subsets": 100,
+          "kid_subset_size": 1000,
+          "rng_seed": 42,
+          "frechet_inception_distance": 34.47864627298122,
+          "kernel_inception_distance_mean": 0.0030321017317317266,
+          "kernel_inception_distance_std": 6.825692318834767e-05,
+          "kid_std_is_independent_confidence_interval": false
+        },
+        "report_directory": "reports/evaluation/Diffusion-LDM-UNet-0894ep-20260925T020440Z/review",
+        "approval_received": false,
+        "formal_review_status": "awaiting_explicit_user_image_acceptance",
+        "new_generation_for_publication": true,
+        "metrics_recomputed_for_publication": true,
+        "stage_status": "bounded_training_complete_pending_large_sample_evaluation",
+        "stage_stop_does_not_grant_approval": true,
+        "stage_id": "Diffusion-LDM-UNet-tail-20260924T172143Z",
+        "optimizer_updates_since_bounded_source": 30000,
+        "stage_recovery_count": 0,
+        "training_benefit_assessment": "The completed tail has no demonstrated practical gain. The final formal review has higher FID and KID than the first-update formal baseline. Fresh-seed diagnostics also favor the source checkpoint. Retain the source as a provisional candidate; the matched 10k comparison is still running. No user approval or further Diffusion training is implied.",
+        "stage_elapsed_seconds": 29777.402959,
+        "stage_started_at_utc": "2026-09-24T17:48:32.689808+00:00",
+        "review_kind": "bounded_stage_final_review",
+        "contact_sheet_path": "reports/evaluation/Diffusion-LDM-UNet-0894ep-20260925T020440Z/review/first-0256-contact-sheet.png",
+        "training_record_path": "reports/evaluation/Diffusion-LDM-UNet-0894ep-20260925T020440Z/review/training-record.json"
       }
     ],
     "configuration_changes": [
@@ -6580,11 +6775,11 @@
     ],
     "pending_quality_reviews": [
       {
-        "checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0013ep-20260925T060519Z",
         "status": "evaluating_on_K100",
-        "checkpoint_step": 7309,
-        "samples_seen": 701440,
-        "observed_at_utc": "2026-09-25T05:58:07.355811+00:00",
+        "checkpoint_step": 14494,
+        "samples_seen": 1391008,
+        "observed_at_utc": "2026-09-25T08:00:53.316564+00:00",
         "purpose": "scheduled_two_hour_review"
       }
     ],
@@ -7172,6 +7367,48 @@
         "completed_review_prefixes_inspected": [],
         "severe_minor_defect_counts": "not_measured",
         "approval_received": false
+      },
+      {
+        "observed_at_utc": "2026-09-25T08:00:55.941067+00:00",
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+        "optimizer_step": 7309,
+        "samples_seen": 701440,
+        "sample_count": 256,
+        "filtered_samples": 0,
+        "seed": 42,
+        "contact_sheet_path": "reports/evaluation/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z/review/first-0256-contact-sheet.png",
+        "visual_observation": "Most faces have recognizable overall structure and varied poses. Some samples retain patchy or doubled texture, color artifacts, softened detail and irregular mouth or eye detail. Natural expressions, dentition and occlusions are not automatically severe anatomical defects. No calibrated severe/minor defect counts were measured.",
+        "convergence_assessment": "Only the first RF formal metric result is complete. It does not establish a convergence trend or plateau; continued authorized training is supported while subsequent matched reviews are evaluated.",
+        "severe_minor_defect_counts": "not_measured",
+        "recent_training_loss_window": {
+          "count": 100,
+          "first_step": 20430,
+          "last_step": 21420,
+          "mean": 0.06922058705240489
+        },
+        "approval_received": false
+      },
+      {
+        "observed_at_utc": "2026-09-25T08:00:55.941067+00:00",
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0012ep-20260925T053525Z",
+        "optimizer_step": 12721,
+        "samples_seen": 1220832,
+        "sample_count": 64,
+        "filtered_samples": 0,
+        "seed": 42,
+        "contact_sheet_path": "reports/evaluation/RectifiedFlow-NCSNpp-0012ep-20260925T053525Z/preview/first-0064-contact-sheet.png",
+        "visual_observation": "Most faces have recognizable overall structure and varied poses. Some samples retain patchy or doubled texture, color artifacts, softened detail and irregular mouth or eye detail. Natural expressions, dentition and occlusions are not automatically severe anatomical defects. No calibrated severe/minor defect counts were measured.",
+        "convergence_assessment": "Only the first RF formal metric result is complete. It does not establish a convergence trend or plateau; continued authorized training is supported while subsequent matched reviews are evaluated.",
+        "severe_minor_defect_counts": "not_measured",
+        "recent_training_loss_window": {
+          "count": 100,
+          "first_step": 20430,
+          "last_step": 21420,
+          "mean": 0.06922058705240489
+        },
+        "approval_received": false
       }
     ],
     "plateau_diagnostics": {
@@ -7374,9 +7611,9 @@
         "output_directory": "reports/plateau/Diffusion-LDM-UNet-tail-20260924T172143Z-final-evaluation",
         "training_updates_added": 0,
         "approval_received": false,
-        "observed_at_utc": "2026-09-25T05:58:07.355811+00:00",
+        "observed_at_utc": "2026-09-25T08:00:53.316564+00:00",
         "final_formal_review_complete": true,
-        "source_10000_samples_written": 5504,
+        "source_10000_samples_written": 8192,
         "final_10000_generation_started": false,
         "fresh_seed_result": {
           "status": "complete",
