@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-25T16:05:08.584576+00:00",
+    "recorded_at_utc": "2026-09-25T16:29:30.018590+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -492,7 +492,7 @@
     },
     "active_training": {
       "model_id": "MeanFlow-B-4",
-      "status": "remote_process_state_unavailable",
+      "status": "training",
       "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf",
       "controller_started_at_utc": "2026-09-25T10:10:34+00:00",
       "controller_pid": 2138694,
@@ -518,24 +518,24 @@
         "guidance": "none"
       },
       "approval_received": false,
-      "latest_observed_at_utc": "2026-09-25T14:01:02.685223+00:00",
-      "latest_observed_step": 24541,
-      "latest_observed_samples_seen": 122705120,
+      "latest_observed_at_utc": "2026-09-25T16:29:29.905859+00:00",
+      "latest_observed_step": 40122,
+      "latest_observed_samples_seen": 200610240,
       "latest_observed_loss": 0.9999963045120239,
-      "latest_observed_gradient_norm": 0.04464612901210785,
+      "latest_observed_gradient_norm": 0.07844818383455276,
       "latest_observation_is_a_complete_checkpoint": false,
       "latest_complete_checkpoint": {
-        "checkpoint_id": "MeanFlow-B-4-1199ep-20260925T135601986037Z",
-        "optimizer_step": 23981,
-        "samples_seen": 119905120,
-        "exact_HQ_exposure": 1199.0512,
-        "saved_at_utc": "2026-09-25T13:56:06.992465+00:00",
+        "checkpoint_id": "MeanFlow-B-4-1988ep-20260925T162603005661Z",
+        "optimizer_step": 39766,
+        "samples_seen": 198830720,
+        "exact_HQ_exposure": 1988.3072,
+        "saved_at_utc": "2026-09-25T16:26:08.042857+00:00",
         "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf",
         "reason": "scheduled"
       },
-      "unsaved_optimizer_steps_after_latest_complete": 560,
+      "unsaved_optimizer_steps_after_latest_complete": 356,
       "observed_peak_gpu_gib": 68.8369140625,
-      "observed_peak_memory_gib": 67.32332229614258,
+      "observed_peak_memory_gib": 67.50937271118164,
       "recovery_attempt": 0,
       "scheduling_policy": "Use actual quality trends and resource/failure evidence to continue or gracefully switch to the next independent MeanFlow model; quality approval remains explicit. Do not continue a demonstrated plateau indefinitely.",
       "initialization_retained": true,
@@ -554,11 +554,11 @@
         "error": "TimeoutError during SSH interruption"
       },
       "process_state_verification": {
-        "observed_at_utc": "2026-09-25T16:05:08.584576+00:00",
-        "last_direct_observation_at_utc": "2026-09-25T14:01:02.685223+00:00",
-        "failure": "Aliyun SSH accessible; no listener on reverse port 31412; direct-tcpip connection refused",
-        "training_stopped_by_this_check": false,
-        "current_GPU_and_memory_usage": "unavailable"
+        "observed_at_utc": "2026-09-25T16:29:30.018590+00:00",
+        "SSH": "restored",
+        "controller_pid": 2138694,
+        "trainer_pid": 2138699,
+        "restarted_training": false
       },
       "latest_source_save_report_received_on_K100": {
         "checkpoint_id": "MeanFlow-B-4-1663ep-20260925T152602569044Z",
@@ -569,7 +569,17 @@
         "evidence": "Source controller save event received by K100; source filesystem cannot be reinspected while SSH is unavailable",
         "K100_complete_restore_present": false
       },
-      "unsaved_optimizer_steps_observation_at_utc": "2026-09-25T14:01:02.685223+00:00"
+      "unsaved_optimizer_steps_observation_at_utc": "2026-09-25T16:29:29.905859+00:00",
+      "replication_policy": {
+        "poll_seconds": 300,
+        "restore_transfer_interval_seconds": 7200,
+        "transfer_separate_previews": false,
+        "review_interval_seconds": 7200,
+        "source_checkpoint_interval_seconds": 900,
+        "unfinished_transfers": "preserve and resume",
+        "terminal_state": "retain source and transfer within the same interval",
+        "effective_after_K100_worker_restart": true
+      }
     },
     "interruptions": [
       {
@@ -2950,6 +2960,96 @@
         "saved_at_utc": "2026-09-25T15:26:21.001663+00:00",
         "saved_time_evidence": "source_controller_save_event_received_on_K100",
         "source_filesystem_reinspected_this_check": false,
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-1282ep-20260925T141102104753Z",
+        "step": 25655,
+        "samples_seen": 128276800,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T14:11:08.837767+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-1357ep-20260925T142602392268Z",
+        "step": 27143,
+        "samples_seen": 135715360,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T14:26:08.029242+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-1440ep-20260925T144102137274Z",
+        "step": 28802,
+        "samples_seen": 144010240,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T14:41:09.164418+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-1516ep-20260925T145602688414Z",
+        "step": 30338,
+        "samples_seen": 151692160,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T14:56:16.593710+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-1590ep-20260925T151102244150Z",
+        "step": 31803,
+        "samples_seen": 159015360,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T15:11:10.041424+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-1740ep-20260925T154102579557Z",
+        "step": 34819,
+        "samples_seen": 174097280,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T15:41:09.501329+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-1825ep-20260925T155602862910Z",
+        "step": 36503,
+        "samples_seen": 182515360,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T15:56:08.612978+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-1908ep-20260925T161053653638Z",
+        "step": 38168,
+        "samples_seen": 190840960,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T16:11:00.262002+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-1908ep-20260925T161103004318Z",
+        "step": 38173,
+        "samples_seen": 190866560,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T16:11:09.726619+00:00",
+        "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
+      },
+      {
+        "model_id": "MeanFlow-B-4",
+        "checkpoint_id": "MeanFlow-B-4-1988ep-20260925T162603005661Z",
+        "step": 39766,
+        "samples_seen": 198830720,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T16:26:08.042857+00:00",
         "training_code_commit": "17c8477994f85bcee4a37d2350243e308959efbf"
       }
     ],

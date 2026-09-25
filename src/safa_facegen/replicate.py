@@ -620,7 +620,24 @@ def poll_requests(reader: RemoteReader, journal: Journal):
                     journal.reject(model, line, f"{type(exc).__name__}: {exc}")
 
 
-def transfer_pending(reader: RemoteReader, journal: Journal, root: Path):
+def transfer_allowed(row: dict, journal: Journal, config: dict, now: float) -> bool:
+    # Finish durable partial transfers before applying limits to new work.
+    if row['status'] != 'received':
+        return True
+    if row['event'] == 'preview':
+        return config.get('transfer_previews', True)
+    if row['event'] == 'save':
+        interval = float(config.get('restore_transfer_interval_seconds', 0))
+        with journal.connection() as db:
+            latest = db.execute(
+                "SELECT MAX(updated) FROM requests WHERE model=? AND event='save' AND status='transport_verified'",
+                (row['model'],),
+            ).fetchone()[0]
+        return latest is None or now >= latest + interval
+    return True
+
+
+def transfer_pending(reader: RemoteReader, journal: Journal, root: Path, config: dict):
     def waiting():
         rows = journal.rows("received") + journal.rows("retry_transfer") + journal.rows("paused_transfer")
         return sorted(rows, key=lambda item: (TRANSFER_PRIORITY[item["event"]],
@@ -636,11 +653,15 @@ def transfer_pending(reader: RemoteReader, journal: Journal, root: Path):
         poll_requests(reader, journal)
         pending = waiting()
         for candidate in pending:
+            if candidate['status'] == 'received' and candidate['event'] == 'preview' and not config.get('transfer_previews', True):
+                journal.update(candidate['id'], 'skipped_by_policy', error='Separate preview transfer disabled; scheduled reviews retained')
+                continue
             if candidate["status"] == "received" and candidate["event"] in ("save", "preview"):
                 if any(item["model"] == candidate["model"] and item["event"] == candidate["event"]
                        and item["rowid"] > candidate["rowid"] for item in pending):
                     journal.update(candidate["id"], "superseded", error="Newer unstarted request of the same kind exists")
-        eligible = [item for item in waiting() if json.loads(item["payload"]).get("retry_after_unix", 0) <= time.time()]
+        eligible = [item for item in waiting() if json.loads(item["payload"]).get("retry_after_unix", 0) <= time.time()
+                    and transfer_allowed(item, journal, config, time.time())]
         if not eligible:
             break
         row = eligible[0]
@@ -657,6 +678,7 @@ def transfer_pending(reader: RemoteReader, journal: Journal, root: Path):
             last_poll = time.monotonic()
             if any(TRANSFER_PRIORITY[item["event"]] < TRANSFER_PRIORITY[row["event"]]
                    and json.loads(item["payload"]).get("retry_after_unix", 0) <= time.time()
+                   and transfer_allowed(item, journal, config, time.time())
                    for item in waiting()):
                 raise TransferPaused("Higher priority EMA request arrived; preserve and resume this partial transfer")
 
@@ -798,7 +820,7 @@ def _run(credentials: dict, config: dict, *, once=False):
             try:
                 with RemoteReader(credentials) as reader:
                     poll_requests(reader, journal)
-                    transfer_pending(reader, journal, root)
+                    transfer_pending(reader, journal, root, config)
                 if thread is not None and not thread.is_alive():
                     raise RuntimeError("Evaluation worker exited unexpectedly")
                 atomic_json(root / "reports/replication/status.json", {"status": "one_shot_complete" if once else "running", "last_poll": time.time(),
