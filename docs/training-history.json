@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-25T04:01:13.348863+00:00",
+    "recorded_at_utc": "2026-09-25T05:58:08.194174+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -517,25 +517,25 @@
       "approval_received": false,
       "num_workers_per_rank": 4,
       "prefetch_factor": 2,
-      "latest_observed_at_utc": "2026-09-25T04:01:13.348863+00:00",
-      "latest_observed_step": 7060,
-      "latest_observed_samples_seen": 677568,
-      "latest_observed_loss": 0.0496259368956089,
-      "latest_observed_gradient_norm": 0.09918830543756485,
+      "latest_observed_at_utc": "2026-09-25T05:58:08.194174+00:00",
+      "latest_observed_step": 14050,
+      "latest_observed_samples_seen": 1348384,
+      "latest_observed_loss": 0.09858674556016922,
+      "latest_observed_gradient_norm": 0.008052108809351921,
       "latest_observation_is_a_complete_checkpoint": false,
       "latest_optimizer_learning_rate": 2e-05,
       "latest_complete_checkpoint": {
-        "checkpoint_id": "RectifiedFlow-NCSNpp-0006ep-20260925T035020Z",
-        "optimizer_step": 6402,
-        "samples_seen": 614400,
-        "exact_HQ_exposure": 6.144,
-        "saved_at_utc": "2026-09-25T03:50:23.462428+00:00",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0013ep-20260925T055025Z",
+        "optimizer_step": 13573,
+        "samples_seen": 1302592,
+        "exact_HQ_exposure": 13.02592,
+        "saved_at_utc": "2026-09-25T05:50:30.289793+00:00",
         "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd",
         "reason": "scheduled"
       },
-      "unsaved_optimizer_steps_after_latest_complete": 658,
+      "unsaved_optimizer_steps_after_latest_complete": 477,
       "observed_peak_gpu_gib": 62.7158203125,
-      "observed_peak_memory_gib": 54.61513900756836,
+      "observed_peak_memory_gib": 57.46882629394531,
       "recovery_attempt": 0,
       "scheduling_policy": "Use actual quality trends and resource/failure evidence to continue or gracefully switch to the next independent MeanFlow model; quality approval remains explicit. Do not continue a demonstrated plateau indefinitely."
     },
@@ -2500,6 +2500,87 @@
         "samples_seen": 614400,
         "reason": "scheduled",
         "saved_at_utc": "2026-09-25T03:50:23.462428+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+        "step": 7309,
+        "samples_seen": 701440,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T04:05:21.599219+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040522Z",
+        "step": 7310,
+        "samples_seen": 701536,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T04:05:25.208570+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T042022Z",
+        "step": 8206,
+        "samples_seen": 787552,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T04:20:38.812801+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0008ep-20260925T043523Z",
+        "step": 9120,
+        "samples_seen": 875264,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T04:35:25.706289+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0009ep-20260925T045024Z",
+        "step": 10042,
+        "samples_seen": 963744,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T04:50:26.793521+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0010ep-20260925T050524Z",
+        "step": 10945,
+        "samples_seen": 1050400,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T05:05:26.659733+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0011ep-20260925T052024Z",
+        "step": 11809,
+        "samples_seen": 1133312,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T05:20:27.910529+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0012ep-20260925T053525Z",
+        "step": 12721,
+        "samples_seen": 1220832,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T05:35:27.642638+00:00",
+        "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0013ep-20260925T055025Z",
+        "step": 13573,
+        "samples_seen": 1302592,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-25T05:50:30.289793+00:00",
         "training_code_commit": "f375a7f9cea0e6e5dac54a6733a2d81afdc4decd"
       }
     ],
@@ -6497,7 +6578,16 @@
         "quality_approval_written": false
       }
     ],
-    "pending_quality_reviews": [],
+    "pending_quality_reviews": [
+      {
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+        "status": "evaluating_on_K100",
+        "checkpoint_step": 7309,
+        "samples_seen": 701440,
+        "observed_at_utc": "2026-09-25T05:58:07.355811+00:00",
+        "purpose": "scheduled_two_hour_review"
+      }
+    ],
     "visual_quality_observations": [
       {
         "observed_at_utc": "2026-09-23T06:53:43.362146+00:00",
@@ -7284,9 +7374,9 @@
         "output_directory": "reports/plateau/Diffusion-LDM-UNet-tail-20260924T172143Z-final-evaluation",
         "training_updates_added": 0,
         "approval_received": false,
-        "observed_at_utc": "2026-09-25T04:01:02.224970+00:00",
+        "observed_at_utc": "2026-09-25T05:58:07.355811+00:00",
         "final_formal_review_complete": true,
-        "source_10000_samples_written": 2688,
+        "source_10000_samples_written": 5504,
         "final_10000_generation_started": false,
         "fresh_seed_result": {
           "status": "complete",
@@ -7344,10 +7434,12 @@
           "quality_approval_received": false
         },
         "full_state_replication": {
-          "observed_at_utc": "2026-09-25T04:01:02.224970+00:00",
-          "latest_K100_restore": "Diffusion-LDM-UNet-0828ep-20260924T223424Z",
-          "final_state_status": "copying",
-          "final_state_exists_complete_on_H100": true
+          "observed_at_utc": "2026-09-25T05:58:07.355811+00:00",
+          "latest_K100_restore": "Diffusion-LDM-UNet-0894ep-20260925T020440Z",
+          "final_state_status": "transport_verified",
+          "final_state_exists_complete_on_H100": true,
+          "registered_file_sizes_and_mtimes_match": true,
+          "K100_restore_exercised": false
         }
       }
     },
