@@ -2,7 +2,7 @@
 
 The production controller remains responsible for locking, four GPUs, limits,
 recovery, and checkpoint publication. This module only adds a fixed stop budget
-and an intentional LR reduction AFTER the existing resume/recovery resolution.
+and intentional runtime overrides AFTER the existing resume/recovery resolution.
 """
 from __future__ import annotations
 import copy
@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 
 MODEL = "Diffusion-LDM-UNet"
+RF_MODEL = "RectifiedFlow-NCSNpp"
+SUPPORTED_MODELS = (MODEL, RF_MODEL)
 SCHEMA = 1
 FIELDS = {"schema_version", "stage_id", "model_id", "source_checkpoint_id",
           "source_step", "additional_steps", "learning_rate"}
@@ -83,12 +85,18 @@ def validate_stage(campaign: dict) -> dict | None:
     stage = campaign.get("bounded_stage")
     if stage is None:
         return None
-    if not isinstance(stage, dict) or set(stage) != FIELDS:
+    if not isinstance(stage, dict):
         raise ValueError("bounded_stage has missing or unknown fields")
-    if type(stage["schema_version"]) is not int or stage["schema_version"] != SCHEMA or stage["model_id"] != MODEL:
-        raise ValueError("Only bounded Diffusion continuation is supported")
-    if campaign.get("model_order") != [MODEL]:
-        raise ValueError("A bounded campaign must contain Diffusion only; no automatic next model")
+    model = stage.get("model_id")
+    expected = FIELDS | ({"precision"} if model == RF_MODEL and "precision" in stage else set())
+    if set(stage) != expected:
+        raise ValueError("bounded_stage has missing or unknown fields")
+    if type(stage["schema_version"]) is not int or stage["schema_version"] != SCHEMA or model not in SUPPORTED_MODELS:
+        raise ValueError("Only bounded Diffusion or RectifiedFlow continuation is supported")
+    if campaign.get("model_order") != [model]:
+        raise ValueError("A bounded campaign must contain its model only; no automatic next model")
+    if "precision" in stage and stage["precision"] != "fp32":
+        raise ValueError("Bounded RectifiedFlow precision override must be fp32")
     for field in ("stage_id", "source_checkpoint_id"):
         value = stage[field]
         if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", value):
@@ -120,10 +128,11 @@ def resolve_config(campaign: dict, config: dict, state: dict | None,
         if (saved_config or {}).get("bounded_stage") is not None:
             raise ValueError("A bounded checkpoint cannot resume under an unbounded campaign")
         return config
-    if config.get("model_id") != MODEL:
+    model = stage["model_id"]
+    if config.get("model_id") != model:
         raise ValueError("Bounded stage used for a different model")
-    if not state or state.get("complete") is not True or state.get("model_id") != MODEL:
-        raise ValueError("Bounded continuation requires a complete Diffusion checkpoint")
+    if not state or state.get("complete") is not True or state.get("model_id") != model:
+        raise ValueError("Bounded continuation requires a complete checkpoint of its model")
     if state.get("recovery_state_available") is False or not saved_config:
         raise ValueError("The complete recovery state/config must remain available")
     step = state.get("step")
@@ -150,6 +159,14 @@ def resolve_config(campaign: dict, config: dict, state: dict | None,
     else:
         changes.pop("learning_rate", None)
     result["learning_rate"] = desired
+    if "precision" in stage:
+        if saved_config.get("precision") not in ("fp32", "bf16"):
+            raise ValueError("Invalid saved precision for bounded RectifiedFlow")
+        result["precision"] = stage["precision"]
+        if result["precision"] != saved_config["precision"]:
+            changes["precision"] = result["precision"]
+        else:
+            changes.pop("precision", None)
     result["max_steps"] = goal(stage)  # Absolute optimizer step; never latest+budget.
     result.pop("max_epochs", None)
     result.pop("max_hq_epochs", None)
@@ -163,8 +180,10 @@ def resolve_config(campaign: dict, config: dict, state: dict | None,
     return result
 
 
-def registry_path(root: Path) -> Path:
-    return Path(root) / "runs/controller" / (MODEL + ".bounded-stage.json")
+def registry_path(root: Path, model: str = MODEL) -> Path:
+    if model not in SUPPORTED_MODELS:
+        raise ValueError("Unsupported bounded model")
+    return Path(root) / "runs/controller" / (model + ".bounded-stage.json")
 
 
 def _read_json_file(path: Path) -> dict:
@@ -189,14 +208,14 @@ def _read_saved_config(root: Path, state: dict) -> dict:
     return _read_json_file(path)
 
 
-def read_registration(root: Path) -> dict | None:
-    path = registry_path(root)
+def read_registration(root: Path, model: str = MODEL) -> dict | None:
+    path = registry_path(root, model)
     if not path.exists() and not path.is_symlink():
         return None
     record = _read_json_file(path)
-    stage = validate_stage({"model_order": [MODEL], "bounded_stage": record.get("stage")})
+    stage = validate_stage({"model_order": [model], "bounded_stage": record.get("stage")})
     if (record.get("schema_version") != 1 or stage is None or
-            record.get("model_id") != MODEL or record.get("stop_step") != goal(stage)):
+            record.get("model_id") != model or record.get("stop_step") != goal(stage)):
         raise ValueError("Invalid immutable stage registration")
     return record
 
@@ -204,21 +223,22 @@ def read_registration(root: Path) -> dict | None:
 def guard_campaign(root: Path, campaign: dict) -> None:
     """Block an old periodic launcher before it can resume or skip this model.
 
-    An explicit campaign for another model is unaffected. The original six-model
-    campaign includes Diffusion and must not silently bypass its bounded stage.
+    Each registered model is guarded separately. An explicit campaign for another
+    model is unaffected; a mixed campaign cannot bypass a registered stage.
     """
     stage = validate_stage(campaign)
-    if MODEL not in campaign.get("model_order", []):
-        return
-    registered = read_registration(root)
-    if registered is not None and stage != registered["stage"]:
-        raise ValueError("Diffusion has an immutable bounded stage; reuse its campaign")
-    pointer = Path(root) / "runs" / MODEL / "last.json"
-    if pointer.exists():
-        saved = _read_saved_config(root, _read_json_file(pointer))
-        previous = saved.get("bounded_stage")
-        if previous is not None and previous != stage:
-            raise ValueError("Checkpoint stage cannot be removed, replaced, or extended")
+    for model in SUPPORTED_MODELS:
+        if model not in campaign.get("model_order", []):
+            continue
+        registered = read_registration(root, model)
+        if registered is not None and stage != registered["stage"]:
+            raise ValueError(f"{model} has an immutable bounded stage; reuse its campaign")
+        pointer = Path(root) / "runs" / model / "last.json"
+        if pointer.exists():
+            saved = _read_saved_config(root, _read_json_file(pointer))
+            previous = saved.get("bounded_stage")
+            if previous is not None and previous != stage:
+                raise ValueError("Checkpoint stage cannot be removed, replaced, or extended")
 
 
 def bind_stage(root: Path, stage: dict) -> None:
@@ -227,17 +247,18 @@ def bind_stage(root: Path, stage: dict) -> None:
     Publish a complete temporary JSON via an exclusive hard link. Existing
     registrations are never overwritten, including when two launchers race.
     """
-    validate_stage({"model_order": [MODEL], "bounded_stage": stage})
-    existing = read_registration(root)
+    model = stage["model_id"]
+    validate_stage({"model_order": [model], "bounded_stage": stage})
+    existing = read_registration(root, model)
     if existing is not None:
         if existing["stage"] != stage:
             raise ValueError("Cannot replace the registered stage or reset its budget")
         return
     from .common import utc_now, fsync_directory
     import tempfile
-    path = registry_path(root)
+    path = registry_path(root, model)
     path.parent.mkdir(parents=True, exist_ok=True)
-    record = {"schema_version": 1, "model_id": MODEL, "stage": stage,
+    record = {"schema_version": 1, "model_id": model, "stage": stage,
               "stop_step": goal(stage), "registered_at_utc": utc_now()}
     fd, temp = tempfile.mkstemp(prefix=".bounded-stage-", dir=path.parent)
     try:
@@ -248,7 +269,7 @@ def bind_stage(root: Path, stage: dict) -> None:
             os.link(temp, path)  # No replacement of an existing registration.
             fsync_directory(path.parent)
         except FileExistsError:
-            existing = read_registration(root)
+            existing = read_registration(root, model)
             if existing is None or existing["stage"] != stage:
                 raise ValueError("Concurrent, incompatible stage registration")
     finally:
@@ -272,20 +293,25 @@ def prepare_launch(root: Path, campaign: dict, config: dict, state: dict | None,
 
 def guard_trainer_launch(config: dict, root: Path) -> None:
     """Check registered stage even when a stale torchrun config omits resume."""
-    if config.get("model_id") != MODEL:
+    model = config.get("model_id")
+    if model not in SUPPORTED_MODELS:
+        if config.get("bounded_stage") is not None:
+            raise ValueError("Unsupported bounded trainer model")
         return
     requested = config.get("bounded_stage")
-    record = read_registration(root)
+    record = read_registration(root, model)
     if record is not None and requested != record["stage"]:
         raise ValueError("Trainer cannot bypass the registered continuation budget")
     if requested is not None:
-        stage = validate_stage({"model_order": [MODEL], "bounded_stage": requested})
+        stage = validate_stage({"model_order": [model], "bounded_stage": requested})
         if record is None:
             raise ValueError("Bounded training must be registered by the controller")
         if not config.get("paths", {}).get("resume"):
             raise ValueError("Bounded training requires complete state resume, not reinitialization")
         if type(config.get("max_steps")) is not int or config["max_steps"] != goal(stage):
             raise ValueError("Trainer must preserve the exact absolute stop_step")
+        if "precision" in stage and config.get("precision") != stage["precision"]:
+            raise ValueError("Trainer must preserve the bounded precision override")
 
 
 def validate_training_resume(config: dict, payload: dict, root: Path | None = None) -> None:
@@ -296,8 +322,9 @@ def validate_training_resume(config: dict, payload: dict, root: Path | None = No
     """
     previous = payload.get("config", {}).get("bounded_stage")
     requested = config.get("bounded_stage")
-    if root is not None and config.get("model_id") == MODEL:
-        record = read_registration(root)
+    model = config.get("model_id")
+    if root is not None and model in SUPPORTED_MODELS:
+        record = read_registration(root, model)
         if record is not None and requested != record["stage"]:
             raise ValueError("Trainer cannot bypass the registered continuation budget")
         if requested is not None and record is None:
@@ -306,9 +333,9 @@ def validate_training_resume(config: dict, payload: dict, root: Path | None = No
         return
     if requested is None or (previous is not None and previous != requested):
         raise ValueError("Trainer resume cannot erase or modify a bounded stage")
-    stage = validate_stage({"model_order": [MODEL], "bounded_stage": requested})
-    if config.get("model_id") != MODEL or payload.get("model_id") != MODEL:
-        raise ValueError("Bounded trainer resume requires Diffusion states")
+    stage = validate_stage({"model_order": [model], "bounded_stage": requested})
+    if payload.get("model_id") != model:
+        raise ValueError("Bounded trainer resume requires states of the same model")
     step = payload.get("step")
     if (type(step) is not int or payload.get("progress", {}).get("step") != step or
             not stage["source_step"] <= step <= goal(stage)):
@@ -321,12 +348,14 @@ def validate_training_resume(config: dict, payload: dict, root: Path | None = No
         raise ValueError("Trainer must preserve the exact absolute stop_step")
     if config.get("max_epochs") is not None or config.get("max_hq_epochs") is not None:
         raise ValueError("Conflicting epoch budget in bounded training")
+    if "precision" in stage and config.get("precision") != stage["precision"]:
+        raise ValueError("Trainer must preserve the bounded precision override")
     rate = config.get("learning_rate")
     saved_rate = payload.get("config", {}).get("learning_rate")
     if (type(rate) not in (int, float) or not math.isfinite(rate) or
             not 0 < rate <= stage["learning_rate"]):
         raise ValueError("Invalid bounded trainer learning rate")
-    if previous is not None and saved_rate is not None and rate > float(saved_rate):
+    if (previous is not None or model == RF_MODEL) and saved_rate is not None and rate > float(saved_rate):
         raise ValueError("Resume must not raise a previously reduced learning rate")
 
 
@@ -368,8 +397,9 @@ def finish_if_budget_met(root: Path, campaign: dict, state: dict | None,
     stage = validate_stage(campaign)
     if stage is None or state is None or state.get("step", -1) < goal(stage):
         return False
+    model = stage["model_id"]
     if (state.get("step") != goal(stage) or state.get("complete") is not True or
-            state.get("model_id") != MODEL or config.get("bounded_stage") != stage):
+            state.get("model_id") != model or config.get("bounded_stage") != stage):
         raise ValueError("Budget completion lacks an exact, complete stage checkpoint")
     from .common import atomic_json, utc_now, require_inside
     saved = _read_saved_config(root, state)
@@ -383,21 +413,21 @@ def finish_if_budget_met(root: Path, campaign: dict, state: dict | None,
         path = require_inside(original, root)
         if not path.is_file() or path.stat().st_size <= 0:
             raise ValueError(f"Final checkpoint lacks {key}")
-    registered = read_registration(root)
+    registered = read_registration(root, model)
     if registered is None or registered["stage"] != stage:
         raise ValueError("Final checkpoint lacks its immutable stage registration")
-    request_path = root / "runs" / MODEL / "requests.jsonl"
+    request_path = root / "runs" / model / "requests.jsonl"
     request_id = state["checkpoint_id"] + "-review"
-    request_identity = {"event": "review", "model_id": MODEL,
+    request_identity = {"event": "review", "model_id": model,
                         "checkpoint_id": state["checkpoint_id"]}
     queued = _jsonl_has(request_path, "request_id", request_id, request_identity)
     event_id = stage["stage_id"] + ":complete"
-    event_identity = {"event": "bounded_stage_complete", "model_id": MODEL,
+    event_identity = {"event": "bounded_stage_complete", "model_id": model,
                       "checkpoint_id": state["checkpoint_id"]}
     recorded = _jsonl_has(events, "bounded_event_id", event_id, event_identity)
     if not queued:
         _durable_append(request_path, "review", {**state, "request_id": request_id, "type": "review"})
-    status = {"status": "bounded_stage_complete_pending_review", "model_id": MODEL,
+    status = {"status": "bounded_stage_complete_pending_review", "model_id": model,
               "time": utc_now(), "stage": stage, "checkpoint_id": state["checkpoint_id"],
               "step": state["step"], "quality_approved": False, "next_model_started": False}
     if not recorded:
