@@ -203,10 +203,13 @@ class Generator(nn.Module):
             else:
                 if not 1 <= self.steps <= 50:
                     raise ValueError("LCM inference steps must be between 1 and 50")
-                # Original official LCM Scheduler (diffusers v0.22.0), linked by
-                # the pinned LCM repository: integer skipping on the teacher grid.
-                origin_steps = np.arange(1,51)*20-1
-                timesteps = origin_steps[::-int(50//self.steps)][:self.steps]
+                # Diffusers PR #5836: evenly select the inference points from
+                # the unchanged 50-point teacher grid, including non-divisors.
+                origin_steps = (np.arange(1, 51) * 20 - 1)[::-1].copy()
+                inference_indices = np.floor(
+                    np.linspace(0, len(origin_steps), num=self.steps, endpoint=False)
+                ).astype(np.int64)
+                timesteps = origin_steps[inference_indices]
                 math_impl = lcd_math()
                 for k, step in enumerate(timesteps):
                     t = torch.full((x.shape[0],), int(step), device=x.device, dtype=torch.long)

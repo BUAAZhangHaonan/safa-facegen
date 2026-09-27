@@ -14,7 +14,8 @@ from pathlib import Path
 
 MODEL = "Diffusion-LDM-UNet"
 RF_MODEL = "RectifiedFlow-NCSNpp"
-SUPPORTED_MODELS = (MODEL, RF_MODEL)
+LCM_MODEL = "LatentConsistency-LDM-UNet"
+SUPPORTED_MODELS = (MODEL, RF_MODEL, LCM_MODEL)
 SCHEMA = 1
 FIELDS = {"schema_version", "stage_id", "model_id", "source_checkpoint_id",
           "source_step", "additional_steps", "learning_rate"}
@@ -89,10 +90,12 @@ def validate_stage(campaign: dict) -> dict | None:
         raise ValueError("bounded_stage has missing or unknown fields")
     model = stage.get("model_id")
     expected = FIELDS | ({"precision"} if model == RF_MODEL and "precision" in stage else set())
+    if model == LCM_MODEL:
+        expected |= {"teacher_approval"}
     if set(stage) != expected:
         raise ValueError("bounded_stage has missing or unknown fields")
     if type(stage["schema_version"]) is not int or stage["schema_version"] != SCHEMA or model not in SUPPORTED_MODELS:
-        raise ValueError("Only bounded Diffusion or RectifiedFlow continuation is supported")
+        raise ValueError("Unsupported bounded training model")
     if campaign.get("model_order") != [model]:
         raise ValueError("A bounded campaign must contain its model only; no automatic next model")
     if "precision" in stage and stage["precision"] != "fp32":
@@ -106,8 +109,14 @@ def validate_stage(campaign: dict) -> dict | None:
         if type(value) is not int or not lo <= value <= hi:
             raise ValueError(f"Invalid {field}")
     lr = stage["learning_rate"]
-    if type(lr) not in (int, float) or not math.isfinite(lr) or not 0 < lr <= 3e-6:
-        raise ValueError("Bounded learning_rate must be positive and at most 3e-6")
+    max_lr = 1e-5 if model == LCM_MODEL else 3e-6
+    if type(lr) not in (int, float) or not math.isfinite(lr) or not 0 < lr <= max_lr:
+        raise ValueError(f"Bounded learning_rate must be positive and at most {max_lr}")
+    if model == LCM_MODEL:
+        approval = stage["teacher_approval"]
+        if (stage["source_step"] != 0 or not isinstance(approval, dict) or
+                approval.get("teacher_checkpoint_id") != stage["source_checkpoint_id"]):
+            raise ValueError("LCM must start at zero from its fixed approved teacher")
     return copy.deepcopy(stage)
 
 
@@ -131,6 +140,29 @@ def resolve_config(campaign: dict, config: dict, state: dict | None,
     model = stage["model_id"]
     if config.get("model_id") != model:
         raise ValueError("Bounded stage used for a different model")
+    if recovery.get("status") == "exhausted":
+        raise ValueError("Exhausted recovery must not be reset by a bounded stage")
+    if model == LCM_MODEL:
+        if config.get("teacher_approval") != stage["teacher_approval"]:
+            raise ValueError("LCM teacher approval differs from the fixed stage")
+        if config.get("paths", {}).get("initial_checkpoint"):
+            raise ValueError("LCM initialization must copy the approved teacher")
+        if state is None:
+            if saved_config is not None or config.get("paths", {}).get("resume") or recovery.get("status") != "idle":
+                raise ValueError("LCM initialization cannot discard a recovery state")
+            result = copy.deepcopy(config)
+            rate = result.get("learning_rate")
+            if type(rate) not in (int, float) or not math.isfinite(rate) or not 0 < rate <= stage["learning_rate"]:
+                raise ValueError("Invalid initial LCM learning rate")
+            if result.get("recovery_overrides"):
+                raise ValueError("Initial LCM training cannot use recovery overrides")
+            result.update(max_steps=goal(stage), bounded_stage=stage)
+            result.pop("max_epochs", None)
+            result.pop("max_hq_epochs", None)
+            return result
+        if (not saved_config or saved_config.get("bounded_stage") != stage or
+                saved_config.get("teacher_approval") != stage["teacher_approval"]):
+            raise ValueError("LCM resume must preserve its registered stage and teacher")
     if not state or state.get("complete") is not True or state.get("model_id") != model:
         raise ValueError("Bounded continuation requires a complete checkpoint of its model")
     if state.get("recovery_state_available") is False or not saved_config:
@@ -146,8 +178,6 @@ def resolve_config(campaign: dict, config: dict, state: dict | None,
             raise ValueError("Cannot chain another bounded stage without a separate decision")
     elif saved_config.get("bounded_stage") != stage:
         raise ValueError("Resume checkpoint is not a descendant of this bounded stage")
-    if recovery.get("status") == "exhausted":
-        raise ValueError("Exhausted recovery must not be reset by a bounded stage")
     result = copy.deepcopy(config)
     runtime_lr, saved_lr = float(result["learning_rate"]), float(saved_config["learning_rate"])
     if not all(math.isfinite(x) and x > 0 for x in (runtime_lr, saved_lr)):
@@ -198,6 +228,74 @@ def _read_json_file(path: Path) -> dict:
     return value
 
 
+def read_lcm_teacher_approval(root: Path) -> dict:
+    """Read a teacher-only decision; reuse export metadata without hashing weights."""
+    from .common import require_inside
+    root = Path(root).resolve()
+    path = root / "runs/teacher-approvals" / (LCM_MODEL + ".json")
+    approval = _read_json_file(path)
+    expected = {"decision": "approved", "source": "explicit_user_confirmation",
+                "scope": "lcm_teacher_only", "student_model_id": LCM_MODEL,
+                "teacher_model_id": MODEL, "state_role": "ema"}
+    if any(approval.get(key) != value for key, value in expected.items()):
+        raise ValueError("LCM requires an explicit teacher-only approval")
+    identity = approval.get("teacher_checkpoint_id")
+    if not isinstance(identity, str) or not re.fullmatch(re.escape(MODEL) + r"-\d+ep-\d{8}T\d{6}Z", identity):
+        raise ValueError("Invalid approved teacher checkpoint identity")
+    weight = Path(approval.get("ema_path", ""))
+    weight = weight if weight.is_absolute() else root / weight
+    if weight.is_symlink():
+        raise ValueError("Approved teacher must not be a symlink")
+    weight = require_inside(weight, root)
+    if weight.name != identity + ".ema.pt" or not weight.is_file():
+        raise ValueError("Approved teacher path differs from its checkpoint identity")
+    metadata = _read_json_file(weight.with_name(identity + ".json"))
+    registered_digest = metadata.get("hashes", {}).get("ema") or metadata.get("ema_sha256")
+    info = weight.stat()
+    stat = {"bytes": info.st_size, "mtime_ns": info.st_mtime_ns}
+    if (metadata.get("checkpoint_id", metadata.get("identity")) != identity or
+            metadata.get("model_id") != MODEL or metadata.get("state_role") != "ema" or
+            metadata.get("complete") is not True or info.st_size <= 0 or
+            approval.get("ema_stat") != stat or not registered_digest or
+            approval.get("ema_sha256") != registered_digest or
+            type(approval.get("teacher_step")) is not int or
+            approval["teacher_step"] != metadata.get("step")):
+        raise ValueError("Approved teacher differs from its registered export metadata")
+    if not isinstance(approval.get("approved_at_utc"), str) or not approval["approved_at_utc"]:
+        raise ValueError("Teacher approval requires its explicit decision time")
+    return {**expected, "teacher_checkpoint_id": identity, "teacher_step": approval["teacher_step"],
+            "ema_path": weight.relative_to(root).as_posix(), "ema_sha256": registered_digest,
+            "ema_stat": stat, "approved_at_utc": approval["approved_at_utc"]}
+
+
+def _guard_lcm_teacher(root: Path, config: dict, stage: dict) -> None:
+    approval = read_lcm_teacher_approval(root)
+    teacher = Path(config.get("paths", {}).get("teacher_checkpoint", ""))
+    teacher = teacher if teacher.is_absolute() else Path(root) / teacher
+    if (config.get("teacher_approval") != approval or stage.get("teacher_approval") != approval or
+            teacher.resolve() != (Path(root) / approval["ema_path"]).resolve() or
+            config.get("teacher_ema_sha256") != approval["ema_sha256"]):
+        raise ValueError("LCM runtime must preserve its fixed approved teacher identity")
+    if config.get("paths", {}).get("initial_checkpoint"):
+        raise ValueError("LCM initialization must copy the approved teacher")
+
+
+def _guard_lcm_initialization(root: Path) -> None:
+    run = Path(root) / "runs" / LCM_MODEL
+    if ((run / "last.json").exists() or (run / "last.json").is_symlink() or
+            any(run.glob(LCM_MODEL + "-*.state.pt")) or
+            any(run.glob(LCM_MODEL + "-*.ema.pt")) or
+            any(run.glob(LCM_MODEL + "-*.json"))):
+        raise ValueError("Existing LCM checkpoint requires complete state resume")
+    for name in ("events.jsonl", "requests.jsonl"):
+        path = run / name
+        validate_journal(path)
+        if path.exists():
+            with path.open(encoding="utf-8") as handle:
+                if any(json.loads(line).get("event") in ("save", "metrics", "review", "preview") for line in handle):
+                    raise ValueError("LCM history prevents reinitializing a previously started stage")
+
+
 def _read_saved_config(root: Path, state: dict) -> dict:
     from .common import require_inside
     value = Path(state["config_path"])
@@ -227,6 +325,8 @@ def guard_campaign(root: Path, campaign: dict) -> None:
     model is unaffected; a mixed campaign cannot bypass a registered stage.
     """
     stage = validate_stage(campaign)
+    if LCM_MODEL in campaign.get("model_order", []) and (stage is None or stage["model_id"] != LCM_MODEL):
+        raise ValueError("LCM distillation requires its registered bounded campaign")
     for model in SUPPORTED_MODELS:
         if model not in campaign.get("model_order", []):
             continue
@@ -283,9 +383,13 @@ def prepare_launch(root: Path, campaign: dict, config: dict, state: dict | None,
     stage = validate_stage(campaign)
     if stage is None:
         return config
-    if not state:
+    if stage["model_id"] == LCM_MODEL:
+        _guard_lcm_teacher(root, config, stage)
+        if state is None:
+            _guard_lcm_initialization(root)
+    elif not state:
         raise ValueError("No complete source checkpoint")
-    saved = _read_saved_config(root, state)
+    saved = _read_saved_config(root, state) if state is not None else None
     result = resolve_config(campaign, config, state, saved, recovery)
     bind_stage(root, stage)
     return result
@@ -299,6 +403,8 @@ def guard_trainer_launch(config: dict, root: Path) -> None:
             raise ValueError("Unsupported bounded trainer model")
         return
     requested = config.get("bounded_stage")
+    if model == LCM_MODEL and requested is None:
+        raise ValueError("LCM trainer requires its bounded distillation stage")
     record = read_registration(root, model)
     if record is not None and requested != record["stage"]:
         raise ValueError("Trainer cannot bypass the registered continuation budget")
@@ -306,10 +412,19 @@ def guard_trainer_launch(config: dict, root: Path) -> None:
         stage = validate_stage({"model_order": [model], "bounded_stage": requested})
         if record is None:
             raise ValueError("Bounded training must be registered by the controller")
+        if model == LCM_MODEL:
+            _guard_lcm_teacher(root, config, stage)
         if not config.get("paths", {}).get("resume"):
-            raise ValueError("Bounded training requires complete state resume, not reinitialization")
+            if model != LCM_MODEL:
+                raise ValueError("Bounded training requires complete state resume, not reinitialization")
+            _guard_lcm_initialization(root)
         if type(config.get("max_steps")) is not int or config["max_steps"] != goal(stage):
             raise ValueError("Trainer must preserve the exact absolute stop_step")
+        if config.get("max_epochs") is not None or config.get("max_hq_epochs") is not None:
+            raise ValueError("Conflicting epoch budget in bounded training")
+        rate = config.get("learning_rate")
+        if type(rate) not in (int, float) or not math.isfinite(rate) or not 0 < rate <= stage["learning_rate"]:
+            raise ValueError("Invalid bounded trainer learning rate")
         if "precision" in stage and config.get("precision") != stage["precision"]:
             raise ValueError("Trainer must preserve the bounded precision override")
 
@@ -334,6 +449,11 @@ def validate_training_resume(config: dict, payload: dict, root: Path | None = No
     if requested is None or (previous is not None and previous != requested):
         raise ValueError("Trainer resume cannot erase or modify a bounded stage")
     stage = validate_stage({"model_order": [model], "bounded_stage": requested})
+    if model == LCM_MODEL:
+        if previous != stage or payload.get("config", {}).get("teacher_approval") != stage["teacher_approval"]:
+            raise ValueError("LCM resume must preserve its stage and teacher approval")
+        if root is not None:
+            _guard_lcm_teacher(root, config, stage)
     if payload.get("model_id") != model:
         raise ValueError("Bounded trainer resume requires states of the same model")
     step = payload.get("step")

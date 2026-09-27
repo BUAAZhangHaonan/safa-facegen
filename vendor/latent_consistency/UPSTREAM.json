@@ -5,11 +5,11 @@
     "LCD math extracted verbatim",
     "Unconditional FFHQ-LDM teacher adaptation; no text/CFG branch"
   ],
-  "inference_scheduler_reference": "https://github.com/huggingface/diffusers/blob/v0.22.0/src/diffusers/schedulers/scheduling_lcm.py",
+  "inference_scheduler_reference": "https://github.com/huggingface/diffusers/pull/5836",
   "inference_timesteps_4": [
     999,
     759,
-    519,
-    279
+    499,
+    259
   ]
 }

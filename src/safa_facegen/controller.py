@@ -16,7 +16,7 @@ import time
 
 from .common import atomic_json, check_limits, git_commit, MODEL_IDS, project_root, sha256_file, utc_now, EXECUTION_PATHS, release_checkpoint_cache
 from .retention import retire_states, timestamp as checkpoint_timestamp
-from .bounded_stage import prepare_launch as prepare_bounded_launch, finish_if_budget_met, protected_identities, validate_stage, guard_campaign, append_event, validate_journal
+from .bounded_stage import prepare_launch as prepare_bounded_launch, finish_if_budget_met, protected_identities, validate_stage, guard_campaign, append_event, validate_journal, read_lcm_teacher_approval
 
 
 def read_json(path):
@@ -674,10 +674,10 @@ def run_campaign(root, campaign_path):
                 continue
             config = load_model_config(root, campaign, model_id)
             if model_id == "LatentConsistency-LDM-UNet":
-                teacher = read_approval(root, "Diffusion-LDM-UNet")
-                if not teacher:
-                    raise RuntimeError("LCM requires the user-approved project Diffusion teacher")
-                config["paths"]["teacher_checkpoint"] = teacher["ema_path"]
+                teacher = read_lcm_teacher_approval(root)
+                config["teacher_approval"] = teacher
+                config["teacher_ema_sha256"] = teacher["ema_sha256"]
+                config["paths"]["teacher_checkpoint"] = str(root / teacher["ema_path"])
                 config["paths"]["initial_checkpoint"] = None
             verify_launch(root, config, events=events)
             bounds = copy.deepcopy(config)
