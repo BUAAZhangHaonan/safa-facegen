@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-27T15:55:25.878900+00:00",
+    "recorded_at_utc": "2026-09-27T17:03:23.792281+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -547,42 +547,42 @@
         ],
         "guidance": "none"
       },
-      "latest_observed_at_utc": "2026-09-27T15:48:39.904494+00:00",
-      "latest_observed_step": 21220,
-      "latest_observed_samples_seen": 10826624,
+      "latest_observed_at_utc": "2026-09-27T17:03:23.792281+00:00",
+      "latest_observed_step": 24330,
+      "latest_observed_samples_seen": 12413312,
       "latest_logged_metrics": {
-        "time": "20260927T154835Z",
+        "time": "20260927T170322Z",
         "event": "metrics",
-        "epoch": 108,
-        "next_batch": 52,
-        "step": 21220,
-        "samples_seen": 10826624,
-        "samples_in_epoch_per_rank": 6656,
+        "epoch": 124,
+        "next_batch": 26,
+        "step": 24330,
+        "samples_seen": 12413312,
+        "samples_in_epoch_per_rank": 3328,
         "event_times_utc_seconds": {
-          "save": 1790523753.8993108,
-          "preview": 1790522495.1607277,
-          "review": 1790520664.4875903
+          "save": 1790527899.311945,
+          "preview": 1790527899.311946,
+          "review": 1790527865.387715
         },
         "model_id": "LatentConsistency-LDM-UNet",
-        "loss": 0.005415840074419975,
-        "grad_norm": 0.8445020914077759,
+        "loss": 0.006782232783734798,
+        "grad_norm": 1.0361078977584839,
         "learning_rate": 1e-05
       },
       "latest_observation_is_a_complete_checkpoint": false,
       "observed_peak_gpu_gib": 60.6337890625,
       "observed_peak_memory_gib": 84.71798706054688,
       "latest_complete_checkpoint": {
-        "checkpoint_id": "LatentConsistency-LDM-UNet-0107ep-20260927T154233Z",
-        "optimizer_step": 20995,
-        "samples_seen": 10711776,
-        "exact_HQ_exposure": 107.11776,
-        "saved_at_utc": "2026-09-27T15:42:46.330865+00:00",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0121ep-20260927T165139Z",
+        "optimizer_step": 23846,
+        "samples_seen": 12166560,
+        "exact_HQ_exposure": 121.6656,
+        "saved_at_utc": "2026-09-27T16:51:51.395122+00:00",
         "training_code_commit": "6b3614840e0695c7d8bb984a86fdf51724c61715",
         "reason": "scheduled"
       },
       "complete_checkpoint_status": "complete",
-      "unsaved_optimizer_steps_after_latest_complete": 225,
-      "stage_budget_remaining_after_latest_logged_step": 8780,
+      "unsaved_optimizer_steps_after_latest_complete": 484,
+      "stage_budget_remaining_after_latest_logged_step": 5670,
       "recovery_journal": null,
       "current_training_process_running": true,
       "approval_received": false,
@@ -604,25 +604,21 @@
         "evaluation_code_commit": "1d82904bbc58bb451658f2c66c736aab1a678b42",
         "first_complete_state": "transport_verified",
         "restore_exercised": false,
-        "observed_at_utc": "2026-09-27T15:55:25.878900+00:00",
-        "latest_restore_checkpoint_id": "LatentConsistency-LDM-UNet-0034ep-20260927T093617Z",
-        "latest_restore_step": 6789,
-        "latest_restore_samples_seen": 3464000,
-        "latest_restore_transport_verified_at_utc": "2026-09-27T12:21:44.162417+00:00",
-        "latest_restore_path": "/home/k100/projects/safa-facegen/models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0034ep-20260927T093617Z/LatentConsistency-LDM-UNet-0034ep-20260927T093617Z.state.pt",
-        "latest_H100_save_transfer_status": "awaiting_original_worker_poll_while_older_partial_restore_completes",
+        "observed_at_utc": "2026-09-27T17:03:20.687508+00:00",
+        "latest_restore_checkpoint_id": "LatentConsistency-LDM-UNet-0094ep-20260927T142133Z",
+        "latest_restore_step": 18610,
+        "latest_restore_samples_seen": 9495232,
+        "latest_restore_transport_verified_at_utc": "2026-09-27T16:39:41.804693+00:00",
+        "latest_restore_path": "/home/k100/projects/safa-facegen/models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0094ep-20260927T142133Z/LatentConsistency-LDM-UNet-0094ep-20260927T142133Z.state.pt",
+        "latest_H100_save_transfer_status": "received_waiting_for_transfer_interval",
         "first_review_request_id": "LatentConsistency-LDM-UNet-0024ep-20260927T085103Z-review",
         "first_review_status": "complete",
         "partial_files_preserved": true,
         "first_review_finished_at_utc": "2026-09-27T09:10:12.365100+00:00",
-        "current_review_request_id": null,
-        "current_review_status": "all_received_scheduled_reviews_complete",
+        "current_review_request_id": "LatentConsistency-LDM-UNet-0121ep-20260927T165105Z-review",
+        "current_review_status": "copying",
         "latest_completed_review_checkpoint_id": "LatentConsistency-LDM-UNet-0100ep-20260927T145104Z",
-        "latest_completed_review_finished_at_utc": "2026-09-27T15:11:18.130912+00:00",
-        "incomplete_restore_request_id": "LatentConsistency-LDM-UNet-0094ep-20260927T142133Z-save",
-        "incomplete_restore_checkpoint_id": "LatentConsistency-LDM-UNet-0094ep-20260927T142133Z",
-        "incomplete_restore_step": 18610,
-        "incomplete_restore_status": "copying"
+        "latest_completed_review_finished_at_utc": "2026-09-27T15:11:18.130912+00:00"
       },
       "recovery_attempt": 0,
       "original_stage_training_code_commit": "1d82904bbc58bb451658f2c66c736aab1a678b42",
@@ -4428,6 +4424,17 @@
         "exact_HQ_exposure": 107.11776,
         "reason": "scheduled",
         "saved_at_utc": "2026-09-27T15:42:46.330865+00:00",
+        "training_code_commit": "6b3614840e0695c7d8bb984a86fdf51724c61715"
+      },
+      {
+        "model_id": "LatentConsistency-LDM-UNet",
+        "stage_id": "LatentConsistency-LDM-UNet-teacher741-20260927T065043Z",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0121ep-20260927T165139Z",
+        "step": 23846,
+        "samples_seen": 12166560,
+        "exact_HQ_exposure": 121.6656,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-27T16:51:51.395122+00:00",
         "training_code_commit": "6b3614840e0695c7d8bb984a86fdf51724c61715"
       }
     ],
@@ -12619,7 +12626,25 @@
         "not_a_training_fault": true
       }
     ],
-    "pending_quality_reviews": [],
+    "pending_quality_reviews": [
+      {
+        "model_id": "LatentConsistency-LDM-UNet",
+        "stage_id": "LatentConsistency-LDM-UNet-teacher741-20260927T065043Z",
+        "request_id": "LatentConsistency-LDM-UNet-0121ep-20260927T165105Z-review",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0121ep-20260927T165105Z",
+        "checkpoint_training_step": 23829,
+        "samples_seen": 12157856,
+        "exact_HQ_exposure": 121.57856,
+        "checkpoint_saved_at_utc": "2026-09-27T16:51:15.397525+00:00",
+        "observed_at_utc": "2026-09-27T17:03:20.687508+00:00",
+        "status": "copying",
+        "report_directory": "reports/evaluation/LatentConsistency-LDM-UNet-0121ep-20260927T165105Z/review",
+        "state_role": "ema",
+        "formal_review_samples": 1024,
+        "formal_review_fixed_prefix": 256,
+        "evaluation_complete": false
+      }
+    ],
     "visual_quality_observations": [
       {
         "observed_at_utc": "2026-09-23T06:53:43.362146+00:00",
