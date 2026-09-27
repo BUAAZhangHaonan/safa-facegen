@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-27T06:51:48.658183+00:00",
+    "recorded_at_utc": "2026-09-27T08:58:10.222880+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -547,42 +547,42 @@
         ],
         "guidance": "none"
       },
-      "latest_observed_at_utc": "2026-09-27T06:51:48.658183+00:00",
-      "latest_observed_step": 20,
-      "latest_observed_samples_seen": 10240,
+      "latest_observed_at_utc": "2026-09-27T08:58:10.222880+00:00",
+      "latest_observed_step": 5150,
+      "latest_observed_samples_seen": 2627648,
       "latest_logged_metrics": {
-        "time": "20260927T065138Z",
+        "time": "20260927T085806Z",
         "event": "metrics",
-        "epoch": 0,
-        "next_batch": 20,
-        "step": 20,
-        "samples_seen": 10240,
-        "samples_in_epoch_per_rank": 2560,
+        "epoch": 26,
+        "next_batch": 54,
+        "step": 5150,
+        "samples_seen": 2627648,
+        "samples_in_epoch_per_rank": 6912,
         "event_times_utc_seconds": {
-          "save": 1790491863.0220847,
-          "preview": 1790491862.8346348,
-          "review": 1790491862.8346348
+          "save": 1790499075.891506,
+          "preview": 1790499075.8915071,
+          "review": 1790499063.0743449
         },
         "model_id": "LatentConsistency-LDM-UNet",
-        "loss": 0.006492277607321739,
-        "grad_norm": 3.9603939056396484,
+        "loss": 0.006065294146537781,
+        "grad_norm": 1.0185308456420898,
         "learning_rate": 1e-05
       },
       "latest_observation_is_a_complete_checkpoint": false,
       "observed_peak_gpu_gib": 60.6337890625,
-      "observed_peak_memory_gib": 76.71479034423828,
+      "observed_peak_memory_gib": 82.37132263183594,
       "latest_complete_checkpoint": {
-        "checkpoint_id": "LatentConsistency-LDM-UNet-0000ep-20260927T065103Z",
-        "optimizer_step": 0,
-        "samples_seen": 0,
-        "exact_HQ_exposure": 0.0,
-        "saved_at_utc": "2026-09-27T06:51:09.167246+00:00",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0024ep-20260927T085115Z",
+        "optimizer_step": 4863,
+        "samples_seen": 2481408,
+        "exact_HQ_exposure": 24.81408,
+        "saved_at_utc": "2026-09-27T08:51:27.621638+00:00",
         "training_code_commit": "1d82904bbc58bb451658f2c66c736aab1a678b42",
-        "reason": "initialization"
+        "reason": "scheduled"
       },
       "complete_checkpoint_status": "complete",
-      "unsaved_optimizer_steps_after_latest_complete": 20,
-      "stage_budget_remaining_after_latest_logged_step": 29980,
+      "unsaved_optimizer_steps_after_latest_complete": 287,
+      "stage_budget_remaining_after_latest_logged_step": 24850,
       "recovery_journal": null,
       "current_training_process_running": true,
       "approval_received": false,
@@ -602,9 +602,21 @@
       "K100_replication": {
         "worker_pid": 471096,
         "evaluation_code_commit": "1d82904bbc58bb451658f2c66c736aab1a678b42",
-        "first_complete_state": "awaiting_original_worker_poll",
-        "restore_exercised": false
-      }
+        "first_complete_state": "transport_verified",
+        "restore_exercised": false,
+        "observed_at_utc": "2026-09-27T08:58:06.529588+00:00",
+        "latest_restore_checkpoint_id": "LatentConsistency-LDM-UNet-0000ep-20260927T065103Z",
+        "latest_restore_step": 0,
+        "latest_restore_samples_seen": 0,
+        "latest_restore_transport_verified_at_utc": "2026-09-27T07:49:06.780023+00:00",
+        "latest_restore_path": "/home/k100/projects/safa-facegen/models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0000ep-20260927T065103Z/LatentConsistency-LDM-UNet-0000ep-20260927T065103Z.state.pt",
+        "latest_H100_save_transfer_status": "received_waiting_for_transfer_interval",
+        "first_review_request_id": "LatentConsistency-LDM-UNet-0024ep-20260927T085103Z-review",
+        "first_review_status": "copying",
+        "review_transfer_heartbeat_at_utc": "2026-09-27T09:01:50.511503+00:00",
+        "partial_files_preserved": true
+      },
+      "recovery_attempt": 0
     },
     "interruptions": [
       {
@@ -4310,6 +4322,17 @@
         "reason": "complete",
         "saved_at_utc": "2026-09-26T19:11:02.263247+00:00",
         "training_code_commit": "35d2421181ee1556d30b4c58153599bfd9a14b88"
+      },
+      {
+        "model_id": "LatentConsistency-LDM-UNet",
+        "stage_id": "LatentConsistency-LDM-UNet-teacher741-20260927T065043Z",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0024ep-20260927T085115Z",
+        "step": 4863,
+        "samples_seen": 2481408,
+        "exact_HQ_exposure": 24.81408,
+        "reason": "scheduled",
+        "saved_at_utc": "2026-09-27T08:51:27.621638+00:00",
+        "training_code_commit": "1d82904bbc58bb451658f2c66c736aab1a678b42"
       }
     ],
     "quality_materials": {
@@ -11965,7 +11988,40 @@
         }
       }
     ],
-    "pending_quality_reviews": [],
+    "pending_quality_reviews": [
+      {
+        "model_id": "LatentConsistency-LDM-UNet",
+        "stage_id": "LatentConsistency-LDM-UNet-teacher741-20260927T065043Z",
+        "request_id": "LatentConsistency-LDM-UNet-0024ep-20260927T085103Z-review",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0024ep-20260927T085103Z",
+        "checkpoint_training_step": 4862,
+        "samples_seen": 2480896,
+        "exact_HQ_exposure": 24.80896,
+        "checkpoint_saved_at_utc": "2026-09-27T08:51:14.137798+00:00",
+        "state_role": "ema",
+        "training_code_commit": "1d82904bbc58bb451658f2c66c736aab1a678b42",
+        "evaluation_code_commit": "1d82904bbc58bb451658f2c66c736aab1a678b42",
+        "observed_at_utc": "2026-09-27T08:58:06.529588+00:00",
+        "status": "copying",
+        "report_directory": "reports/evaluation/LatentConsistency-LDM-UNet-0024ep-20260927T085103Z/review",
+        "formal_review_samples": 1024,
+        "formal_review_fixed_prefix": 256,
+        "sampling": {
+          "method": "LCM",
+          "steps": 4,
+          "timesteps": [
+            999,
+            759,
+            499,
+            259
+          ],
+          "guidance": "none"
+        },
+        "generation_started": false,
+        "evaluation_complete": false,
+        "note": "First scheduled LCM review is one optimizer step earlier than the latest complete save; no quality metrics available yet."
+      }
+    ],
     "visual_quality_observations": [
       {
         "observed_at_utc": "2026-09-23T06:53:43.362146+00:00",
