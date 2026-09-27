@@ -10,7 +10,9 @@ The three adapters preserve the pinned official backbones and unconditional inpu
 
 LCM retains the project's unconditional FFHQ UNet and omits the upstream text/CFG conditioning branches. Its teacher must be an explicit project Diffusion EMA export with the same codec hash. The upstream distillation math is retained in `vendor/latent_consistency/lcd_math.py`, extracted from the pinned training script. The provenance file records this adaptation. The teacher, target, loss, and solver run within the same schedule; the target is the FP32 student EMA.
 
-The LCM inference grid follows the [official Diffusers 0.22.0 LCMScheduler](https://github.com/huggingface/diffusers/blob/v0.22.0/src/diffusers/schedulers/scheduling_lcm.py) linked by the pinned LCM repository: integer skipping on the 50-step teacher grid gives `[999, 759, 519, 279]` at four steps. The generator returns the final denoised latent; the three intermediate transitions consume explicit noises. The unused random draw after the final denoised result in that scheduler is omitted.
+The LCM inference grid follows the [Diffusers scheduler correction](https://github.com/huggingface/diffusers/pull/5836): evenly selecting indices from the unchanged 50-point teacher grid gives `[999, 759, 499, 259]` at four steps. The generator returns the final denoised latent; the three intermediate transitions consume explicit noises. The unused random draw after the final denoised result in that scheduler is omitted.
+
+Production LCM requires a teacher-only decision in `runs/teacher-approvals/LatentConsistency-LDM-UNet.json` and a single registered bounded campaign. The decision fixes the Diffusion EMA identity and is independent of either model's image-quality acceptance. The new student starts from that EMA with fresh optimizer and step zero; subsequent recovery preserves its full state and absolute stop step. A completed stage cannot be extended by changing the latest checkpoint or calling the old campaign. Current training implements LCD; a later teacher-independent LCF objective is not implemented or automatically authorized.
 
 ## Vendor boundaries
 

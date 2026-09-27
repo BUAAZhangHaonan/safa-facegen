@@ -33,16 +33,17 @@ H100 在现有 `meanflow_e15_h100_bundle` 根目录内执行全部训练。K100 
 export PYTHONPATH="$PWD/src"
 export SAFA_FACEGEN_ROOT="$PWD"
 .venv-torch/bin/python -m safa_facegen.cli status
-.venv-torch/bin/python -m safa_facegen.controller --campaign configs/campaign.json
+# Resume only the already registered single-model campaign for the active stage.
+.venv-torch/bin/python -m safa_facegen.controller --campaign runs/controller/<registered-campaign>.json
 ```
 
-控制器使用正式模型配置中的每设备 batch：Diffusion 128、LCM 128、RF 24、MeanFlow B/4 1280、B/2 256、L/2 96；四卡梯度累积为1，学习率和EMA系数保持各模型配方。模型已完成实际训练与恢复检查，临时测试文件在使用后删除。它每次仅启动一个四卡任务，顺序为 Diffusion、LCM、RF、MeanFlow B/4、B/2、L/2。正式完成通过人工图像验收决定；等待审核期间继续训练当前模型。
+控制器每次仅启动一个四卡任务；实际 batch、学习率、恢复记录及固定预算以已登记阶段和完整保存配置为准。六模型清单保留，调度停止与人工图像验收分别记录。有界阶段达到绝对步数上限后完整保存、提交唯一最终审核并退出，不能因等待审核继续更新。LCM 须明确批准教师 EMA，并单独登记有界蒸馏阶段；教师批准不表示 Diffusion 或 LCM 已通过画质验收。
 
 ## 检查点与评价
 
 检查点名称使用 `模型名称-本次HQ阶段完成轮数-UTC时间`。元数据额外保存精确优化器步数、有效样本曝光数、数据与编解码器哈希、代码提交、初始化来源和异常恢复记录。历史数据阶段的轮数单独登记。
 
-每15分钟保存完整恢复状态，每30分钟输出64张预览，每2小时提交1024张样本的评价，并展示其中固定前256张。记录单脸检测、空白或非有限图、FID-1024和KID；样本不按质量筛选。FID-1024的样本预算在指标名称中明确保留。
+每15分钟保存完整恢复状态，每30分钟导出预览请求，每2小时提交1024张样本的评价，并展示其中固定前256张。目前 K100 为减少传输跳过单独预览，每模型完整恢复副本距上次传输成功至少2小时才启动下一份，审核 EMA 保持两小时间隔。记录单脸检测、空白或非有限图、FID-1024和KID；样本不按质量筛选。FID-1024的样本预算在指标名称中明确保留。
 
 训练恢复状态与正式 EMA 使用不同角色标识。跨机传输使用临时文件与内容校验，正式评价只接受明确的 EMA 导出。
 
