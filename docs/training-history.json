@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-09-28T12:03:35.703050+00:00",
+  "recorded_at": "2026-09-28T12:39:54.696920+00:00",
   "phase": "historical_initialization_and_HQ_pretraining",
   "scope": "The records array retains historical log statistics. HQ stages record actual production training, committed checkpoints, interruptions, and explicit image acceptance.",
   "selected_weight_provenance": "initializations.json",
@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-28T12:03:35.703050+00:00",
+    "recorded_at_utc": "2026-09-28T12:39:54.696920+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -576,31 +576,33 @@
       "recovery_scale": 1,
       "quality_approved": false,
       "K100_replication": {
-        "worker_pid": 523574,
-        "loaded_code_commit": "4ca37cd2df5339db534e3c301da07d289be7f705",
+        "worker_pid": 543313,
+        "loaded_code_commit": "e956eec2e6dd364627a60d035db29d127d1c89cc",
         "restore_transfer_interval_seconds": 7200,
         "poll_seconds": 300,
         "transfer_separate_previews": false,
-        "active_restore_copy": "paused_transfer: Diffusion-LDM-UNet-0000ep-20260928T090448Z-save",
+        "active_restore_copy": null,
         "restore_exercised": false,
-        "evaluation_deployment_status": "waiting_for_transfer_idle",
+        "evaluation_deployment_status": "complete; actual new protocol running",
         "deployed_evaluation_commit": "900e06850b902cc78f4c61a9a4e7b828f4f585e8",
-        "temporary_evaluation_hold": "Only new 20260928 Diffusion reviews become awaiting_worker_reload after transfer; drop hold and release queued reviews exactly once after idle worker reload. No images regenerated.",
-        "observed_at_utc": "2026-09-28T11:59:28.789628+00:00",
+        "temporary_evaluation_hold": null,
+        "observed_at_utc": "2026-09-28T12:39:54.696920+00:00",
         "transfer_queue": [
           {
-            "id": "Diffusion-LDM-UNet-0000ep-20260928T090448Z-save",
-            "status": "paused_transfer"
+            "id": "Diffusion-LDM-UNet-0023ep-20260928T110410Z-review",
+            "status": "evaluating"
           },
           {
             "id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z-review",
-            "status": "copying"
+            "status": "queued"
           }
         ],
-        "first_review_status": "awaiting_worker_reload; EMA transferred, no generation yet",
+        "first_review_status": "evaluating",
         "partial_mtime_active": true,
-        "final_review_status": "copying",
-        "final_complete_state_status": "received"
+        "final_review_status": "queued",
+        "final_complete_state_status": "received",
+        "latest_complete_replica": "Diffusion-LDM-UNet-0000ep-20260928T090448Z",
+        "latest_complete_replica_verified_at_utc": "2026-09-28T12:29:13.900452+00:00"
       },
       "scheduling_policy": "Fixed15000 stage completed. No new updates. LCM branch requires actual complete quality evidence; missing review is not NOT_BETTER.",
       "final_review_request_count": 1,
@@ -13856,24 +13858,80 @@
         "evaluation_hold_record": "reports/replication/quality-v1-evaluation-reload.json",
         "active_copy_interrupted": false,
         "quality_approved": false
+      },
+      {
+        "at_utc": "2026-09-28T12:39:54.696920+00:00",
+        "action": "Controlled idle replication worker reload; new Diffusion fixed-reference precision protocol confirmed during actual generation",
+        "previous_worker_pid": 523574,
+        "worker_pid": 543313,
+        "executing_code_commit": "e956eec2e6dd364627a60d035db29d127d1c89cc",
+        "idle_before_restart": true,
+        "active_transfers_interrupted": 0,
+        "released_review_requests": 2,
+        "temporary_trigger_removed": true,
+        "actual_generation_precision": {
+          "network_parameter_dtypes": [
+            "float32"
+          ],
+          "codec_parameter_dtypes": [
+            "float32"
+          ],
+          "network_autocast_enabled": false,
+          "network_autocast_dtype": null,
+          "ambient_autocast_enabled": false,
+          "device_type": "cuda",
+          "noise_dtype": "float32",
+          "ode_state_dtype": null,
+          "cuda_matmul_allow_tf32": false,
+          "cudnn_allow_tf32": false,
+          "torch_float32_matmul_precision": "highest"
+        },
+        "actual_evaluation_protocol": {
+          "protocol_id": "diffusion-741-ddim200-eta1-fp32-tf32off-fixed-reference-v1",
+          "objective_id": "min_snr_epsilon_v1",
+          "baseline_checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+          "reference_review": "/home/k100/projects/safa-facegen/reports/evaluation/Diffusion-LDM-UNet-0741ep-20260924T143627Z/review",
+          "reference_features": "/home/k100/projects/safa-facegen/reports/evaluation/Diffusion-LDM-UNet-0741ep-20260924T143627Z/review/real-inception.npy",
+          "reference_records": "/home/k100/projects/safa-facegen/reports/evaluation/Diffusion-LDM-UNet-0741ep-20260924T143627Z/review/real-records.json",
+          "reference_feature_stat": {
+            "bytes": 8388736,
+            "mtime_ns": 1790255730555201473
+          },
+          "reference_count": 1024,
+          "reference_records_and_order_verified": true,
+          "reference_features_recomputed": false,
+          "reference_runtime_precision": "historical runtime flags unrecorded; identical fixed matrix reused",
+          "reference_origin": "/home/k100/projects/safa-facegen/reports/plateau/reference-1024-seed42",
+          "generation_batch_size": 8,
+          "generated_feature_batch_size": 32,
+          "seed": 42,
+          "precision": "fp32",
+          "cuda_matmul_allow_tf32": false,
+          "cudnn_allow_tf32": false,
+          "integrity_mode": "metadata"
+        },
+        "formal_evaluation_complete": false,
+        "transfer_policy_unchanged": true
       }
     ],
     "pending_quality_reviews": {
       "model_id": "Diffusion-LDM-UNet",
       "stage_id": "qv1-diffusion",
-      "observed_at_utc": "2026-09-28T11:59:28.789628+00:00",
+      "observed_at_utc": "2026-09-28T12:39:54.696920+00:00",
       "reviews": [
         {
           "request_id": "Diffusion-LDM-UNet-0023ep-20260928T110410Z-review",
-          "status": "awaiting_worker_reload"
+          "status": "evaluating",
+          "started_at_utc": "2026-09-28T12:35:28.413297+00:00",
+          "images_observed": 176
         },
         {
           "request_id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z-review",
-          "status": "copying"
+          "status": "queued"
         }
       ],
       "new_formal_review_completed": false,
-      "deployment_hold": "Leave active transfer intact; original reload helper removes hold and queues reviews after idle worker replacement."
+      "deployment_hold": null
     },
     "visual_quality_observations": [
       {
