@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-28T21:25:02.834648+00:00",
+    "recorded_at_utc": "2026-09-28T22:03:27.066430+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -552,50 +552,50 @@
         "memory_hard_gib": 243
       },
       "latest_complete_checkpoint": {
-        "checkpoint_id": "LatentConsistency-LDM-UNet-0011ep-20260928T211717Z",
-        "optimizer_step": 4317,
-        "samples_seen": 1104096,
-        "exact_HQ_exposure": 11.04096,
-        "saved_at_utc": "2026-09-28T21:17:22.043761+00:00",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0021ep-20260928T220217Z",
+        "optimizer_step": 8533,
+        "samples_seen": 2182432,
+        "exact_HQ_exposure": 21.82432,
+        "saved_at_utc": "2026-09-28T22:02:22.659047+00:00",
         "training_code_commit": "2ee3ec62b6c3c55fe52fd9eec66b4a8b96ab19c7",
         "integrity_mode": "metadata",
         "raw_EMA_Adam_RNG_cursor": true
       },
-      "latest_observed_at_utc": "2026-09-28T21:25:02.834648+00:00",
-      "latest_observed_step": 5020,
-      "latest_observed_samples_seen": 1283968,
+      "latest_observed_at_utc": "2026-09-28T22:03:27.066430+00:00",
+      "latest_observed_step": 8630,
+      "latest_observed_samples_seen": 2207168,
       "latest_logged_metrics": {
         "event": "metrics",
-        "epoch": 12,
-        "next_batch": 328,
-        "step": 5020,
-        "samples_seen": 1283968,
-        "samples_in_epoch_per_rank": 20992,
+        "epoch": 22,
+        "next_batch": 28,
+        "step": 8630,
+        "samples_seen": 2207168,
+        "samples_in_epoch_per_rank": 1792,
         "event_times_utc_seconds": {
-          "save": 1790630237.0573082,
-          "preview": 1790629336.9793162,
+          "save": 1790632937.614559,
+          "preview": 1790632937.61456,
           "review": 1790627536.715543
         },
-        "stage_step": 5020,
+        "stage_step": 8630,
         "recovery_scale": 1.0,
         "model_id": "LatentConsistency-LDM-UNet",
         "objective_id": "lcf_real_v1",
-        "consistency_mse": 0.009656551526859403,
-        "grad_norm": 0.4655463993549347,
-        "loss": 0.009656551526859403,
-        "t_high_mean": 518.2734375,
-        "learning_rate": 1.1685432502865863e-06
+        "consistency_mse": 0.009521034313365817,
+        "grad_norm": 0.305114209651947,
+        "loss": 0.009521034313365817,
+        "t_high_mean": 529.66796875,
+        "learning_rate": 2.9081443309129134e-07
       },
       "latest_log_finite": true,
       "latest_observation_is_a_complete_checkpoint": false,
-      "unsaved_optimizer_steps_after_latest_complete": 703,
-      "stage_budget_remaining_after_latest_logged_step": 4980,
+      "unsaved_optimizer_steps_after_latest_complete": 97,
+      "stage_budget_remaining_after_latest_logged_step": 1370,
       "current_training_process_running": true,
       "recovery_scale": 1.0,
       "recovery_attempt": 0,
       "observed_peak_gpu_gib": 32.0361328125,
-      "observed_peak_memory_gib": 79.40227890014648,
-      "observed_GPU_memory_and_utilization": "0, 32805, 100\n1, 32805, 99\n2, 32805, 95\n3, 32805, 100",
+      "observed_peak_memory_gib": 79.75339126586914,
+      "observed_GPU_memory_and_utilization": "0, 32805, 100\n1, 32805, 100\n2, 32805, 94\n3, 32805, 100",
       "quality_approved": false,
       "selection_decision": "NOT_BETTER from complete qv1-diffusion final evidence",
       "selection_evidence": "reports/quality-v1/diffusion-selection/selection-2.json",
@@ -607,14 +607,20 @@
       "K100_replication": {
         "worker_pid": 543313,
         "loaded_code_commit": "e956eec2e6dd364627a60d035db29d127d1c89cc",
-        "observed_at_utc": "2026-09-28T21:25:02.107729+00:00",
-        "initial_complete_state_status": "copying",
+        "observed_at_utc": "2026-09-28T21:59:42.587344+00:00",
+        "initial_complete_state_status": "transport_verified",
         "restore_exercised": false,
         "restore_transfer_interval_seconds": 7200,
         "poll_seconds": 300,
         "transfer_separate_previews": false,
         "initial_complete_state_request_id": "LatentConsistency-LDM-UNet-0000ep-20260928T203217Z-save",
-        "worker_alive": true
+        "worker_alive": true,
+        "initial_complete_state_received_at_utc": "2026-09-28T21:34:04.065183+00:00",
+        "latest_restore": {
+          "identity": "LatentConsistency-LDM-UNet-0000ep-20260928T203217Z",
+          "path": "/home/k100/projects/safa-facegen/models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0000ep-20260928T203217Z/state.pt",
+          "restore_exercised": false
+        }
       }
     },
     "completed_quality_v1_diffusion": {
@@ -4849,20 +4855,34 @@
         "training_code_commit": "2ee3ec62b6c3c55fe52fd9eec66b4a8b96ab19c7",
         "integrity_mode": "metadata",
         "raw_EMA_Adam_RNG_cursor": true
+      },
+      {
+        "model_id": "LatentConsistency-LDM-UNet",
+        "stage_id": "qv1-lcm-refine",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0021ep-20260928T220217Z",
+        "optimizer_step": 8533,
+        "samples_seen": 2182432,
+        "exact_HQ_exposure": 21.82432,
+        "saved_at_utc": "2026-09-28T22:02:22.659047+00:00",
+        "training_code_commit": "2ee3ec62b6c3c55fe52fd9eec66b4a8b96ab19c7",
+        "integrity_mode": "metadata",
+        "raw_EMA_Adam_RNG_cursor": true
       }
     ],
     "quality_materials": {
       "status": "complete",
       "model_id": "RectifiedFlow-NCSNpp",
       "stage_id": "qv1-rf",
-      "checkpoint_id": "RectifiedFlow-NCSNpp-0002ep-20260928T191435Z",
+      "checkpoint_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
       "objective_id": "rf_batch_ot_v1",
       "training_code_commit": "be4e20e8a44ba8dbbddb9db8d517e7f549b02207",
       "evaluation_code_commit": "e956eec2e6dd364627a60d035db29d127d1c89cc",
-      "checkpoint_training_step": 6042,
-      "samples_seen": 289952,
-      "exact_HQ_exposure": 2.89952,
-      "finished_at_utc": "2026-09-28T20:11:31.168765+00:00",
+      "checkpoint_training_step": 10000,
+      "samples_seen": 479872,
+      "exact_HQ_exposure": 4.79872,
+      "checkpoint_is_stage_endpoint": true,
+      "finished_at_utc": "2026-09-28T21:33:11.533639+00:00",
+      "quality_panel_finished_at_utc": "20260928T213323Z",
       "formal_review_samples": 1024,
       "formal_review_fixed_prefix": 256,
       "distribution": {
@@ -4876,9 +4896,9 @@
         "kid_subsets": 100,
         "kid_subset_size": 1000,
         "rng_seed": 42,
-        "frechet_inception_distance": 54.37705484456529,
-        "kernel_inception_distance_mean": 0.018953908683683688,
-        "kernel_inception_distance_std": 0.00020493853209305435
+        "frechet_inception_distance": 54.08409575547984,
+        "kernel_inception_distance_mean": 0.018575279744744808,
+        "kernel_inception_distance_std": 0.00020359762922601772
       },
       "generation": {
         "status": "complete",
@@ -4940,7 +4960,7 @@
       },
       "topiq": {
         "model_id": "RectifiedFlow-NCSNpp",
-        "checkpoint": "/home/k100/projects/safa-facegen/models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0002ep-20260928T191435Z/ema.pt",
+        "checkpoint": "/home/k100/projects/safa-facegen/models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/ema.pt",
         "metric": "topiq_nr",
         "higher_is_better": true,
         "image_count": 1024,
@@ -4952,18 +4972,18 @@
         "weights_path": "/home/k100/projects/safa-facegen/models/evaluation/cfanet_nr_koniq_res50-9a73138b.pth",
         "weights_bytes": 181196009,
         "weight_loading": "complete state including backbone; strict=True; offline",
-        "mean": 0.7102711143379565,
-        "median": 0.7212734818458557,
-        "p10": 0.6311758637428284,
-        "p05": 0.6038662970066071,
+        "mean": 0.7105621041555423,
+        "median": 0.7215720117092133,
+        "p10": 0.633268004655838,
+        "p05": 0.6067342340946198,
         "anatomical_validity": "not_measured_by_TOPIQ",
         "calibration": "required_for_thresholds"
       },
       "prdc": {
-        "precision": 0.7509765625,
-        "recall": 0.5498046875,
-        "density": 0.815625,
-        "coverage": 0.841796875,
+        "precision": 0.7373046875,
+        "recall": 0.5556640625,
+        "density": 0.8095703125,
+        "coverage": 0.84375,
         "k": 5,
         "real_count": 1024,
         "fake_count": 1024,
@@ -4971,18 +4991,18 @@
         "not_identity_or_privacy_certification": true
       },
       "visual_review": {
-        "checkpoint_id": "RectifiedFlow-NCSNpp-0002ep-20260928T191435Z",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
         "review_type": "Codex AI visual initial review, not human annotation or owner acceptance",
         "counts": {
-          "acceptable": 195,
-          "minor": 36,
+          "reviewed": 256,
+          "acceptable": 193,
+          "minor": 38,
           "severe": 8,
           "uncertain": 17,
-          "reviewed": 256,
-          "texture_issue": 60,
+          "texture_issue": 63,
           "background_multi": 3
         },
-        "method": "Two GPT Sol medium agents viewed page00..07 and page08..15 using original detail; all256 native256x256 tiles viewed. Root compared8 paired original-resolution details.",
+        "method": "Two GPT Sol medium agents independently viewed endpoint pages00..07 and08..15 at original detail; all256 native256x256 tiles. Root inspected8 parent/endpoint original-resolution pairs.",
         "severe_sample_indices": [
           71,
           91,
@@ -5015,12 +5035,12 @@
         "paired_detail_indices": [
           0,
           13,
-          51,
-          63,
+          71,
+          113,
           125,
           128,
           137,
-          214
+          217
         ],
         "texture_review": "rejected",
         "texture_reviewer": "Codex AI original-resolution review",
@@ -5029,18 +5049,19 @@
           "reviewer": "Codex AI paired original-resolution review",
           "baseline_checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
           "basis": "original_resolution_review",
-          "note": "Severe face-center overlays128 and malformed mouth137 persist. Mouth/object ambiguity125 is retained uncertain;214 has edge artifacts. Overall texture pollution and softness persist; no clear practical improvement."
+          "note": "Face-center overlay128 and malformed mouth137 persist. Ambiguous mouth/occlusion125 remains uncertain. Texture overlays, softness and local eye/mouth problems remain; no clear practical improvement in reviewed endpoint images."
         },
         "limitations": [
-          "Current and historical AI raters were not calibrated; differences in counts are not measured training changes.",
-          "Uncertain labels remain unresolved; no human signature or owner quality approval.",
-          "Background-face counts are visual observations on256, not the detector result on1024.",
-          "Natural expression, teeth and occlusion are not automatically severe defects."
+          "AI labels are not a human signature or owner acceptance.",
+          "Historical and current rater thresholds are not calibrated; count differences are not measured training changes.",
+          "Uncertain cases remain unresolved.",
+          "Background faces on256 are separate from detector counts on1024.",
+          "Natural expression, teeth and occlusion are not automatically defects."
         ],
         "quality_approved": false,
-        "created_at_utc": "2026-09-28T20:30:35.832622+00:00"
+        "created_at_utc": "2026-09-28T22:02:55.250698+00:00"
       },
-      "reviewer_type": "Codex GPT Sol medium AI initial review; not human signature or owner acceptance",
+      "reviewer_type": "Codex AI visual initial review, not human annotation or owner acceptance",
       "cross_reviewer_counts_not_calibrated": true,
       "quality_approved": false,
       "selection_status": "REVIEW_REQUIRED",
@@ -5049,9 +5070,9 @@
         "candidate.resolve_uncertain_labels",
         "baseline.resolve_uncertain_labels"
       ],
-      "selection_reason": "Uncertain labels remain; historical parent actual precision fields incomplete. Paired128/137 severe defects persist; no clear practical texture improvement.",
-      "report_directory": "/home/k100/projects/safa-facegen/reports/evaluation/RectifiedFlow-NCSNpp-0002ep-20260928T191435Z/review",
-      "local_visual_records": "reports/quality-v1/RectifiedFlow-NCSNpp-0002ep-20260928T191435Z"
+      "selection_reason": "Uncertain labels remain and historical parent precision fields are incomplete. Fixed severe overlays/mouth defects persist; no clear practical visual improvement. Retain corrected7 EMA and endpoint full restore state.",
+      "report_directory": "/home/k100/projects/safa-facegen/reports/evaluation/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/review",
+      "local_visual_records": "reports/quality-v1/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z"
     },
     "quality_materials_history": [
       {
@@ -13088,6 +13109,211 @@
         "selection_reason": "Uncertain labels remain; historical parent actual precision fields incomplete. Paired128/137 severe defects persist; no clear practical texture improvement.",
         "report_directory": "/home/k100/projects/safa-facegen/reports/evaluation/RectifiedFlow-NCSNpp-0002ep-20260928T191435Z/review",
         "local_visual_records": "reports/quality-v1/RectifiedFlow-NCSNpp-0002ep-20260928T191435Z"
+      },
+      {
+        "status": "complete",
+        "model_id": "RectifiedFlow-NCSNpp",
+        "stage_id": "qv1-rf",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
+        "objective_id": "rf_batch_ot_v1",
+        "training_code_commit": "be4e20e8a44ba8dbbddb9db8d517e7f549b02207",
+        "evaluation_code_commit": "e956eec2e6dd364627a60d035db29d127d1c89cc",
+        "checkpoint_training_step": 10000,
+        "samples_seen": 479872,
+        "exact_HQ_exposure": 4.79872,
+        "checkpoint_is_stage_endpoint": true,
+        "finished_at_utc": "2026-09-28T21:33:11.533639+00:00",
+        "quality_panel_finished_at_utc": "20260928T213323Z",
+        "formal_review_samples": 1024,
+        "formal_review_fixed_prefix": 256,
+        "distribution": {
+          "status": "complete",
+          "num_generated": 1024,
+          "num_real": 1024,
+          "feature_extractor": "torch-fidelity inception-v3-compat",
+          "feature_dimension": 2048,
+          "torch_fidelity_version": "0.4.0",
+          "weights_sha256": "6726825d0af5f729cebd5821db510b11b1cfad8faad88a03f1befd49fb9129b2",
+          "kid_subsets": 100,
+          "kid_subset_size": 1000,
+          "rng_seed": 42,
+          "frechet_inception_distance": 54.08409575547984,
+          "kernel_inception_distance_mean": 0.018575279744744808,
+          "kernel_inception_distance_std": 0.00020359762922601772
+        },
+        "generation": {
+          "status": "complete",
+          "samples": 1024,
+          "nonfinite": 0,
+          "blank_spatial_std_lt1": 0,
+          "out_of_range_before_png": 0,
+          "filtered_samples": 0
+        },
+        "face_detection": {
+          "status": "complete",
+          "samples": 1024,
+          "zero": 0,
+          "single": 1024,
+          "multiple": 0,
+          "nonfinite": 0,
+          "single_face_rate": 1.0,
+          "denominator_includes_blank_and_nonfinite": true,
+          "detector": "det_10g.onnx",
+          "detector_sha256": "5838f7fe053675b1c7a08b633df49e7af5495cee0493c7dcf6697200b85b5b91",
+          "detector_size": [
+            256,
+            256
+          ],
+          "threshold": 0.5,
+          "cpu_threads": 8,
+          "cpu_inter_threads": 1,
+          "providers": [
+            "CPUExecutionProvider"
+          ],
+          "insightface_version": "0.7.3"
+        },
+        "sampling": {
+          "steps": null,
+          "eta": 1.0,
+          "ode_tol": 1e-05,
+          "bf16": false,
+          "checkpoint_sampling": true,
+          "guidance": false,
+          "method": "rk45",
+          "atol": 1e-05,
+          "rtol": 1e-05,
+          "time_label": "fp32(t)*999"
+        },
+        "generation_precision": {
+          "network_parameter_dtypes": [
+            "float32"
+          ],
+          "codec_parameter_dtypes": [],
+          "network_autocast_enabled": false,
+          "network_autocast_dtype": null,
+          "ambient_autocast_enabled": false,
+          "device_type": "cuda",
+          "noise_dtype": "float32",
+          "ode_state_dtype": "float64",
+          "cuda_matmul_allow_tf32": false,
+          "cudnn_allow_tf32": true,
+          "torch_float32_matmul_precision": "highest"
+        },
+        "topiq": {
+          "model_id": "RectifiedFlow-NCSNpp",
+          "checkpoint": "/home/k100/projects/safa-facegen/models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/ema.pt",
+          "metric": "topiq_nr",
+          "higher_is_better": true,
+          "image_count": 1024,
+          "input": "original RGB 256x256 float [0,1]; no external resize or repair",
+          "pyiqa_version": "0.1.15.post2",
+          "torch_version": "2.11.0+cu128",
+          "device": "cuda:0",
+          "batch_size": 16,
+          "weights_path": "/home/k100/projects/safa-facegen/models/evaluation/cfanet_nr_koniq_res50-9a73138b.pth",
+          "weights_bytes": 181196009,
+          "weight_loading": "complete state including backbone; strict=True; offline",
+          "mean": 0.7105621041555423,
+          "median": 0.7215720117092133,
+          "p10": 0.633268004655838,
+          "p05": 0.6067342340946198,
+          "anatomical_validity": "not_measured_by_TOPIQ",
+          "calibration": "required_for_thresholds"
+        },
+        "prdc": {
+          "precision": 0.7373046875,
+          "recall": 0.5556640625,
+          "density": 0.8095703125,
+          "coverage": 0.84375,
+          "k": 5,
+          "real_count": 1024,
+          "fake_count": 1024,
+          "feature_dim": 2048,
+          "not_identity_or_privacy_certification": true
+        },
+        "visual_review": {
+          "checkpoint_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
+          "review_type": "Codex AI visual initial review, not human annotation or owner acceptance",
+          "counts": {
+            "reviewed": 256,
+            "acceptable": 193,
+            "minor": 38,
+            "severe": 8,
+            "uncertain": 17,
+            "texture_issue": 63,
+            "background_multi": 3
+          },
+          "method": "Two GPT Sol medium agents independently viewed endpoint pages00..07 and08..15 at original detail; all256 native256x256 tiles. Root inspected8 parent/endpoint original-resolution pairs.",
+          "severe_sample_indices": [
+            71,
+            91,
+            113,
+            118,
+            123,
+            128,
+            137,
+            217
+          ],
+          "uncertain_sample_indices": [
+            8,
+            15,
+            21,
+            45,
+            49,
+            76,
+            98,
+            117,
+            120,
+            125,
+            147,
+            178,
+            181,
+            189,
+            203,
+            226,
+            229
+          ],
+          "paired_detail_indices": [
+            0,
+            13,
+            71,
+            113,
+            125,
+            128,
+            137,
+            217
+          ],
+          "texture_review": "rejected",
+          "texture_reviewer": "Codex AI original-resolution review",
+          "texture_comparison": {
+            "verdict": "unchanged",
+            "reviewer": "Codex AI paired original-resolution review",
+            "baseline_checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+            "basis": "original_resolution_review",
+            "note": "Face-center overlay128 and malformed mouth137 persist. Ambiguous mouth/occlusion125 remains uncertain. Texture overlays, softness and local eye/mouth problems remain; no clear practical improvement in reviewed endpoint images."
+          },
+          "limitations": [
+            "AI labels are not a human signature or owner acceptance.",
+            "Historical and current rater thresholds are not calibrated; count differences are not measured training changes.",
+            "Uncertain cases remain unresolved.",
+            "Background faces on256 are separate from detector counts on1024.",
+            "Natural expression, teeth and occlusion are not automatically defects."
+          ],
+          "quality_approved": false,
+          "created_at_utc": "2026-09-28T22:02:55.250698+00:00"
+        },
+        "reviewer_type": "Codex AI visual initial review, not human annotation or owner acceptance",
+        "cross_reviewer_counts_not_calibrated": true,
+        "quality_approved": false,
+        "selection_status": "REVIEW_REQUIRED",
+        "selection_missing": [
+          "matching_protocol_id",
+          "candidate.resolve_uncertain_labels",
+          "baseline.resolve_uncertain_labels"
+        ],
+        "selection_reason": "Uncertain labels remain and historical parent precision fields are incomplete. Fixed severe overlays/mouth defects persist; no clear practical visual improvement. Retain corrected7 EMA and endpoint full restore state.",
+        "report_directory": "/home/k100/projects/safa-facegen/reports/evaluation/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/review",
+        "local_visual_records": "reports/quality-v1/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z"
       }
     ],
     "configuration_changes": [
@@ -14276,32 +14502,31 @@
           "transfer_separate_previews": false,
           "restore_exercised": false,
           "latest_diffusion_final_verified_at_utc": "2026-09-28T16:16:09.329087+00:00",
-          "observed_at_utc": "2026-09-28T21:25:02.107729+00:00",
+          "observed_at_utc": "2026-09-28T21:59:42.587344+00:00",
           "initial_complete_state_status": "transport_verified",
           "latest_complete_replica": "RectifiedFlow-NCSNpp-0002ep-20260928T191438Z",
           "latest_complete_replica_verified_at_utc": "2026-09-28T19:52:22.534305+00:00",
           "current_save_status": "received_waiting_same_two_hour_interval",
           "current_review": {
-            "checkpoint_id": "RectifiedFlow-NCSNpp-0002ep-20260928T191435Z",
-            "optimizer_step": 6042,
-            "samples_seen": 289952,
-            "exact_HQ_exposure": 2.89952,
+            "checkpoint_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
+            "optimizer_step": 10000,
             "status": "complete",
-            "started_at_utc": "2026-09-28T19:18:29.109124+00:00",
-            "errors": [],
             "quality_results_available": true,
-            "finished_at_utc": "2026-09-28T20:11:31.168765+00:00"
+            "finished_at_utc": "2026-09-28T21:33:11.533639+00:00"
           },
-          "final_complete_state_status": "received; original two-hour interval since19:52:22UTC success retained; source retained",
-          "final_review_status": "evaluating",
-          "final_review_started_at_utc": "2026-09-28T20:38:34.632980+00:00"
+          "final_complete_state_status": "copying; source and original partial retained; restore not exercised",
+          "final_review_status": "complete",
+          "final_review_started_at_utc": "2026-09-28T20:38:34.632980+00:00",
+          "final_review_finished_at_utc": "2026-09-28T21:33:11.533639+00:00"
         },
         "current_training_process_running": false,
         "recovery_scale": 1.0,
         "final_review_request_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z-review",
         "final_review_request_count": 1,
         "final_review_submitted_at_utc": "20260928T203141Z",
-        "final_review_status": "evaluating"
+        "final_review_status": "complete",
+        "final_review_finished_at_utc": "2026-09-28T21:33:11.533639+00:00",
+        "final_review_quality_selection": "REVIEW_REQUIRED"
       }
     ],
     "operational_actions": [
@@ -15923,6 +16148,28 @@
         "background_multiple_face_manual_count": 3,
         "natural_expression_dentition_occlusion_not_automatically_defects": true,
         "approval_received": false
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "stage_id": "qv1-rf",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
+        "observed_at_utc": "2026-09-28T22:02:55.250698+00:00",
+        "optimizer_step": 10000,
+        "samples_seen": 479872,
+        "sample_count": 1024,
+        "images_examined": 256,
+        "filtered_samples": 0,
+        "contact_sheet_path": "/home/k100/projects/safa-facegen/reports/evaluation/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/review/first-0256-contact-sheet.png",
+        "visual_observation": "Face-center overlay128 and malformed mouth137 persist. Ambiguous mouth/occlusion125 remains uncertain. Texture overlays, softness and local eye/mouth problems remain; no clear practical improvement in reviewed endpoint images.",
+        "severe_defect_count": 8,
+        "minor_detail_defect_count": 38,
+        "uncertain_count": 17,
+        "acceptable_count": 193,
+        "manual_defect_counts_status": "Codex AI initial review; unresolved uncertainty; historical cross-rater counts not calibrated",
+        "automated_multiple_face_indices": [],
+        "background_multiple_face_manual_count": 3,
+        "natural_expression_dentition_occlusion_not_automatically_defects": true,
+        "approval_received": false
       }
     ],
     "plateau_diagnostics": {
@@ -16286,7 +16533,7 @@
       }
     },
     "dispatch_policy": {
-      "observed_at_utc": "2026-09-28T21:25:02.834648+00:00",
+      "observed_at_utc": "2026-09-28T22:03:27.066430+00:00",
       "status": "quality_v1_LCF_running_after_exact_RF10000_cap",
       "current_training_model": "LatentConsistency-LDM-UNet",
       "current_stage_id": "qv1-lcm-refine",
@@ -16298,7 +16545,7 @@
       "handoff_watcher_alive": false,
       "LCF_already_started": true,
       "LCF_quality_selection": "NOT_BETTER from completed new Diffusion",
-      "RF_final_review_pending": true,
+      "RF_final_review_pending": false,
       "RF_final_complete_replica_pending": true,
       "owner_cost_preference": "Independent authorized training continues while K100 reviews run; GPT Sol medium/high for delegated visual work",
       "remaining_conditional_MF_policy": "B4/L2 require actual B2 BETTER; current B2 REVIEW_REQUIRED does not authorize promotion. No second budget for completed models."
