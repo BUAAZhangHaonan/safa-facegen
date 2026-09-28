@@ -154,11 +154,30 @@ def release_checkpoint_cache(root, model_id):
             record = json.loads(metadata.read_text())
             if not record.get("complete"):
                 continue
+            checkpoint_dir = output
+            if record.get("integrity_mode") == "metadata":
+                from .integrity import validate_completion
+                identity = record.get("checkpoint_id")
+                if identity != metadata.stem:
+                    raise ValueError(f"Checkpoint metadata identity mismatch: {metadata}")
+                checkpoint_dir = output / identity
+                if checkpoint_dir.is_symlink() or checkpoint_dir.resolve().parent != output:
+                    raise ValueError(f"Invalid atomic checkpoint directory: {checkpoint_dir}")
+                # Retention may leave a sidecar after retiring its state.
+                if not checkpoint_dir.exists():
+                    continue
+                manifest_path = checkpoint_dir / "manifest.json"
+                manifest = json.loads(manifest_path.read_text())
+                complete = json.loads((checkpoint_dir / "COMPLETE.json").read_text())
+                validate_completion(manifest, complete, manifest_bytes=manifest_path.stat().st_size,
+                                    checkpoint_id=identity)
             for key in ("state_path", "ema_path"):
                 if record.get(key):
                     path = root / record[key]
-                    if path.parent.resolve() != output:
+                    if path.parent.resolve() != checkpoint_dir:
                         raise ValueError(f"Checkpoint path is outside its model directory: {path}")
+                    if checkpoint_dir != output and path.name != {"state_path": "state.pt", "ema_path": "ema.pt"}[key]:
+                        raise ValueError(f"Invalid atomic checkpoint file: {path}")
                     paths.append(path)
     return release_file_cache(paths, root)
 
