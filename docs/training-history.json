@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-28T20:32:58.590562+00:00",
+    "recorded_at_utc": "2026-09-28T20:55:20.086301+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -552,50 +552,50 @@
         "memory_hard_gib": 243
       },
       "latest_complete_checkpoint": {
-        "checkpoint_id": "LatentConsistency-LDM-UNet-0000ep-20260928T203217Z",
-        "optimizer_step": 0,
-        "samples_seen": 0,
-        "exact_HQ_exposure": 0.0,
-        "saved_at_utc": "2026-09-28T20:32:19.489750+00:00",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0003ep-20260928T204717Z",
+        "optimizer_step": 1442,
+        "samples_seen": 368864,
+        "exact_HQ_exposure": 3.68864,
+        "saved_at_utc": "2026-09-28T20:47:22.177155+00:00",
         "training_code_commit": "2ee3ec62b6c3c55fe52fd9eec66b4a8b96ab19c7",
         "integrity_mode": "metadata",
         "raw_EMA_Adam_RNG_cursor": true
       },
-      "latest_observed_at_utc": "2026-09-28T20:32:58.590562+00:00",
-      "latest_observed_step": 60,
-      "latest_observed_samples_seen": 15360,
+      "latest_observed_at_utc": "2026-09-28T20:55:20.086301+00:00",
+      "latest_observed_step": 2200,
+      "latest_observed_samples_seen": 562720,
       "latest_logged_metrics": {
         "event": "metrics",
-        "epoch": 0,
-        "next_batch": 60,
-        "step": 60,
-        "samples_seen": 15360,
-        "samples_in_epoch_per_rank": 3840,
+        "epoch": 5,
+        "next_batch": 245,
+        "step": 2200,
+        "samples_seen": 562720,
+        "samples_in_epoch_per_rank": 15680,
         "event_times_utc_seconds": {
-          "save": 1790627537.0705624,
+          "save": 1790628437.1904802,
           "preview": 1790627536.715543,
           "review": 1790627536.715543
         },
-        "stage_step": 60,
+        "stage_step": 2200,
         "recovery_scale": 1.0,
         "model_id": "LatentConsistency-LDM-UNet",
         "objective_id": "lcf_real_v1",
-        "consistency_mse": 0.007272554561495781,
-        "grad_norm": 0.19953784346580505,
-        "loss": 0.007272554561495781,
-        "t_high_mean": 503.59375,
-        "learning_rate": 2.4e-07
+        "consistency_mse": 0.00844095484353602,
+        "grad_norm": 0.28928515315055847,
+        "loss": 0.00844095484353602,
+        "t_high_mean": 477.55078125,
+        "learning_rate": 1.8616159673446023e-06
       },
       "latest_log_finite": true,
       "latest_observation_is_a_complete_checkpoint": false,
-      "unsaved_optimizer_steps_after_latest_complete": 60,
-      "stage_budget_remaining_after_latest_logged_step": 9940,
+      "unsaved_optimizer_steps_after_latest_complete": 758,
+      "stage_budget_remaining_after_latest_logged_step": 7800,
       "current_training_process_running": true,
       "recovery_scale": 1.0,
       "recovery_attempt": 0,
-      "observed_peak_gpu_gib": 32.0341796875,
-      "observed_peak_memory_gib": 74.79746627807617,
-      "observed_GPU_memory_and_utilization": "0, 32803, 94\n1, 32803, 100\n2, 32803, 100\n3, 32803, 99",
+      "observed_peak_gpu_gib": 32.0361328125,
+      "observed_peak_memory_gib": 79.40227890014648,
+      "observed_GPU_memory_and_utilization": "0, 32805, 100\n1, 32805, 100\n2, 32805, 100\n3, 32805, 100",
       "quality_approved": false,
       "selection_decision": "NOT_BETTER from complete qv1-diffusion final evidence",
       "selection_evidence": "reports/quality-v1/diffusion-selection/selection-2.json",
@@ -607,12 +607,14 @@
       "K100_replication": {
         "worker_pid": 543313,
         "loaded_code_commit": "e956eec2e6dd364627a60d035db29d127d1c89cc",
-        "observed_at_utc": "2026-09-28T20:33:33.141127+00:00",
-        "initial_complete_state_status": "Awaiting original worker poll at20:33UTC",
+        "observed_at_utc": "2026-09-28T20:55:19.368264+00:00",
+        "initial_complete_state_status": "copying",
         "restore_exercised": false,
         "restore_transfer_interval_seconds": 7200,
         "poll_seconds": 300,
-        "transfer_separate_previews": false
+        "transfer_separate_previews": false,
+        "initial_complete_state_request_id": "LatentConsistency-LDM-UNet-0000ep-20260928T203217Z-save",
+        "worker_alive": true
       }
     },
     "completed_quality_v1_diffusion": {
@@ -4820,6 +4822,18 @@
         "samples_seen": 0,
         "exact_HQ_exposure": 0.0,
         "saved_at_utc": "2026-09-28T20:32:19.489750+00:00",
+        "training_code_commit": "2ee3ec62b6c3c55fe52fd9eec66b4a8b96ab19c7",
+        "integrity_mode": "metadata",
+        "raw_EMA_Adam_RNG_cursor": true
+      },
+      {
+        "model_id": "LatentConsistency-LDM-UNet",
+        "stage_id": "qv1-lcm-refine",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0003ep-20260928T204717Z",
+        "optimizer_step": 1442,
+        "samples_seen": 368864,
+        "exact_HQ_exposure": 3.68864,
+        "saved_at_utc": "2026-09-28T20:47:22.177155+00:00",
         "training_code_commit": "2ee3ec62b6c3c55fe52fd9eec66b4a8b96ab19c7",
         "integrity_mode": "metadata",
         "raw_EMA_Adam_RNG_cursor": true
@@ -14250,7 +14264,7 @@
           "transfer_separate_previews": false,
           "restore_exercised": false,
           "latest_diffusion_final_verified_at_utc": "2026-09-28T16:16:09.329087+00:00",
-          "observed_at_utc": "2026-09-28T20:33:33.141127+00:00",
+          "observed_at_utc": "2026-09-28T20:55:19.368264+00:00",
           "initial_complete_state_status": "transport_verified",
           "latest_complete_replica": "RectifiedFlow-NCSNpp-0002ep-20260928T191438Z",
           "latest_complete_replica_verified_at_utc": "2026-09-28T19:52:22.534305+00:00",
@@ -14266,15 +14280,16 @@
             "quality_results_available": true,
             "finished_at_utc": "2026-09-28T20:11:31.168765+00:00"
           },
-          "final_complete_state_status": "Awaiting original worker poll; source retained; same two-hour interval remains",
-          "final_review_status": "Awaiting original worker poll"
+          "final_complete_state_status": "received; original two-hour interval since19:52:22UTC success retained; source retained",
+          "final_review_status": "evaluating",
+          "final_review_started_at_utc": "2026-09-28T20:38:34.632980+00:00"
         },
         "current_training_process_running": false,
         "recovery_scale": 1.0,
         "final_review_request_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z-review",
         "final_review_request_count": 1,
         "final_review_submitted_at_utc": "20260928T203141Z",
-        "final_review_status": "Submitted on H100; not yet observed in K100 queue at20:33UTC"
+        "final_review_status": "evaluating"
       }
     ],
     "operational_actions": [
@@ -16259,7 +16274,7 @@
       }
     },
     "dispatch_policy": {
-      "observed_at_utc": "2026-09-28T20:32:58.590562+00:00",
+      "observed_at_utc": "2026-09-28T20:55:20.086301+00:00",
       "status": "quality_v1_LCF_running_after_exact_RF10000_cap",
       "current_training_model": "LatentConsistency-LDM-UNet",
       "current_stage_id": "qv1-lcm-refine",
