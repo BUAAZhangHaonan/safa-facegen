@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-28T22:03:27.066430+00:00",
+    "recorded_at_utc": "2026-09-28T22:29:21.137700+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -493,7 +493,7 @@
     "active_training": {
       "model_id": "LatentConsistency-LDM-UNet",
       "stage_id": "qv1-lcm-refine",
-      "status": "running",
+      "status": "bounded_stage_complete",
       "started_at_utc": "2026-09-28T20:31:51.822192+00:00",
       "controller_pid": 76010,
       "trainer_pid": 76046,
@@ -552,62 +552,63 @@
         "memory_hard_gib": 243
       },
       "latest_complete_checkpoint": {
-        "checkpoint_id": "LatentConsistency-LDM-UNet-0021ep-20260928T220217Z",
-        "optimizer_step": 8533,
-        "samples_seen": 2182432,
-        "exact_HQ_exposure": 21.82432,
-        "saved_at_utc": "2026-09-28T22:02:22.659047+00:00",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z",
+        "optimizer_step": 10000,
+        "samples_seen": 2557600,
+        "exact_HQ_exposure": 25.576,
+        "saved_at_utc": "2026-09-28T22:18:33.517517+00:00",
         "training_code_commit": "2ee3ec62b6c3c55fe52fd9eec66b4a8b96ab19c7",
         "integrity_mode": "metadata",
         "raw_EMA_Adam_RNG_cursor": true
       },
-      "latest_observed_at_utc": "2026-09-28T22:03:27.066430+00:00",
-      "latest_observed_step": 8630,
-      "latest_observed_samples_seen": 2207168,
+      "latest_observed_at_utc": "2026-09-28T22:29:21.137700+00:00",
+      "latest_observed_step": 10000,
+      "latest_observed_samples_seen": 2557600,
       "latest_logged_metrics": {
         "event": "metrics",
-        "epoch": 22,
-        "next_batch": 28,
-        "step": 8630,
-        "samples_seen": 2207168,
-        "samples_in_epoch_per_rank": 1792,
+        "epoch": 25,
+        "next_batch": 225,
+        "step": 10000,
+        "samples_seen": 2557600,
+        "samples_in_epoch_per_rank": 14400,
         "event_times_utc_seconds": {
-          "save": 1790632937.614559,
+          "save": 1790633837.8014941,
           "preview": 1790632937.61456,
           "review": 1790627536.715543
         },
-        "stage_step": 8630,
+        "stage_step": 10000,
         "recovery_scale": 1.0,
         "model_id": "LatentConsistency-LDM-UNet",
         "objective_id": "lcf_real_v1",
-        "consistency_mse": 0.009521034313365817,
-        "grad_norm": 0.305114209651947,
-        "loss": 0.009521034313365817,
-        "t_high_mean": 529.66796875,
-        "learning_rate": 2.9081443309129134e-07
+        "consistency_mse": 0.008102091844193637,
+        "grad_norm": 0.1665155291557312,
+        "loss": 0.008102091844193637,
+        "t_high_mean": 486.3984375,
+        "learning_rate": 2e-07
       },
       "latest_log_finite": true,
-      "latest_observation_is_a_complete_checkpoint": false,
-      "unsaved_optimizer_steps_after_latest_complete": 97,
-      "stage_budget_remaining_after_latest_logged_step": 1370,
-      "current_training_process_running": true,
+      "latest_observation_is_a_complete_checkpoint": true,
+      "unsaved_optimizer_steps_after_latest_complete": 0,
+      "stage_budget_remaining_after_latest_logged_step": 0,
+      "current_training_process_running": false,
       "recovery_scale": 1.0,
       "recovery_attempt": 0,
       "observed_peak_gpu_gib": 32.0361328125,
       "observed_peak_memory_gib": 79.75339126586914,
-      "observed_GPU_memory_and_utilization": "0, 32805, 100\n1, 32805, 100\n2, 32805, 94\n3, 32805, 100",
+      "observed_GPU_memory_and_utilization": "0, 0, 0\n1, 0, 0\n2, 0, 0\n3, 0, 0",
       "quality_approved": false,
       "selection_decision": "NOT_BETTER from complete qv1-diffusion final evidence",
       "selection_evidence": "reports/quality-v1/diffusion-selection/selection-2.json",
       "selection_revalidated_at_registration": true,
       "observation_sources": [
         ".tools/quality-kit/H100-rf-heartbeat.json",
-        "runs/controller/quality-v1-lcf-start.json"
+        "runs/controller/quality-v1-lcf-start.json",
+        ".tools/quality-kit/H100-lcf-final-check.json"
       ],
       "K100_replication": {
         "worker_pid": 543313,
         "loaded_code_commit": "e956eec2e6dd364627a60d035db29d127d1c89cc",
-        "observed_at_utc": "2026-09-28T21:59:42.587344+00:00",
+        "observed_at_utc": "2026-09-28T22:25:27.829167+00:00",
         "initial_complete_state_status": "transport_verified",
         "restore_exercised": false,
         "restore_transfer_interval_seconds": 7200,
@@ -620,8 +621,26 @@
           "identity": "LatentConsistency-LDM-UNet-0000ep-20260928T203217Z",
           "path": "/home/k100/projects/safa-facegen/models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0000ep-20260928T203217Z/state.pt",
           "restore_exercised": false
-        }
-      }
+        },
+        "final_complete_state_status": "received",
+        "final_complete_state_request_id": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z-save",
+        "final_review_status": "copying",
+        "final_review_request_id": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z-review",
+        "final_complete_transfer_not_before_utc": "2026-09-28T23:34:04.065183+00:00",
+        "source_retained_until_receipt": true
+      },
+      "controller_alive": false,
+      "trainer_alive": false,
+      "final_review_request_id": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z-review",
+      "final_review_request_count": 1,
+      "final_review_submitted_at_utc": "20260928T221836Z",
+      "final_review_status": "copying",
+      "final_review_quality_results_available": false,
+      "bounded_completion_event_count": 1,
+      "bounded_completed_at_utc": "20260928T221836Z",
+      "persistent_controller_status": "bounded_stage_complete_pending_review",
+      "persistent_controller_status_is_exited_history": true,
+      "observed_peak_resource_note": "Historical running snapshot at 2026-09-28T22:03:27.066430+00:00; not a new idle-time peak measurement"
     },
     "completed_quality_v1_diffusion": {
       "model_id": "Diffusion-LDM-UNet",
@@ -4864,6 +4883,18 @@
         "samples_seen": 2182432,
         "exact_HQ_exposure": 21.82432,
         "saved_at_utc": "2026-09-28T22:02:22.659047+00:00",
+        "training_code_commit": "2ee3ec62b6c3c55fe52fd9eec66b4a8b96ab19c7",
+        "integrity_mode": "metadata",
+        "raw_EMA_Adam_RNG_cursor": true
+      },
+      {
+        "model_id": "LatentConsistency-LDM-UNet",
+        "stage_id": "qv1-lcm-refine",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z",
+        "optimizer_step": 10000,
+        "samples_seen": 2557600,
+        "exact_HQ_exposure": 25.576,
+        "saved_at_utc": "2026-09-28T22:18:33.517517+00:00",
         "training_code_commit": "2ee3ec62b6c3c55fe52fd9eec66b4a8b96ab19c7",
         "integrity_mode": "metadata",
         "raw_EMA_Adam_RNG_cursor": true
@@ -14502,11 +14533,11 @@
           "transfer_separate_previews": false,
           "restore_exercised": false,
           "latest_diffusion_final_verified_at_utc": "2026-09-28T16:16:09.329087+00:00",
-          "observed_at_utc": "2026-09-28T21:59:42.587344+00:00",
+          "observed_at_utc": "2026-09-28T22:25:27.829167+00:00",
           "initial_complete_state_status": "transport_verified",
-          "latest_complete_replica": "RectifiedFlow-NCSNpp-0002ep-20260928T191438Z",
-          "latest_complete_replica_verified_at_utc": "2026-09-28T19:52:22.534305+00:00",
-          "current_save_status": "received_waiting_same_two_hour_interval",
+          "latest_complete_replica": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
+          "latest_complete_replica_verified_at_utc": "2026-09-28T22:18:42.237629+00:00",
+          "current_save_status": "transport_verified",
           "current_review": {
             "checkpoint_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
             "optimizer_step": 10000,
@@ -14514,10 +14545,16 @@
             "quality_results_available": true,
             "finished_at_utc": "2026-09-28T21:33:11.533639+00:00"
           },
-          "final_complete_state_status": "copying; source and original partial retained; restore not exercised",
+          "final_complete_state_status": "transport_verified",
           "final_review_status": "complete",
           "final_review_started_at_utc": "2026-09-28T20:38:34.632980+00:00",
-          "final_review_finished_at_utc": "2026-09-28T21:33:11.533639+00:00"
+          "final_review_finished_at_utc": "2026-09-28T21:33:11.533639+00:00",
+          "final_complete_state_received_at_utc": "2026-09-28T22:18:42.237629+00:00",
+          "latest_restore": {
+            "identity": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
+            "path": "/home/k100/projects/safa-facegen/models/replicas/RectifiedFlow-NCSNpp/restore/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/state.pt",
+            "restore_exercised": false
+          }
         },
         "current_training_process_running": false,
         "recovery_scale": 1.0,
@@ -16533,11 +16570,11 @@
       }
     },
     "dispatch_policy": {
-      "observed_at_utc": "2026-09-28T22:03:27.066430+00:00",
-      "status": "quality_v1_LCF_running_after_exact_RF10000_cap",
-      "current_training_model": "LatentConsistency-LDM-UNet",
-      "current_stage_id": "qv1-lcm-refine",
-      "absolute_stop_step": 10000,
+      "observed_at_utc": "2026-09-28T22:29:21.137700+00:00",
+      "status": "quality_v1_executable_training_stages_complete_LCF_final_review_and_replica_pending",
+      "current_training_model": null,
+      "current_stage_id": null,
+      "absolute_stop_step": null,
       "model_quality_approval_remains_explicit": true,
       "one_shot_handoff_plan": "runs/controller/quality-v1-rf-to-lcf.json",
       "one_shot_handoff_pid": 4181994,
@@ -16546,9 +16583,15 @@
       "LCF_already_started": true,
       "LCF_quality_selection": "NOT_BETTER from completed new Diffusion",
       "RF_final_review_pending": false,
-      "RF_final_complete_replica_pending": true,
+      "RF_final_complete_replica_pending": false,
       "owner_cost_preference": "Independent authorized training continues while K100 reviews run; GPT Sol medium/high for delegated visual work",
-      "remaining_conditional_MF_policy": "B4/L2 require actual B2 BETTER; current B2 REVIEW_REQUIRED does not authorize promotion. No second budget for completed models."
+      "remaining_conditional_MF_policy": "B4/L2 require actual B2 BETTER; current B2 REVIEW_REQUIRED does not authorize promotion. No second budget for completed models.",
+      "LCF_stage_complete": true,
+      "LCF_final_review_pending": true,
+      "LCF_final_complete_replica_pending": true,
+      "all_four_H100_idle": true,
+      "next_training_action": "None: B4/L2 require actual B2 BETTER; LCF/LCD alternatives are mutually exclusive; no second budgets.",
+      "remaining_work": "Original K100 worker processes the unique LCF final review and complete-state copy; keep all six candidates and owner acceptance pending."
     },
     "rf_diagnostics": {
       "observed_at_utc": "2026-09-25T22:01:20.913441+00:00",
