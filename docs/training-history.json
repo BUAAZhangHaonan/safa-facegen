@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-28T17:56:00.173221+00:00",
+    "recorded_at_utc": "2026-09-28T18:25:23.753225+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -516,51 +516,53 @@
       "learning_rate_end": 3e-07,
       "warmup_steps": 500,
       "latest_complete_checkpoint": {
-        "checkpoint_id": "RectifiedFlow-NCSNpp-0000ep-20260928T174435Z",
-        "optimizer_step": 1564,
-        "samples_seen": 75072,
-        "exact_HQ_exposure": 0.75072,
-        "saved_at_utc": "2026-09-28T17:44:36.688179+00:00",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0001ep-20260928T181436Z",
+        "optimizer_step": 3046,
+        "samples_seen": 146176,
+        "exact_HQ_exposure": 1.46176,
+        "saved_at_utc": "2026-09-28T18:14:37.661505+00:00",
         "training_code_commit": "be4e20e8a44ba8dbbddb9db8d517e7f549b02207",
         "integrity_mode": "metadata",
         "raw_EMA_Adam_RNG_cursor": true
       },
-      "latest_observed_step": 2120,
-      "latest_observed_samples_seen": 101728,
+      "latest_observed_step": 3550,
+      "latest_observed_samples_seen": 170368,
       "latest_log_finite": true,
       "latest_observation_is_a_complete_checkpoint": false,
       "quality_approved": false,
       "observation_sources": [
         ".tools/quality-kit/rf-start.json",
-        ".tools/quality-kit/rf-live.json"
+        ".tools/quality-kit/rf-live.json",
+        ".tools/quality-kit/H100-rf-heartbeat.json",
+        ".tools/quality-kit/RTX_Pro_6000-rf-heartbeat.json"
       ],
-      "latest_observed_at_utc": "2026-09-28T17:56:00.173221+00:00",
+      "latest_observed_at_utc": "2026-09-28T18:25:23.753225+00:00",
       "latest_logged_metrics": {
         "event": "metrics",
         "epoch": 1,
-        "next_batch": 36,
-        "step": 2120,
-        "samples_seen": 101728,
-        "samples_in_epoch_per_rank": 432,
+        "next_batch": 1466,
+        "step": 3550,
+        "samples_seen": 170368,
+        "samples_in_epoch_per_rank": 17592,
         "event_times_utc_seconds": {
-          "save": 1790617475.305961,
-          "preview": 1790617475.3059642,
+          "save": 1790619276.0498304,
+          "preview": 1790619276.0498323,
           "review": 1790615674.976108
         },
-        "stage_step": 2120,
+        "stage_step": 3550,
         "recovery_scale": 1.0,
         "model_id": "RectifiedFlow-NCSNpp",
         "objective_id": "rf_batch_ot_v1",
-        "grad_norm": 0.009315076284110546,
-        "loss": 0.07563937362283468,
-        "t_mean": 0.48119494318962097,
-        "velocity_mse": 0.07563937362283468,
-        "learning_rate": 2.811052879204546e-06
+        "grad_norm": 0.2869962155818939,
+        "loss": 0.05797359347343445,
+        "t_mean": 0.45841576159000397,
+        "velocity_mse": 0.05797359347343445,
+        "learning_rate": 2.3698493001369477e-06
       },
       "trainer_pid": 4162779,
-      "unsaved_optimizer_steps_after_latest_complete": 556,
-      "stage_budget_remaining_after_latest_logged_step": 7880,
-      "all_four_GPU_utilization_at_observation": "84/84/99/100%; memory40519/40499/40499/40499MiB",
+      "unsaved_optimizer_steps_after_latest_complete": 504,
+      "stage_budget_remaining_after_latest_logged_step": 6450,
+      "all_four_GPU_utilization_at_observation": "100% each; memory40519/40499/40499/40499MiB",
       "K100_replication": {
         "worker_pid": 543313,
         "loaded_code_commit": "e956eec2e6dd364627a60d035db29d127d1c89cc",
@@ -569,7 +571,7 @@
         "transfer_separate_previews": false,
         "restore_exercised": false,
         "latest_diffusion_final_verified_at_utc": "2026-09-28T16:16:09.329087+00:00",
-        "observed_at_utc": "2026-09-28T17:55:59.442171+00:00",
+        "observed_at_utc": "2026-09-28T18:25:22.982289+00:00",
         "initial_complete_state_status": "transport_verified",
         "latest_complete_replica": "RectifiedFlow-NCSNpp-0000ep-20260928T171435Z",
         "latest_complete_replica_verified_at_utc": "2026-09-28T17:28:13.705202+00:00",
@@ -4709,6 +4711,18 @@
         "samples_seen": 75072,
         "exact_HQ_exposure": 0.75072,
         "saved_at_utc": "2026-09-28T17:44:36.688179+00:00",
+        "training_code_commit": "be4e20e8a44ba8dbbddb9db8d517e7f549b02207",
+        "integrity_mode": "metadata",
+        "raw_EMA_Adam_RNG_cursor": true
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "stage_id": "qv1-rf",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0001ep-20260928T181436Z",
+        "optimizer_step": 3046,
+        "samples_seen": 146176,
+        "exact_HQ_exposure": 1.46176,
+        "saved_at_utc": "2026-09-28T18:14:37.661505+00:00",
         "training_code_commit": "be4e20e8a44ba8dbbddb9db8d517e7f549b02207",
         "integrity_mode": "metadata",
         "raw_EMA_Adam_RNG_cursor": true
@@ -15599,7 +15613,7 @@
       }
     },
     "dispatch_policy": {
-      "observed_at_utc": "2026-09-28T17:56:00.173221+00:00",
+      "observed_at_utc": "2026-09-28T18:25:23.753225+00:00",
       "status": "quality_v1_RF_running_after_Diffusion_two_NOT_BETTER_reviews",
       "current_training_model": "RectifiedFlow-NCSNpp",
       "current_stage_id": "qv1-rf",
