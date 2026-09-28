@@ -5,6 +5,10 @@
 `vendor/meanflow/UPSTREAM.json`、`LICENSE`、`PATCHES.md`。只调整包相对导入
 及 JAX 的 clip API。
 
+2026-09-28 的 [quality-v1](quality-v1.md) 在项目训练器中增加显式
+`imf_boundary_v1` 目标，保留上述主干和原目标分支。新阶段使用独立登记、
+绝对步数上限、metadata 完整保存与 FP32/highest；不是重新运行旧无限入口。
+
 ## 环境与入口
 
 训练环境使用 `requirements-jax.txt`，Python 3.11/3.12，Linux，NVIDIA 驱动

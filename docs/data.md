@@ -2,7 +2,7 @@
 
 训练集保留 FFHQ 70,000 张与 CelebA-HQ 30,000 张，共 100,000 条来源记录。输入使用 H100 原项目已有的 256×256 RGB JPEG95 文件。此次核验不重新裁剪、缩放或按人脸检测结果筛选。重复图片登记在报告中，继续保留原来源记录和固定训练集大小。
 
-H100 项目根目录仍是 `/home/apulis-dev/code/meanflow_e15_h100_bundle`。`data/hq256/manifest.json` 中的 `image_root` 相对项目根目录，`records[].path` 相对图片根目录。部署到 K100 或后续整理目录时，可用 `--image-root` 覆盖图片位置；文件内容和 manifest 哈希仍需校验。不要在训练或缓存构建期间移动源文件。
+H100 项目根目录仍是 `/home/apulis-dev/code/meanflow_e15_h100_bundle`。`data/hq256/manifest.json` 中的 `image_root` 相对项目根目录，`records[].path` 相对图片根目录。部署到 K100 或后续整理目录时，可用 `--image-root` 覆盖图片位置；quality-v1 复用既有来源登记并检查文件元数据，不重复全文件哈希扫描。不要在训练或缓存构建期间移动源文件。
 
 ## 已完成的源数据核验
 

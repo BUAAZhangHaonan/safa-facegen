@@ -12,7 +12,13 @@ LCM retains the project's unconditional FFHQ UNet and omits the upstream text/CF
 
 The LCM inference grid follows the [Diffusers scheduler correction](https://github.com/huggingface/diffusers/pull/5836): evenly selecting indices from the unchanged 50-point teacher grid gives `[999, 759, 499, 259]` at four steps. The generator returns the final denoised latent; the three intermediate transitions consume explicit noises. The unused random draw after the final denoised result in that scheduler is omitted.
 
-Production LCM requires a teacher-only decision in `runs/teacher-approvals/LatentConsistency-LDM-UNet.json` and a single registered bounded campaign. The decision fixes the Diffusion EMA identity and is independent of either model's image-quality acceptance. The new student starts from that EMA with fresh optimizer and step zero; subsequent recovery preserves its full state and absolute stop step. A completed stage cannot be extended by changing the latest checkpoint or calling the old campaign. Current training implements LCD; a later teacher-independent LCF objective is not implemented or automatically authorized.
+The original production LCD requires a teacher-only decision in `runs/teacher-approvals/LatentConsistency-LDM-UNet.json` and a single registered bounded campaign. The decision fixes the Diffusion EMA identity and is independent of either model's image-quality acceptance. The student starts from that EMA with fresh optimizer and step zero; subsequent recovery preserves its full state and absolute stop step. A completed stage cannot be extended by changing the latest checkpoint or calling the old campaign.
+
+The separately authorized [quality-v1 plan](quality-v1.md) now implements explicit
+Min-SNR, global-batch RF OT, LCD-v2 and teacher-independent real-data LCF routes.
+Its conditional LCD/LCF branches share one immutable budget slot. LCF keeps an
+FP32 target EMA but uses no fixed teacher; LCD-v2 requires a quality-selected
+new Diffusion teacher. These routes do not alter or reopen the sealed original LCD.
 
 ## Vendor boundaries
 
