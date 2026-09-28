@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-27T21:06:28.692045+00:00",
+    "recorded_at_utc": "2026-09-28T01:07:56.003254+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -492,7 +492,7 @@
     },
     "active_training": {
       "model_id": "LatentConsistency-LDM-UNet",
-      "status": "bounded_LCM_stage_complete_final_review_complete_restore_transfer_pending",
+      "status": "bounded_LCM_stage_complete_final_review_complete_final_restore_transport_verified",
       "stage_id": "LatentConsistency-LDM-UNet-teacher741-20260927T065043Z",
       "training_code_commit": "6b3614840e0695c7d8bb984a86fdf51724c61715",
       "controller_started_at_utc": "2026-09-27T15:42:01.158160+00:00",
@@ -604,13 +604,13 @@
         "evaluation_code_commit": "1d82904bbc58bb451658f2c66c736aab1a678b42",
         "first_complete_state": "transport_verified",
         "restore_exercised": false,
-        "observed_at_utc": "2026-09-27T21:06:27.570366+00:00",
-        "latest_restore_checkpoint_id": "LatentConsistency-LDM-UNet-0144ep-20260927T183642Z",
-        "latest_restore_step": 28242,
-        "latest_restore_samples_seen": 14409216,
-        "latest_restore_transport_verified_at_utc": "2026-09-27T20:47:10.263970+00:00",
-        "latest_restore_path": "/home/k100/projects/safa-facegen/models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0144ep-20260927T183642Z/LatentConsistency-LDM-UNet-0144ep-20260927T183642Z.state.pt",
-        "latest_H100_save_transfer_status": "received_waiting_for_transfer_interval",
+        "observed_at_utc": "2026-09-28T01:07:56.003254+00:00",
+        "latest_restore_checkpoint_id": "LatentConsistency-LDM-UNet-0153ep-20260927T192044Z",
+        "latest_restore_step": 30000,
+        "latest_restore_samples_seen": 15306144,
+        "latest_restore_transport_verified_at_utc": "2026-09-28T00:17:55.574379+00:00",
+        "latest_restore_path": "/home/k100/projects/safa-facegen/models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0153ep-20260927T192044Z/LatentConsistency-LDM-UNet-0153ep-20260927T192044Z.state.pt",
+        "latest_H100_save_transfer_status": "transport_verified",
         "first_review_request_id": "LatentConsistency-LDM-UNet-0024ep-20260927T085103Z-review",
         "first_review_status": "complete",
         "partial_files_preserved": true,
@@ -620,8 +620,9 @@
         "latest_completed_review_checkpoint_id": "LatentConsistency-LDM-UNet-0153ep-20260927T192044Z",
         "latest_completed_review_finished_at_utc": "2026-09-27T19:39:38.157941+00:00",
         "final_complete_state_request_id": "LatentConsistency-LDM-UNet-0153ep-20260927T192044Z-save",
-        "final_complete_state_status": "received",
-        "final_complete_state_transport_verified": false
+        "final_complete_state_status": "transport_verified",
+        "final_complete_state_transport_verified": true,
+        "final_complete_state_transport_verified_at_utc": "2026-09-28T00:17:55.574379+00:00"
       },
       "recovery_attempt": 0,
       "original_stage_training_code_commit": "1d82904bbc58bb451658f2c66c736aab1a678b42",
@@ -13081,6 +13082,20 @@
         "quality_approved": false,
         "next_model_started": false,
         "final_full_replica_status": "received_waiting_for_existing_transfer_interval"
+      },
+      {
+        "event_id": "LatentConsistency-LDM-UNet-teacher741-20260927T065043Z:final_full_replica_transport_verified",
+        "action": "LCM_final_full_replica_transport_verified",
+        "observed_at_utc": "2026-09-28T01:07:56.003254+00:00",
+        "transport_verified_at_utc": "2026-09-28T00:17:55.574379+00:00",
+        "model_id": "LatentConsistency-LDM-UNet",
+        "stage_id": "LatentConsistency-LDM-UNet-teacher741-20260927T065043Z",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0153ep-20260927T192044Z",
+        "optimizer_step": 30000,
+        "samples_seen": 15306144,
+        "restore_exercised": false,
+        "quality_approved": false,
+        "new_training_started": false
       }
     ],
     "pending_quality_reviews": [],
