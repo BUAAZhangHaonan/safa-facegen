@@ -44,6 +44,11 @@ def protocol(review: Path, summary: dict) -> dict:
             "feature_dimension": distribution.get("feature_dimension"),
             "torch_fidelity_version": distribution.get("torch_fidelity_version"),
             "registered_extractor_weights_identity": distribution.get("weights_sha256"),
+            "generated_feature_precision": distribution.get("generated_feature_precision"),
+            "fixed_reference_features": ({key: distribution["fixed_reference"].get(key) for key in (
+                "reference_features", "reference_records", "reference_feature_stat", "reference_count",
+                "reference_runtime_precision", "reference_origin", "reference_features_recomputed")}
+                if distribution.get("fixed_reference") is not None else None),
             "kid_subsets": distribution.get("kid_subsets"),
             "kid_subset_size": distribution.get("kid_subset_size"),
             "kid_rng_seed": distribution.get("rng_seed")}

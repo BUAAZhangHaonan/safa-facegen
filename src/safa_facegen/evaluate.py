@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import ExitStack, contextmanager
 from datetime import datetime, timezone
 import gc
 import importlib.metadata
@@ -151,6 +152,93 @@ def generator_protocol(generator):
     return {"sampling": sampling, "generation_precision": precision}
 
 
+@contextmanager
+def fp32_tf32_disabled(device: str):
+    """Scope the new Diffusion protocol without changing other queued models."""
+    previous = (torch.get_float32_matmul_precision(), torch.backends.cuda.matmul.allow_tf32,
+                torch.backends.cudnn.allow_tf32)
+    try:
+        torch.set_float32_matmul_precision("highest")
+        torch.backends.cuda.matmul.allow_tf32 = False
+        torch.backends.cudnn.allow_tf32 = False
+        with torch.autocast(device_type=torch.device(device).type, enabled=False):
+            yield
+    finally:
+        torch.set_float32_matmul_precision(previous[0])
+        torch.backends.cuda.matmul.allow_tf32 = previous[1]
+        torch.backends.cudnn.allow_tf32 = previous[2]
+
+
+def quality_v1_plan(generator, settings, *, seed, batch_size, real_indices, real_records, weights, codec_info):
+    """Require an explicit protocol only for the new metadata Min-SNR objective."""
+    identity = getattr(generator, "ema_identity", None) or {}
+    if (getattr(generator, "integrity_mode", None) != "metadata"
+            or identity.get("objective_id") != "min_snr_epsilon_v1"):
+        return None
+    if generator.model_id != "Diffusion-LDM-UNet":
+        raise ValueError("Min-SNR evaluation requires the Diffusion model identity")
+    if not isinstance(settings, dict):
+        raise ValueError("min_snr_epsilon_v1 requires explicit quality_v1_evaluation settings")
+    required = {"objective_id": "min_snr_epsilon_v1", "seed": 42,
+                "generation_batch_size": 8, "feature_batch_size": 32, "precision": "fp32"}
+    if any(settings.get(key) != value for key, value in required.items()):
+        raise ValueError("quality_v1_evaluation differs from the registered Diffusion protocol")
+    if (settings.get("cuda_matmul_allow_tf32") is not False
+            or settings.get("cudnn_allow_tf32") is not False
+            or not isinstance(settings.get("protocol_id"), str) or not settings["protocol_id"].strip()):
+        raise ValueError("Explicit FP32/TF32-disabled protocol identity is required")
+    if seed != settings["seed"] or batch_size != settings["generation_batch_size"]:
+        raise ValueError("Evaluation seed or generation batch differs from the registered protocol")
+    if generator.steps != 200 or generator.eta != 1.0 or generator.bf16:
+        raise ValueError("Min-SNR comparison requires DDIM200 eta1 with network BF16 disabled")
+    if not settings.get("reference_review") or not settings.get("baseline_checkpoint_id"):
+        raise ValueError("Explicit baseline checkpoint and reference review are required")
+    review = Path(settings["reference_review"]).resolve(strict=True)
+    source_paths = [review / name for name in ("summary.json", "real-records.json", "real-inception.npy")]
+    before = {str(path): file_stat(path) for path in source_paths}
+    baseline = json.loads(source_paths[0].read_text(encoding="utf-8"))
+    reference = json.loads(source_paths[1].read_text(encoding="utf-8"))
+    if baseline.get("status") != "complete" or baseline.get("checkpoint_id") != settings["baseline_checkpoint_id"]:
+        raise ValueError("Configured Diffusion baseline identity is not a complete review")
+    baseline_precision = baseline.get("protocol", {}).get("generation_precision", {})
+    if baseline_precision != {"dtype": "fp32", "cuda_matmul_allow_tf32": False, "cudnn_allow_tf32": False}:
+        raise ValueError("Baseline does not register the expected TF32-disabled generation protocol")
+    sampling = baseline.get("sampling", {})
+    if (baseline.get("model_id") != generator.model_id or baseline.get("seed") != seed
+            or sampling.get("steps") != 200 or sampling.get("eta") != 1.0 or sampling.get("bf16") is not False):
+        raise ValueError("Baseline sampling differs from the new Diffusion comparison")
+    if not codec_info or not codec_info.get("sha256") or baseline.get("codec", {}).get("sha256") != codec_info["sha256"]:
+        raise ValueError("Diffusion baseline and candidate require the same registered codec")
+    if (len(real_indices) != SAMPLE_COUNT or len(real_records) != SAMPLE_COUNT
+            or reference.get("seed") != seed or reference.get("indices") != real_indices
+            or reference.get("records") != real_records):
+        raise ValueError("Fixed real reference identities or order differ from the baseline")
+    expected_stat = settings.get("reference_feature_stat")
+    if not isinstance(expected_stat, dict) or before[str(source_paths[2])] != expected_stat:
+        raise ValueError("Fixed real feature metadata differs from explicit registration")
+    distribution = baseline.get("distribution", {})
+    if (distribution.get("weights_sha256") != evaluation_asset(Path(weights))["sha256"]
+            or distribution.get("torch_fidelity_version") != _version("torch-fidelity")
+            or distribution.get("num_real") != SAMPLE_COUNT or distribution.get("num_generated") != SAMPLE_COUNT
+            or distribution.get("kid_subsets") != 100 or distribution.get("kid_subset_size") != 1000
+            or distribution.get("rng_seed") != seed):
+        raise ValueError("Baseline Inception/KID registration differs from the active evaluator")
+    features = np.load(source_paths[2], mmap_mode="r", allow_pickle=False)
+    if features.shape != (SAMPLE_COUNT, 2048) or features.dtype != np.float32 or not np.isfinite(features).all():
+        raise ValueError("Fixed real reference features must be finite FP32 [1024,2048]")
+    return {"features": features, "source_stats": before, "feature_batch_size": settings["feature_batch_size"],
+            "record": {"protocol_id": settings["protocol_id"], "objective_id": identity["objective_id"],
+                "baseline_checkpoint_id": settings["baseline_checkpoint_id"], "reference_review": str(review),
+                "reference_features": str(source_paths[2]), "reference_records": str(source_paths[1]),
+                "reference_feature_stat": expected_stat, "reference_count": SAMPLE_COUNT,
+                "reference_records_and_order_verified": True, "reference_features_recomputed": False,
+                "reference_runtime_precision": "historical runtime flags unrecorded; identical fixed matrix reused",
+                "reference_origin": baseline.get("provenance", {}).get("reference_source"),
+                "generation_batch_size": batch_size, "generated_feature_batch_size": settings["feature_batch_size"],
+                "seed": seed, "precision": "fp32", "cuda_matmul_allow_tf32": False,
+                "cudnn_allow_tf32": False, "integrity_mode": "metadata"}}
+
+
 def codec_provenance(checkpoint, codec):
     if codec is None:
         return None
@@ -199,9 +287,14 @@ def _extract_features(paths: list[Path], extractor, output: Path, device: str, b
 
 
 def distribution_metrics(generated: list[Path], real: list[Path], *, weights: Path,
-                         output: Path, device: str, batch_size: int, seed: int) -> dict:
+                         output: Path, device: str, batch_size: int, seed: int,
+                         fixed_reference: dict | None = None) -> dict:
     if len(generated) != SAMPLE_COUNT or len(real) != SAMPLE_COUNT:
         raise ValueError("FID1024/KID requires exactly 1024 generated and real images")
+    if fixed_reference is not None and (batch_size != fixed_reference["feature_batch_size"]
+            or torch.backends.cuda.matmul.allow_tf32 or torch.backends.cudnn.allow_tf32
+            or torch.is_autocast_enabled(torch.device(device).type)):
+        raise ValueError("Fixed-reference Diffusion features require their explicit FP32/TF32-disabled scope")
     if not weights.is_file():
         raise FileNotFoundError(f"Official Inception weights must already exist: {weights}")
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
@@ -211,13 +304,20 @@ def distribution_metrics(generated: list[Path], real: list[Path], *, weights: Pa
     extractor = FeatureExtractorInceptionV3(
         "inception-v3-compat", ["2048"], feature_extractor_weights_path=str(weights),
     ).to(device).eval()
+    if fixed_reference is not None:
+        extractor = extractor.float()
+    feature_dtype = str(next(extractor.parameters()).dtype).removeprefix("torch.")
     generated_features = _extract_features(generated, extractor, output / "generated-inception.npy", device, batch_size)
-    real_features = _extract_features(real, extractor, output / "real-inception.npy", device, batch_size)
+    if fixed_reference is None:
+        real_features = _extract_features(real, extractor, output / "real-inception.npy", device, batch_size)
+    else:
+        real_features = fixed_reference["features"]
+        np.save(output / "real-inception.npy", real_features, allow_pickle=False)
     del extractor
     if str(device).startswith("cuda"):
         torch.cuda.empty_cache()
     generated_tensor = torch.from_numpy(generated_features)
-    real_tensor = torch.from_numpy(real_features)
+    real_tensor = torch.from_numpy(np.array(real_features, copy=True) if fixed_reference is not None else real_features)
     generated_stats = fid_features_to_statistics(generated_tensor)
     real_stats = fid_features_to_statistics(real_tensor)
     np.savez(output / "generated-inception-stats.npz", **generated_stats)
@@ -228,10 +328,17 @@ def distribution_metrics(generated: list[Path], real: list[Path], *, weights: Pa
     metrics = {**fid, **kid}
     if not all(math.isfinite(float(value)) for value in metrics.values()):
         raise FloatingPointError(f"Non-finite distribution metrics: {metrics}")
-    return {"status": "complete", "num_generated": SAMPLE_COUNT, "num_real": SAMPLE_COUNT,
+    result = {"status": "complete", "num_generated": SAMPLE_COUNT, "num_real": SAMPLE_COUNT,
             "feature_extractor": "torch-fidelity inception-v3-compat", "feature_dimension": 2048,
             "torch_fidelity_version": _version("torch-fidelity"), "weights_sha256": evaluation_asset(weights)["sha256"],
             "kid_subsets": 100, "kid_subset_size": 1000, "rng_seed": seed, **metrics}
+    if fixed_reference is not None:
+        result.update(fixed_reference=fixed_reference["record"], generated_feature_precision={
+            "parameter_dtype": feature_dtype, "autocast_enabled": torch.is_autocast_enabled(torch.device(device).type),
+            "cuda_matmul_allow_tf32": bool(torch.backends.cuda.matmul.allow_tf32),
+            "cudnn_allow_tf32": bool(torch.backends.cudnn.allow_tf32),
+            "torch_float32_matmul_precision": torch.get_float32_matmul_precision(), "batch_size": batch_size})
+    return result
 
 
 def face_metrics(paths: list[Path], invalid: set[int], *, detector_path: Path,
@@ -282,7 +389,8 @@ def evaluate(*, model_id: str, checkpoint: str | Path, dataset_manifest: str | P
              device: str = "cuda:0", batch_size: int = 16, seed: int = 42,
              detector_size: int = 256, detector_threshold: float = 0.5,
              cpu_threads: int = 8, ema_sha256: str | None = None,
-             dataset_manifest_sha256: str | None = None) -> dict:
+             dataset_manifest_sha256: str | None = None,
+             quality_v1_evaluation: dict | None = None) -> dict:
     if batch_size < 1 or cpu_threads < 1 or detector_size < 1 or not 0 < detector_threshold < 1:
         raise ValueError("Batch size, CPU threads and detector size must be positive; threshold must be in (0,1)")
     torch.set_num_threads(cpu_threads)
@@ -295,6 +403,8 @@ def evaluate(*, model_id: str, checkpoint: str | Path, dataset_manifest: str | P
                "checkpoint": str(checkpoint), "errors": []}
     summary_path = output / "summary.json"
     atomic_json(summary_path, summary)
+    precision_scope = ExitStack()
+    quality_plan = None
     try:
         from .generator import load_generator
         if not checkpoint.exists():
@@ -325,7 +435,19 @@ def evaluate(*, model_id: str, checkpoint: str | Path, dataset_manifest: str | P
         if getattr(generator, "state_role", None) != "ema":
             raise ValueError("Generator must confirm state_role='ema'; raw checkpoints are not evaluated silently")
         summary.update(generator_identity(generator, checkpoint, ema_sha256))
+        quality_plan = quality_v1_plan(generator, quality_v1_evaluation, seed=seed, batch_size=batch_size,
+                                      real_indices=real_indices, real_records=real_records, weights=inception_weights,
+                                      codec_info=summary["codec"])
+        if quality_plan is not None:
+            precision_scope.enter_context(fp32_tf32_disabled(device))
+            summary["quality_v1_evaluation"] = quality_plan["record"]
         summary.update(generator_protocol(generator))
+        if quality_plan is not None:
+            precision = summary["generation_precision"]
+            if (precision["network_parameter_dtypes"] != ["float32"]
+                    or precision["codec_parameter_dtypes"] != ["float32"]
+                    or precision["network_autocast_enabled"] or precision["ambient_autocast_enabled"]):
+                raise ValueError("The new Diffusion generator did not load in the required FP32 protocol")
         summary["state_role"] = "ema"
         summary["noise_protocol"] = {"kind": "per_sample_cpu_float32_torch_randn", "seed_rule": "seed + sample_index",
             "noise_shape": list(generator.noise_shape), "step_noise_count": int(getattr(generator, "step_noise_count", 0)),
@@ -389,7 +511,8 @@ def evaluate(*, model_id: str, checkpoint: str | Path, dataset_manifest: str | P
         else:
             try:
                 summary["distribution"] = distribution_metrics(paths, real_paths, weights=Path(inception_weights), output=output,
-                                                                device=device, batch_size=batch_size, seed=seed)
+                    device=device, batch_size=quality_plan["feature_batch_size"] if quality_plan else batch_size,
+                    seed=seed, fixed_reference=quality_plan)
             except Exception as exc:
                 summary["distribution"] = {"status": "failed", "error": f"{type(exc).__name__}: {exc}"}
                 summary["errors"].append(summary["distribution"]["error"])
@@ -397,12 +520,15 @@ def evaluate(*, model_id: str, checkpoint: str | Path, dataset_manifest: str | P
             summary["errors"].append("Checkpoint or dataset manifest changed during evaluation")
         if codec and codec_provenance(checkpoint, codec)["verified_stats"] != summary["codec"]["verified_stats"]:
             summary["errors"].append("Codec changed during evaluation")
+        if quality_plan is not None and any(file_stat(path) != info for path, info in quality_plan["source_stats"].items()):
+            summary["errors"].append("Fixed reference metadata changed during evaluation")
         summary["status"] = "failed" if summary["errors"] else "complete"
     except BaseException as exc:
         summary["status"] = "failed"
         summary["errors"].append(f"{type(exc).__name__}: {exc}")
         raise
     finally:
+        precision_scope.close()
         summary["finished_at_utc"] = datetime.now(timezone.utc).isoformat()
         atomic_json(summary_path, summary)
     if summary["status"] != "complete":

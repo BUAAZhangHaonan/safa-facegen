@@ -800,7 +800,13 @@ def evaluate_worker(journal: Journal, root: Path, config: dict, stop: threading.
             if row["event"] == "preview":
                 result = preview(**kwargs)
             else:
+                quality_settings = settings.get("quality_v1_evaluation")
+                if quality_settings is not None:
+                    quality_settings = dict(quality_settings)
+                    if "reference_review" in quality_settings:
+                        quality_settings["reference_review"] = local_dependency(root, quality_settings["reference_review"])
                 result = evaluate(**kwargs,
+                    quality_v1_evaluation=quality_settings,
                     dataset_manifest=local_dependency(root, config["dataset_manifest"]),
                     dataset_manifest_sha256=config.get("dataset_manifest_sha256"),
                     image_root=local_dependency(root, config["image_root"]),
