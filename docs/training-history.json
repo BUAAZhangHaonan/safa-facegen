@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-09-28T12:39:54.696920+00:00",
+  "recorded_at": "2026-09-28T17:14:36.380741+00:00",
   "phase": "historical_initialization_and_HQ_pretraining",
   "scope": "The records array retains historical log statistics. HQ stages record actual production training, committed checkpoints, interruptions, and explicit image acceptance.",
   "selected_weight_provenance": "initializations.json",
@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-28T12:39:54.696920+00:00",
+    "recorded_at_utc": "2026-09-28T17:43:27.068537+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -491,9 +491,81 @@
       "MeanFlow-L-2": "awaiting_explicit_user_image_acceptance"
     },
     "active_training": {
+      "model_id": "RectifiedFlow-NCSNpp",
+      "stage_id": "qv1-rf",
+      "status": "running",
+      "started_at_utc": "2026-09-28T17:14:09.388200+00:00",
+      "controller_pid": 4162774,
+      "training_code_commit": "be4e20e8a44ba8dbbddb9db8d517e7f549b02207",
+      "campaign_path": "configs/quality-v1/rectified_flow-campaign.json",
+      "bounded_stage_registration": "runs/controller/quality-v1/RectifiedFlow-NCSNpp.bounded-stage.json",
+      "latest_stage_pointer": "runs/RectifiedFlow-NCSNpp/latest-qv1-rf.json",
+      "source_checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+      "source_step": 0,
+      "absolute_stop_step": 10000,
+      "additional_optimizer_updates_budget": 10000,
+      "initialization_role": "Parent7 EMA into raw and EMA with fresh Adam and stage counters",
+      "objective": "rf_batch_ot_v1",
+      "world_size": 4,
+      "microbatch": 12,
+      "effective_batch": 48,
+      "ot_global_batch": 48,
+      "precision": "fp32",
+      "ema_decay": 0.999,
+      "learning_rate_peak": 3e-06,
+      "learning_rate_end": 3e-07,
+      "warmup_steps": 500,
+      "latest_complete_checkpoint": {
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0000ep-20260928T172936Z",
+        "optimizer_step": 798,
+        "samples_seen": 38304,
+        "exact_HQ_exposure": 0.38304,
+        "saved_at_utc": "2026-09-28T17:29:37.690329+00:00",
+        "training_code_commit": "be4e20e8a44ba8dbbddb9db8d517e7f549b02207",
+        "integrity_mode": "metadata",
+        "raw_EMA_Adam_RNG_cursor": true
+      },
+      "latest_observed_step": 1500,
+      "latest_observed_samples_seen": 72000,
+      "latest_log_finite": true,
+      "latest_observation_is_a_complete_checkpoint": false,
+      "quality_approved": false,
+      "observation_sources": [
+        ".tools/quality-kit/rf-start.json",
+        ".tools/quality-kit/rf-live.json"
+      ],
+      "latest_observed_at_utc": "2026-09-28T17:43:27.068537+00:00",
+      "latest_logged_metrics": {
+        "event": "metrics",
+        "epoch": 0,
+        "next_batch": 1500,
+        "step": 1500,
+        "samples_seen": 72000,
+        "samples_in_epoch_per_rank": 18000,
+        "event_times_utc_seconds": {
+          "save": 1790616576.076777,
+          "preview": 1790615674.976108,
+          "review": 1790615674.976108
+        },
+        "stage_step": 1500,
+        "recovery_scale": 1.0,
+        "model_id": "RectifiedFlow-NCSNpp",
+        "objective_id": "rf_batch_ot_v1",
+        "grad_norm": 0.019772019237279892,
+        "loss": 0.09654988255351782,
+        "t_mean": 0.5047072246670723,
+        "velocity_mse": 0.09654988255351782,
+        "learning_rate": 2.9269829331353837e-06
+      },
+      "trainer_pid": 4162779,
+      "unsaved_optimizer_steps_after_latest_complete": 702,
+      "stage_budget_remaining_after_latest_logged_step": 8500,
+      "all_four_GPU_utilization_at_observation": "100% each; memory40519/40499/40499/40499MiB"
+    },
+    "completed_quality_v1_diffusion": {
       "model_id": "Diffusion-LDM-UNet",
       "stage_id": "qv1-diffusion",
-      "status": "bounded_stage_complete_pending_evaluation",
+      "status": "bounded_stage_complete_and_two_full_reviews_complete",
       "training_code_commit": "01a030d16d46cb117860437f969bafb31103abb5",
       "initial_training_code_commit": "957d64c9f4b227be331fe12cc8c314caf6acef71",
       "controller_pid": 3920752,
@@ -604,11 +676,81 @@
         "latest_complete_replica": "Diffusion-LDM-UNet-0000ep-20260928T090448Z",
         "latest_complete_replica_verified_at_utc": "2026-09-28T12:29:13.900452+00:00"
       },
-      "scheduling_policy": "Fixed15000 stage completed. No new updates. LCM branch requires actual complete quality evidence; missing review is not NOT_BETTER.",
+      "scheduling_policy": "Fixed15000 stage completed. Both full256 reviews are actual NOT_BETTER, not missing evidence. RF runs first under the owner's H100 utilization priority; LCM remains a later single bounded handoff using the approved parent741 teacher.",
       "final_review_request_count": 1,
       "final_review_request_id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z-review",
       "all_four_GPU_released": true,
-      "stage_completed_at_utc": "2026-09-28T11:55:32+00:00"
+      "stage_completed_at_utc": "2026-09-28T11:55:32+00:00",
+      "completed_quality_review_evidence": {
+        "effective_protocol_mapping": "reports/quality-v1/diffusion-protocol-evidence/normalization-evidence.json",
+        "baseline_741": {
+          "reviewed": 256,
+          "acceptable": 197,
+          "minor": 59,
+          "severe": 0,
+          "uncertain": 0,
+          "source": "reports/quality-v1/diffusion-selection/baseline.json"
+        },
+        "periodic": {
+          "checkpoint_id": "Diffusion-LDM-UNet-0023ep-20260928T110410Z",
+          "optimizer_step": 9371,
+          "samples_seen": 2396768,
+          "exact_HQ_exposure": 23.96768,
+          "formal_review_samples": 1024,
+          "fixed_original_resolution_reviewed": 256,
+          "FID1024": 34.54554267877671,
+          "KID": 0.002973863375875867,
+          "coverage": 0.97265625,
+          "acceptable": 197,
+          "minor": 59,
+          "severe": 0,
+          "uncertain": 0,
+          "selection": "NOT_BETTER",
+          "release": "NOT_RELEASE_READY",
+          "selection_source": "reports/quality-v1/diffusion-selection/selection-1.json",
+          "gate_source": "reports/quality-v1/diffusion-selection/gate-1.json"
+        },
+        "final": {
+          "checkpoint_id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z",
+          "optimizer_step": 15000,
+          "samples_seen": 3836352,
+          "exact_HQ_exposure": 38.36352,
+          "formal_review_samples": 1024,
+          "fixed_original_resolution_reviewed": 256,
+          "FID1024": 34.30182324841587,
+          "KID": 0.0027618715715715505,
+          "coverage": 0.9716796875,
+          "initial_visual_counts": {
+            "acceptable": 193,
+            "minor": 60,
+            "severe": 0,
+            "uncertain": 3
+          },
+          "reinspected_original_resolution_indices": [
+            116,
+            166,
+            197
+          ],
+          "resolved_visual_counts": {
+            "acceptable": 194,
+            "minor": 62,
+            "severe": 0,
+            "uncertain": 0
+          },
+          "original_labels_preserved": "reports/quality-v1/Diffusion-LDM-UNet-0038ep-20260928T115524Z/labels-codex.csv",
+          "resolved_labels": "reports/quality-v1/Diffusion-LDM-UNet-0038ep-20260928T115524Z/labels-codex-reviewed-v2.csv",
+          "selection": "NOT_BETTER",
+          "release": "NOT_RELEASE_READY",
+          "selection_source": "reports/quality-v1/diffusion-selection/selection-2.json",
+          "gate_source": "reports/quality-v1/diffusion-selection/gate-2.json"
+        },
+        "texture_comparison": "unchanged_or_rejected",
+        "owner_quality_approval": false,
+        "new_generation_for_visual_resolution": false,
+        "K100_final_complete_copy": "unconfirmed_after_previous_copying_observation",
+        "K100_unique_worker_pid": 543313,
+        "K100_worker_execution_commit": "e956eec2e6dd364627a60d035db29d127d1c89cc"
+      }
     },
     "interruptions": [
       {
@@ -4528,6 +4670,18 @@
         "exact_HQ_exposure": 38.36352,
         "saved_at_utc": "2026-09-28T11:55:29.324808+00:00",
         "training_code_commit": "01a030d16d46cb117860437f969bafb31103abb5",
+        "integrity_mode": "metadata",
+        "raw_EMA_Adam_RNG_cursor": true
+      },
+      {
+        "model_id": "RectifiedFlow-NCSNpp",
+        "stage_id": "qv1-rf",
+        "checkpoint_id": "RectifiedFlow-NCSNpp-0000ep-20260928T172936Z",
+        "optimizer_step": 798,
+        "samples_seen": 38304,
+        "exact_HQ_exposure": 0.38304,
+        "saved_at_utc": "2026-09-28T17:29:37.690329+00:00",
+        "training_code_commit": "be4e20e8a44ba8dbbddb9db8d517e7f549b02207",
         "integrity_mode": "metadata",
         "raw_EMA_Adam_RNG_cursor": true
       }
@@ -13914,7 +14068,7 @@
         "transfer_policy_unchanged": true
       }
     ],
-    "pending_quality_reviews": {
+    "historical_pending_quality_reviews_snapshot": {
       "model_id": "Diffusion-LDM-UNet",
       "stage_id": "qv1-diffusion",
       "observed_at_utc": "2026-09-28T12:39:54.696920+00:00",
@@ -15417,13 +15571,13 @@
       }
     },
     "dispatch_policy": {
-      "observed_at_utc": "2026-09-28T12:03:35.703050+00:00",
-      "status": "quality_v1_Diffusion_cap_complete_waiting_quality_evidence",
-      "current_training_model": null,
-      "current_stage_id": null,
-      "absolute_stop_step": 15000,
+      "observed_at_utc": "2026-09-28T17:14:36.380741+00:00",
+      "status": "quality_v1_RF_running_after_Diffusion_two_NOT_BETTER_reviews",
+      "current_training_model": "RectifiedFlow-NCSNpp",
+      "current_stage_id": "qv1-rf",
+      "absolute_stop_step": 10000,
       "model_quality_approval_remains_explicit": true,
-      "new_stage_policy": "Explicit 2026-09-28 owner plan; bounded slots and conditional quality selection govern subsequent stages, without changing any sealed legacy budget."
+      "new_stage_policy": "Owner prioritizes avoiding idle approximately $40/hour H100 capacity. Independent RF10000 moved before gated LCM; existing model budgets and parent741 teacher approval are unchanged. LCM has not started."
     },
     "rf_diagnostics": {
       "observed_at_utc": "2026-09-25T22:01:20.913441+00:00",
