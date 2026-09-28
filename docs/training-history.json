@@ -560,7 +560,16 @@
       "trainer_pid": 4162779,
       "unsaved_optimizer_steps_after_latest_complete": 702,
       "stage_budget_remaining_after_latest_logged_step": 8500,
-      "all_four_GPU_utilization_at_observation": "100% each; memory40519/40499/40499/40499MiB"
+      "all_four_GPU_utilization_at_observation": "100% each; memory40519/40499/40499/40499MiB",
+      "K100_replication": {
+        "worker_pid": 543313,
+        "loaded_code_commit": "e956eec2e6dd364627a60d035db29d127d1c89cc",
+        "restore_transfer_interval_seconds": 7200,
+        "poll_seconds": 300,
+        "transfer_separate_previews": false,
+        "restore_exercised": false,
+        "latest_diffusion_final_verified_at_utc": "2026-09-28T16:16:09.329087+00:00"
+      }
     },
     "completed_quality_v1_diffusion": {
       "model_id": "Diffusion-LDM-UNet",
@@ -15577,7 +15586,16 @@
       "current_stage_id": "qv1-rf",
       "absolute_stop_step": 10000,
       "model_quality_approval_remains_explicit": true,
-      "new_stage_policy": "Owner prioritizes avoiding idle approximately $40/hour H100 capacity. Independent RF10000 moved before gated LCM; existing model budgets and parent741 teacher approval are unchanged. LCM has not started."
+      "new_stage_policy": "Owner prioritizes avoiding idle approximately $40/hour H100 capacity. Independent RF10000 moved before gated LCM; existing model budgets and parent741 teacher approval are unchanged. LCM has not started.",
+      "next_stage_id": "qv1-lcm-refine",
+      "next_objective": "lcf_real_v1",
+      "next_absolute_stop": 10000,
+      "condition": "After exact RF10000 full save and original controller exit plus four-GPU release",
+      "one_shot_handoff_plan": "runs/controller/quality-v1-rf-to-lcf.json",
+      "one_shot_handoff_pid": 4181994,
+      "LCF_already_started": false,
+      "LCF_quality_selection": "NOT_BETTER from completed new Diffusion",
+      "owner_cost_preference": "Do not leave H100 idle for independent visual reviews; use GPT Sol medium/high for delegated visual/read-only work"
     },
     "rf_diagnostics": {
       "observed_at_utc": "2026-09-25T22:01:20.913441+00:00",
