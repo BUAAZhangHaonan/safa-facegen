@@ -88,6 +88,11 @@ def validate_stage(campaign: dict) -> dict | None:
         return None
     if not isinstance(stage, dict):
         raise ValueError("bounded_stage has missing or unknown fields")
+    if stage.get('schema_version') == 2:
+        from .quality_stage import validate
+        if campaign.get('model_order') != [stage.get('model_id')]:
+            raise ValueError('Quality campaign must contain one model')
+        return validate(stage)
     model = stage.get("model_id")
     expected = FIELDS | ({"precision"} if model == RF_MODEL and "precision" in stage else set())
     if model == LCM_MODEL:
@@ -121,6 +126,8 @@ def validate_stage(campaign: dict) -> dict | None:
 
 
 def goal(stage: dict) -> int:
+    if stage.get('schema_version') == 2:
+        return stage['stop_step']
     return stage["source_step"] + stage["additional_steps"]
 
 
@@ -325,6 +332,15 @@ def guard_campaign(root: Path, campaign: dict) -> None:
     model is unaffected; a mixed campaign cannot bypass a registered stage.
     """
     stage = validate_stage(campaign)
+    from . import quality_stage as q
+    if q.is_v2(stage):
+        existing = q.read_registration(root, stage['model_id'])
+        if existing and existing['stage'] != stage:
+            raise ValueError('Cannot replace quality stage or LCM branch')
+        return
+    for model in campaign.get('model_order', []):
+        if model in q.RECIPES and q.read_registration(root, model):
+            raise ValueError('Model has a quality stage; old campaign remains sealed')
     if LCM_MODEL in campaign.get("model_order", []) and (stage is None or stage["model_id"] != LCM_MODEL):
         raise ValueError("LCM distillation requires its registered bounded campaign")
     for model in SUPPORTED_MODELS:
@@ -381,6 +397,9 @@ def prepare_launch(root: Path, campaign: dict, config: dict, state: dict | None,
                    recovery: dict) -> dict:
     guard_campaign(root, campaign)
     stage = validate_stage(campaign)
+    if stage and stage.get('schema_version') == 2:
+        from .quality_stage import resolve
+        return resolve(root, campaign, config, state, recovery)
     if stage is None:
         return config
     if stage["model_id"] == LCM_MODEL:
@@ -398,6 +417,12 @@ def prepare_launch(root: Path, campaign: dict, config: dict, state: dict | None,
 def guard_trainer_launch(config: dict, root: Path) -> None:
     """Check registered stage even when a stale torchrun config omits resume."""
     model = config.get("model_id")
+    from . import quality_stage as q
+    if q.is_v2(config.get('bounded_stage')):
+        q.guard_trainer(config, root)
+        return
+    if model in q.RECIPES and q.read_registration(root, model):
+        raise ValueError('Old trainer cannot bypass quality stage')
     if model not in SUPPORTED_MODELS:
         if config.get("bounded_stage") is not None:
             raise ValueError("Unsupported bounded trainer model")
@@ -435,6 +460,10 @@ def validate_training_resume(config: dict, payload: dict, root: Path | None = No
     This is called before loading model/EMA/Adam state. Existing recipe equality
     and RNG/data-cursor restore checks remain in place in the original trainer.
     """
+    if config.get('bounded_stage', {}).get('schema_version') == 2:
+        from .quality_stage import validate_resume
+        validate_resume(config, payload, root)
+        return
     previous = payload.get("config", {}).get("bounded_stage")
     requested = config.get("bounded_stage")
     model = config.get("model_id")
@@ -481,6 +510,8 @@ def validate_training_resume(config: dict, payload: dict, root: Path | None = No
 
 def protected_identities(campaign: dict) -> tuple[str, ...]:
     stage = validate_stage(campaign)
+    if stage and stage.get('schema_version') == 2:
+        return (stage['parent_checkpoint_id'],)
     return (stage["source_checkpoint_id"],) if stage else ()
 
 
@@ -515,6 +546,9 @@ def _durable_append(path: Path, event: str, payload: dict) -> None:
 def finish_if_budget_met(root: Path, campaign: dict, state: dict | None,
                          config: dict, events: Path) -> bool:
     stage = validate_stage(campaign)
+    if stage and stage.get('schema_version') == 2:
+        from .quality_stage import finish
+        return finish(root, campaign, state, config, events)
     if stage is None or state is None or state.get("step", -1) < goal(stage):
         return False
     model = stage["model_id"]

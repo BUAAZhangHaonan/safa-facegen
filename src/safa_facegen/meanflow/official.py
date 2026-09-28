@@ -29,15 +29,16 @@ def official_modules():
             importlib.import_module(root + ".models.models_dit"))
 
 
-def create_model(model_id):
+def create_model(model_id, config=None):
     from .spec import FIXED_RECIPE, OFFICIAL_NAMES, get_spec
     get_spec(model_id)
     mf, _ = official_modules()
+    recipe = FIXED_RECIPE if config is None else config
     model = mf.MeanFlow(model_str=OFFICIAL_NAMES[model_id], model_config={},
                        guidance_eq=FIXED_RECIPE["guidance"],
                        noise_dist=FIXED_RECIPE["time_sampling"]["distribution"],
                        class_dropout_prob=FIXED_RECIPE["class_dropout_prob"],
-                       data_proportion=FIXED_RECIPE["data_proportion"],
+                       data_proportion=recipe["data_proportion"],
                        P_mean=FIXED_RECIPE["time_sampling"]["mean"],
                        P_std=FIXED_RECIPE["time_sampling"]["std"],
                        norm_p=FIXED_RECIPE["norm_p"], norm_eps=FIXED_RECIPE["norm_eps"])

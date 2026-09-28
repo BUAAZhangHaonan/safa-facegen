@@ -31,3 +31,9 @@ def append_event(path, event, **values):
         handle.write(json.dumps({"time": time.time(), "event": event, **values},
                                 ensure_ascii=False, allow_nan=False) + "\n")
         handle.flush()
+
+
+def verify_metadata_checkpoint(path):
+    """Validate new metadata or legacy inventory without whole-file digest scans."""
+    from ..integrity import verify_meanflow_checkpoint
+    return verify_meanflow_checkpoint(path)

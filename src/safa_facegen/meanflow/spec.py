@@ -24,10 +24,17 @@ FIXED_RECIPE = {
 
 
 def validate_recipe(config):
+    objective = config.get('objective_id', 'meanflow_original')
+    if objective not in ('meanflow_original', 'imf_boundary_v1'):
+        raise ValueError('Unknown MeanFlow objective')
     for key, expected in FIXED_RECIPE.items():
+        if objective == 'imf_boundary_v1' and key in ('ema_decay', 'data_proportion'):
+            expected = .999 if key == 'ema_decay' else .5
         if config.get(key) != expected:
             raise ValueError(f"Original MeanFlow implementation requires {key}={expected!r}; "
                              f"configuration provided {config.get(key)!r}")
+    if objective == 'imf_boundary_v1' and config.get('matmul_precision') != 'highest':
+        raise ValueError('iMF requires explicit highest matmul precision')
 
 
 @dataclass(frozen=True)

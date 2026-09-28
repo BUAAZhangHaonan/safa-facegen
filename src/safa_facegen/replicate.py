@@ -13,7 +13,6 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
-import shlex
 import shutil
 import sqlite3
 import stat
@@ -24,7 +23,8 @@ import uuid
 import errno
 
 from .common import MODEL_IDS, fsync_directory
-from .data import atomic_json, sha256_file
+from .data import atomic_json
+from .integrity import validate_completion
 from .retention import timestamp as checkpoint_timestamp
 
 H100_ROOT = PurePosixPath("/home/apulis-dev/code/meanflow_e15_h100_bundle")
@@ -78,7 +78,7 @@ def valid_hash(value: str) -> str:
 
 
 class RemoteReader:
-    """Only SFTP reads and sha256sum are exposed to the replication code."""
+    """SFTP metadata and resumable reads; no remote file-digest scans."""
     def __init__(self, credentials: dict):
         import paramiko
 
@@ -104,9 +104,6 @@ class RemoteReader:
         self.retrying = []
         self.last_heartbeat = 0.0
         self.transfer_check = None
-        # hashlib state is deliberately memory-only. Controlled scheduling pauses
-        # reuse it; a process restart must read an unfinished prefix once.
-        self.partial_digests = {}
         try:
             jump, target = credentials["jump"], credentials["h100"]
             self.jump = paramiko.SSHClient()
@@ -174,21 +171,15 @@ class RemoteReader:
                         raise ValueError("Invalid SFTP directory entry")
                     visit(current / entry.filename, relative / entry.filename)
             elif stat.S_ISREG(before.st_mode):
+                if before.st_size <= 0:
+                    raise ValueError("Empty remote artifact")
                 declared = (expected_hashes or {}).get(str(relative))
-                if declared:
-                    digest = valid_hash(declared)
-                else:
-                    _, stdout, stderr = self.target.exec_command("sha256sum -- " + shlex.quote(str(current)), timeout=120)
-                    response = stdout.read().decode("ascii").strip()
-                    error = stderr.read().decode("utf-8", "replace")
-                    if stdout.channel.recv_exit_status() != 0:
-                        raise OSError(f"Remote SHA256 failed: {error[:300]}")
-                    digest = valid_hash(response.split()[0])
+                digest = valid_hash(declared) if declared else None
                 after = self.sftp.stat(str(current))
                 if (before.st_size, before.st_mtime) != (after.st_size, after.st_mtime):
                     raise ValueError("Remote source changed during inventory")
                 output.append({"source": str(current), "path": str(relative), "bytes": after.st_size,
-                               "mtime": after.st_mtime, "sha256": digest})
+                               "mtime": after.st_mtime, "sha256": digest, "integrity_mode": "metadata"})
             else:
                 raise ValueError(f"Remote artifact is not a regular file/directory: {current}")
 
@@ -204,59 +195,34 @@ class RemoteReader:
         if before.st_size != record["bytes"]:
             raise ValueError("Remote source size changed before transfer")
         destination.parent.mkdir(parents=True, exist_ok=True)
-        progress_key = (str(destination), str(source), record["sha256"], record["bytes"], record["mtime"])
-        digest, total = hashlib.sha256(), 0
+        if before.st_mtime != record["mtime"]:
+            raise ValueError("Remote source mtime changed before transfer")
+        total = 0
         if destination.exists():
             if not destination.is_file() or destination.is_symlink() or destination.stat().st_size > record["bytes"]:
                 raise ValueError("Invalid resumable local partial file")
-            info = destination.stat()
-            previous = self.partial_digests.get(progress_key)
-            if previous and previous["stat"] == (info.st_size, info.st_mtime_ns, info.st_ctime_ns):
-                digest, total = previous["digest"].copy(), info.st_size
-            else:
-                with destination.open("rb") as existing:
-                    for block in iter(lambda: existing.read(1024 * 1024), b""):
-                        digest.update(block); total += len(block)
-            if total == record["bytes"]:
-                if digest.hexdigest() != record["sha256"]:
-                    raise ValueError("Completed staging file has an incorrect hash")
-                self.partial_digests.pop(progress_key, None)
-                return
-        try:
-            with self.sftp.open(str(source), "rb") as remote, destination.open("ab" if destination.exists() else "xb") as local:
-                remote.seek(total)
-                try:
-                    while total < record["bytes"]:
-                        # Drain each bounded window before yielding: Paramiko does not
-                        # cancel a whole-file prefetch thread when its handle closes.
-                        window_end = min(total + 1024 * 1024, record["bytes"])
-                        remote.prefetch(file_size=window_end, max_concurrent_requests=32)
-                        block = remote.read(window_end - total)
-                        if not block:
-                            break
-                        local.write(block); digest.update(block); total += len(block)
-                        self.heartbeat()
-                        if self.transfer_check is not None:
-                            self.transfer_check()
-                finally:
-                    local.flush(); os.fsync(local.fileno())
-        finally:
-            if destination.is_file():
-                info = destination.stat()
-                if info.st_size == total:
-                    self.partial_digests[progress_key] = {"stat": (info.st_size, info.st_mtime_ns, info.st_ctime_ns), "digest": digest.copy()}
+            total = destination.stat().st_size
+        with self.sftp.open(str(source), "rb") as remote, destination.open("ab" if destination.exists() else "xb") as local:
+            remote.seek(total)
+            try:
+                while total < record["bytes"]:
+                    window_end = min(total + 1024 * 1024, record["bytes"])
+                    remote.prefetch(file_size=window_end, max_concurrent_requests=32)
+                    block = remote.read(window_end - total)
+                    if not block:
+                        break
+                    local.write(block)
+                    total += len(block)
+                    self.heartbeat()
+                    if self.transfer_check is not None:
+                        self.transfer_check()
+            finally:
+                local.flush()
+                os.fsync(local.fileno())
         after = self.sftp.stat(str(source))
-        if total != record["bytes"] or after.st_size != record["bytes"]:
-            raise ValueError("Transferred file size differs from committed source")
-        if digest.hexdigest() != record["sha256"]:
-            raise ValueError("Transferred content differs from committed source digest")
-        # The source filesystem can refresh mtime after publication. The committed
-        # digest and exact byte count establish the immutable content identity.
-        if after.st_mtime != record["mtime"]:
-            print(json.dumps({"event": "source_mtime_changed_content_verified",
-                              "source": str(source), "recorded_mtime": record["mtime"],
-                              "observed_mtime": after.st_mtime}), flush=True)
-        self.partial_digests.pop(progress_key, None)
+        if total != record["bytes"] or after.st_size != record["bytes"] or after.st_mtime != record["mtime"]:
+            raise ValueError("Source changed or transferred byte count differs from committed inventory")
+
         fsync_directory(destination.parent)
 
     def _prepare_replication_directory(self):
@@ -341,7 +307,7 @@ class RemoteReader:
             handle.flush()
         self.sftp.posix_rename(str(temporary), str(destination))
         with self.sftp.open(str(destination), "rb") as handle:
-            if hashlib.sha256(handle.read()).digest() != hashlib.sha256(body).digest():
+            if handle.read() != body:
                 raise ValueError("Source acknowledgement readback mismatch")
 
 
@@ -362,9 +328,12 @@ def normalize_request(raw: dict, expected_model: str) -> dict:
         raise ValueError("Checkpoint is outside its model's run directory")
     result = {"request_id": str(raw.get("request_id", f"{identity}-{event}")), "model_id": model,
               "identity": identity, "event": event, "checkpoint": str(checkpoint),
-              "seed": int(raw.get("seed", 42)), "source": raw}
+              "seed": int(raw.get("seed", 42)), "source": raw,
+              "integrity_mode": raw.get("integrity_mode", "sha256"), "files": raw.get("files", {})}
     if not re.fullmatch(r"[A-Za-z0-9_.-]{1,220}", result["request_id"]):
         raise ValueError("Unsafe request ID")
+    if result["integrity_mode"] not in ("metadata", "sha256"):
+        raise ValueError("Unsupported integrity mode")
     if model.startswith("MeanFlow-"):
         result["kind"] = "meanflow"
         result["ema"] = str(remote_path(raw["export"])) if raw.get("export") else None
@@ -377,12 +346,28 @@ def normalize_request(raw: dict, expected_model: str) -> dict:
         result["kind"] = "torch"
         result["ema"] = str(remote_path(raw["ema_path"]))
         result["config"] = str(remote_path(raw.get("config_path", raw.get("config", ""))))
-        if checkpoint.name != identity + ".state.pt" or PurePosixPath(result["ema"]) != checkpoint.parent / (identity + ".ema.pt") or PurePosixPath(result["config"]) != checkpoint.parent / (identity + ".config.json"):
+        atomic_directory = (result["integrity_mode"] == "metadata" and checkpoint.name == "state.pt"
+                            and checkpoint.parent.name == identity)
+        if atomic_directory:
+            if PurePosixPath(result["ema"]) != checkpoint.parent / "ema.pt" or PurePosixPath(result["config"]) != checkpoint.parent / "config.json":
+                raise ValueError("Atomic Torch state/EMA/config must share one checkpoint directory")
+            result["manifest"] = str(checkpoint.parent / "manifest.json")
+            result["complete_marker"] = str(checkpoint.parent / "COMPLETE.json")
+        elif checkpoint.name != identity + ".state.pt" or PurePosixPath(result["ema"]) != checkpoint.parent / (identity + ".ema.pt") or PurePosixPath(result["config"]) != checkpoint.parent / (identity + ".config.json"):
             raise ValueError("Torch state, EMA and configuration must share the immutable identity")
         hashes = raw.get("hashes", {})
-        result["hashes"] = {"state": valid_hash(hashes.get("state", raw.get("state_sha256"))),
-                            "ema": valid_hash(hashes.get("ema", raw.get("ema_sha256", raw.get("sha256")))),
-                            "config": valid_hash(hashes.get("config"))}
+        if result["integrity_mode"] == "metadata":
+            result["hashes"] = {key: hashes.get(key) for key in ("state", "ema", "config")}
+            for key in ("state", "ema", "config"):
+                record = result["files"].get(key, {})
+                if not isinstance(record.get("bytes"), int) or record["bytes"] <= 0:
+                    raise ValueError(f"Metadata request requires {key} byte inventory")
+        elif result["integrity_mode"] == "sha256":
+            result["hashes"] = {"state": valid_hash(hashes.get("state", raw.get("state_sha256"))),
+                                "ema": valid_hash(hashes.get("ema", raw.get("ema_sha256", raw.get("sha256")))),
+                                "config": valid_hash(hashes.get("config"))}
+        else:
+            raise ValueError("Unsupported integrity mode")
     if event != "save" and not result["ema"]:
         raise ValueError("Evaluation request has no immutable EMA export")
     return result
@@ -395,8 +380,8 @@ def copy_bundle(reader: RemoteReader, files: list[dict], destination: Path, *, r
     receipt_name = "REPLICA.json"
     if destination.exists():
         receipt = json.loads((destination / receipt_name).read_text())
-        expected = [(x["path"], x["sha256"]) for x in files]
-        if receipt["identity"] != request["identity"] or expected != [(x["path"], x["sha256"]) for x in receipt["files"]]:
+        expected = [(x["path"], x["bytes"]) for x in files]
+        if receipt["identity"] != request["identity"] or expected != [(x["path"], x["bytes"]) for x in receipt["files"]]:
             raise ValueError("Immutable local artifact conflicts with source identity")
         for record in receipt["files"]:
             local = (destination / record["path"]).stat()
@@ -406,12 +391,13 @@ def copy_bundle(reader: RemoteReader, files: list[dict], destination: Path, *, r
     destination.parent.mkdir(parents=True, exist_ok=True)
     staging = destination.with_name("." + destination.name + ".partial")
     receipt = {"schema_version": 1, "managed_by": "safa_facegen.replicate", "role": role,
-               "identity": request["identity"], "model_id": request["model_id"], "status": "transferring", "files": files}
+               "identity": request["identity"], "model_id": request["model_id"], "status": "transferring",
+               "integrity_mode": "metadata", "files": files}
     if staging.exists():
         if staging.is_symlink():
             raise ValueError("Partial staging directory must not be a symlink")
         previous = json.loads((staging / receipt_name).read_text())
-        if previous.get("identity") != request["identity"] or [(x["path"],x["sha256"],x["bytes"]) for x in previous["files"]] != [(x["path"],x["sha256"],x["bytes"]) for x in files]:
+        if previous.get("identity") != request["identity"] or [(x["path"],x["bytes"],x["mtime"]) for x in previous["files"]] != [(x["path"],x["bytes"],x["mtime"]) for x in files]:
             raise ValueError("Partial staging content belongs to a different source identity")
         receipt["verified_files"] = previous.get("verified_files", {})
     else:
@@ -464,25 +450,26 @@ def replicate_artifact(reader: RemoteReader, request: dict, root: Path, role: st
         checkpoint = PurePosixPath(request["checkpoint"])
         complete = reader.json(checkpoint / "COMPLETE.json")
         manifest_bytes = reader.read(checkpoint / "manifest.json")
-        manifest_hash = hashlib.sha256(manifest_bytes).hexdigest()
         manifest = json.loads(manifest_bytes)
         if manifest["model_id"] != request["model_id"]:
             raise ValueError("MeanFlow checkpoint metadata model mismatch")
-        if manifest_hash != complete["manifest_sha256"] or request["hashes"].get("manifest") not in (None, manifest_hash):
-            raise ValueError("MeanFlow checkpoint complete marker/hash mismatch")
+        validate_completion(manifest, complete, manifest_bytes=len(manifest_bytes), checkpoint_id=request["identity"])
+        manifest_hash = complete.get("manifest_sha256")
+        if request["hashes"].get("manifest") not in (None, manifest_hash):
+            raise ValueError("MeanFlow legacy declared manifest identity mismatch")
         path = checkpoint if role == "restore" else PurePosixPath(request["ema"])
         expected = {}
         if role == "ema":
             export = reader.json(path / "manifest.json")
-            expected = export["sha256"]
+            expected = export.get("sha256", {})
         else:
             if not manifest.get("state_files"):
-                raise ValueError("MeanFlow restore requires checkpoint-registered state file identities")
-            expected = {"state/" + row["path"]: valid_hash(row["sha256"]) for row in manifest["state_files"]}
+                raise ValueError("MeanFlow restore requires registered file metadata")
+            expected = {"state/" + row["path"]: row.get("sha256") for row in manifest["state_files"]}
             expected["manifest.json"] = manifest_hash
             if request.get("ema"):
                 export = reader.json(PurePosixPath(request["ema"]) / "manifest.json")
-                expected.update({"export/" + name: value for name, value in export["sha256"].items()})
+                expected.update({"export/" + name: value for name, value in export.get("sha256", {}).items()})
         files = reader.inventory(path, expected_hashes=expected)
         if role == "restore":
             actual = {record["path"]: record for record in files}
@@ -492,25 +479,53 @@ def replicate_artifact(reader: RemoteReader, request: dict, root: Path, role: st
             actual_state = {name for name in actual if name.startswith("state/")}
             if actual_state != set(declared_state):
                 raise ValueError("MeanFlow source restore state is incomplete or contains unregistered files")
-            if any(actual[name]["bytes"] != row["size"] for name, row in declared_state.items()):
+            if any(actual[name]["bytes"] != row.get("bytes", row.get("size")) for name, row in declared_state.items()):
                 raise ValueError("MeanFlow source restore state size differs from its committed metadata")
         if role == "ema":
-            actual = {r["path"]: r["sha256"] for r in files}
-            if actual.get("ema.safetensors") != valid_hash(export["sha256"]["ema.safetensors"]):
-                raise ValueError("MeanFlow exported EMA hash mismatch")
+            actual = {r["path"]: r for r in files}
+            if export.get("model_id") != request["model_id"] or export.get("ema_weights") != "ema.safetensors":
+                raise ValueError("MeanFlow EMA export model/role mismatch")
+            if export.get("integrity_mode") == "metadata":
+                declared = {r["path"]: r["bytes"] for r in export.get("files", [])}
+                if "ema.safetensors" not in declared or any(actual.get(name, {}).get("bytes") != size for name, size in declared.items()):
+                    raise ValueError("MeanFlow exported EMA metadata mismatch")
+            elif actual.get("ema.safetensors", {}).get("sha256") != valid_hash(export["sha256"]["ema.safetensors"]):
+                raise ValueError("MeanFlow exported EMA declared identity mismatch")
         copy_bundle(reader, files, destination, role=role, request=request)
         if reader.json(checkpoint / "COMPLETE.json") != complete:
             raise ValueError("MeanFlow completion marker changed during transfer")
         return destination
+    source_complete = None
+    if request.get("manifest"):
+        manifest_bytes = reader.read(request["manifest"])
+        source_manifest = json.loads(manifest_bytes)
+        source_complete = reader.json(request["complete_marker"])
+        validate_completion(source_manifest, source_complete, manifest_bytes=len(manifest_bytes), checkpoint_id=request["identity"])
+        if source_manifest.get("model_id") != request["model_id"]:
+            raise ValueError("Torch manifest model differs from request")
+        for key, value in request["files"].items():
+            if source_manifest.get("files", {}).get(key) != value:
+                raise ValueError("Torch request differs from committed manifest file inventory")
     roles = ("state", "ema", "config") if role == "restore" else ("ema", "config")
     sources = {"state": request["checkpoint"], "ema": request["ema"], "config": request["config"]}
     files = []
     for item in roles:
         records = reader.inventory(sources[item], expected_hashes={PurePosixPath(sources[item]).name: request["hashes"][item]})
-        if len(records) != 1 or records[0]["sha256"] != request["hashes"][item]:
-            raise ValueError(f"Torch {item} source hash mismatch")
+        if len(records) != 1:
+            raise ValueError(f"Torch {item} source inventory mismatch")
+        if request.get("integrity_mode") == "metadata":
+            declared = request["files"][item]
+            if records[0]["bytes"] != declared["bytes"] or declared.get("path") != PurePosixPath(sources[item]).name:
+                raise ValueError(f"Torch {item} source metadata mismatch")
+        elif records[0]["sha256"] != request["hashes"][item]:
+            raise ValueError(f"Torch {item} declared identity mismatch")
         files.extend(records)
+    if source_complete is not None:
+        for metadata_path in (request["manifest"], request["complete_marker"]):
+            files.extend(reader.inventory(metadata_path))
     copy_bundle(reader, files, destination, role=role, request=request)
+    if source_complete is not None and reader.json(request["complete_marker"]) != source_complete:
+        raise ValueError("Torch completion marker changed during transfer")
     return destination / PurePosixPath(request["checkpoint"] if role == "restore" else request["ema"]).name
 
 
@@ -543,8 +558,9 @@ class Journal:
             row = db.execute("SELECT payload FROM requests WHERE id=?", (request["request_id"],)).fetchone()
             if row:
                 old = json.loads(row["payload"])
-                for field in ("model_id", "identity", "event", "checkpoint", "ema", "hashes", "seed"):
-                    if old.get(field) != request.get(field):
+                for field in ("model_id", "identity", "event", "checkpoint", "ema", "hashes", "seed", "integrity_mode", "files"):
+                    default = "sha256" if field == "integrity_mode" else ({} if field == "files" else None)
+                    if old.get(field, default) != request.get(field, default):
                         raise ValueError("A request ID was reused for different immutable content")
                 return
             db.execute("INSERT INTO requests VALUES (?,?,?,?,?,'received',NULL,?)", (request["request_id"], request["model_id"], request["identity"], request["event"], json.dumps(request), time.time()))
@@ -800,6 +816,20 @@ def evaluate_worker(journal: Journal, root: Path, config: dict, stop: threading.
             journal.update(row["id"], "complete", request=request)
         except Exception as exc:
             journal.update(row["id"], "failed", error=f"{type(exc).__name__}: {exc}")
+            continue
+        # Formal evaluation is already committed complete. Auxiliary quality
+        # failures must never requeue generation or invalidate its summary.
+        if row["event"] == "review":
+            try:
+                from .quality.pipeline import run_panel
+                panel = run_panel(root, output, result, device=config.get("device", "cuda:0"))
+                if panel is not None:
+                    request["quality_panel"] = {"status": panel["status"],
+                                                "report": str(output / "quality-v1/status.json")}
+            except Exception as exc:
+                request["quality_panel"] = {"status": "failed", "error": f"{type(exc).__name__}: {exc}",
+                                            "formal_review_status": "complete"}
+            journal.update(row["id"], "complete", request=request)
 
 
 def _run(credentials: dict, config: dict, *, once=False):

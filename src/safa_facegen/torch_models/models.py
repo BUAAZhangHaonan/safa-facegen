@@ -21,7 +21,7 @@ def registered_ema_sha256(checkpoint):
     import json
     from pathlib import Path
     path=Path(checkpoint).resolve()
-    manifest=path.with_name(path.name.removesuffix('.ema.pt')+'.json')
+    manifest = path.parent / 'manifest.json' if path.name == 'ema.pt' else path.with_name(path.name.removesuffix('.ema.pt')+'.json')
     if manifest.exists():
         saved=json.loads(manifest.read_text(encoding='utf-8'))
         return saved.get('hashes',{}).get('ema',saved.get('ema_sha256'))
@@ -133,6 +133,10 @@ class Generator(nn.Module):
     def train(self, mode=True):
         # A parent SAFA module may call train(); the frozen generator keeps inference behavior.
         return super().train(False)
+
+    def generate(self, num_images=1, seed=None):
+        from ..generation import generate_images
+        return generate_images(self, num_images, seed)
 
     @property
     def step_noise_count(self):
@@ -253,6 +257,31 @@ def load_generator(model_id, checkpoint, device="cuda", codec_checkpoint=None,
             raise ValueError("EMA export and supplied codec have different SHA256 identities")
         shared_payload=metadata if Path(codec_checkpoint).resolve()==Path(checkpoint).resolve() else None
         codec = load_codec(codec_checkpoint,payload=shared_payload)
+    integrity_mode = metadata.get("integrity_mode", metadata.get("config", {}).get("integrity_mode", "sha256"))
+    if integrity_mode == "metadata":
+        from ..integrity import validate_completion, validate_files
+        manifest_path = Path(checkpoint).parent / "manifest.json"
+        committed = json.loads(manifest_path.read_text(encoding="utf-8"))
+        complete_path = manifest_path.parent / "COMPLETE.json"
+        complete = json.loads(complete_path.read_text(encoding="utf-8"))
+        validate_completion(committed, complete, manifest_bytes=manifest_path.stat().st_size,
+                            checkpoint_id=metadata["checkpoint_id"])
+        if committed.get("model_id") != model_id:
+            raise ValueError("EMA metadata model mismatch")
+        validate_files(manifest_path.parent, [committed["files"]["ema"]])
+    ema_identity = {"integrity_mode": integrity_mode, "model_id": model_id, "state_role": "ema",
+        "path": Path(checkpoint).name, "bytes": Path(checkpoint).stat().st_size,
+        "checkpoint_id": metadata.get("checkpoint_id", Path(checkpoint).name.removesuffix(".ema.pt")),
+        "stage_id": metadata.get("stage_id", metadata.get("config", {}).get("bounded_stage", {}).get("stage_id")),
+        "objective_id": metadata.get("objective_id", metadata.get("config", {}).get("objective_id"))}
+    if integrity_mode == "metadata":
+        for field in ("checkpoint_id", "stage_id", "objective_id"):
+            if not ema_identity[field] or committed.get(field) != ema_identity[field]:
+                raise ValueError(f"EMA manifest/payload {field} mismatch or missing")
+        saved_stage = metadata.get("config", {}).get("bounded_stage", {})
+        if (saved_stage.get("stage_id") != ema_identity["stage_id"]
+                or metadata.get("config", {}).get("objective_id") != ema_identity["objective_id"]):
+            raise ValueError("EMA stage/objective differs from saved configuration")
     del metadata
     generator = Generator(model_id, net, codec, **resolved_sampling).to(device)
     generator.sampling_config={"steps":generator.steps,"eta":generator.eta,
@@ -261,4 +290,6 @@ def load_generator(model_id, checkpoint, device="cuda", codec_checkpoint=None,
     generator.state_role = "ema" if is_export else "external_initialization_ema_selected"
     if is_export and ema_sha256 is None:ema_sha256=registered_ema_sha256(checkpoint)
     generator.ema_sha256 = ema_sha256 if is_export else None
+    generator.integrity_mode = integrity_mode
+    generator.ema_identity = ema_identity if is_export else None
     return generator

@@ -13,7 +13,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 import torch
 
-from .data import HQDataset, atomic_json, sha256_file
+from .data import HQDataset, atomic_json
 from .cache import file_stat
 
 SAMPLE_COUNT = 1024
@@ -68,6 +68,87 @@ def evaluation_asset(path: Path) -> dict:
 
 def generator_options(model_id: str, ema_sha256: str | None) -> dict:
     return {"ema_sha256": ema_sha256} if ema_sha256 and not model_id.startswith("MeanFlow-") else {}
+
+
+def generator_identity(generator, checkpoint, expected_hash=None):
+    if getattr(generator, "state_role", None) != "ema":
+        raise ValueError("Evaluation requires a confirmed EMA")
+    digest = getattr(generator, "ema_sha256", None)
+    identity = getattr(generator, "ema_identity", None)
+    if getattr(generator, "integrity_mode", None) == "metadata":
+        if not isinstance(identity, dict) or identity.get("state_role") != "ema" or not identity.get("bytes"):
+            raise ValueError("Generator must expose metadata for its selected EMA")
+        if identity.get("model_id") != generator.model_id:
+            raise ValueError("Generator metadata model mismatch")
+    elif not isinstance(digest, str) or len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
+        raise ValueError("Generator requires registered metadata or a historical EMA identity")
+    if expected_hash and digest != expected_hash:
+        raise ValueError("Loaded EMA identity differs from the replica registration")
+    return {"integrity_mode": getattr(generator, "integrity_mode", "sha256"),
+            "ema_sha256": digest, "ema_identity": identity}
+
+
+def generator_protocol(generator):
+    """Record the loaded sampler and runtime precision, without generating images."""
+    network = getattr(generator, "network", None)
+    if network is None:
+        network = getattr(generator, "net", None)
+    if network is None:
+        raise ValueError("Generator has no inspectable sampling network")
+    parameters = list(network.parameters())
+    if not parameters:
+        raise ValueError("Sampling network has no parameters")
+    device_type = parameters[0].device.type
+    try:
+        ambient_autocast = torch.is_autocast_enabled(device_type)
+    except TypeError:
+        ambient_autocast = (torch.is_autocast_enabled() if device_type == "cuda"
+                            else torch.is_autocast_cpu_enabled())
+    meanflow = generator.model_id.startswith("MeanFlow-")
+    if meanflow:
+        sampling = {"method": "meanflow_one_step", "steps": 1, "guidance": False,
+                    "null_label": 1000, "latent_scale": float(generator.latent_scale),
+                    "time": 1.0, "interval": 1.0}
+        network_autocast = ambient_autocast
+    else:
+        sampling = dict(generator.sampling_config)
+        sampling["guidance"] = False
+        kind = generator.kind
+        if kind == "diffusion":
+            from .torch_models.models import make_ddim_timesteps
+            sampling.update(method="ddim", timesteps=make_ddim_timesteps(
+                "uniform", generator.steps, 1000, verbose=False)[::-1].tolist())
+        elif kind == "latent_consistency":
+            grid = (np.arange(1, 51) * 20 - 1)[::-1]
+            indices = np.floor(np.linspace(0, len(grid), num=generator.steps, endpoint=False)).astype(np.int64)
+            sampling.update(method="latent_consistency", timesteps=grid[indices].tolist(), teacher_grid_points=50)
+        elif kind == "rectified_flow":
+            sampling.update(method="rk45", atol=generator.ode_tol, rtol=generator.ode_tol,
+                            time_label="fp32(t)*999")
+        else:
+            raise ValueError("Unknown generator sampling family")
+        network_autocast = bool(generator.bf16 and device_type == "cuda")
+    codec = getattr(generator, "codec", None)
+    def dtypes(module):
+        return sorted({str(p.dtype).removeprefix("torch.") for p in module.parameters()}) if module is not None else []
+    autocast_dtype = None
+    if network_autocast:
+        if not meanflow:
+            autocast_dtype = "bfloat16"
+        else:
+            try:
+                autocast_dtype = str(torch.get_autocast_dtype(device_type)).removeprefix("torch.")
+            except AttributeError:
+                autocast_dtype = str(torch.get_autocast_gpu_dtype() if device_type == "cuda"
+                                     else torch.get_autocast_cpu_dtype()).removeprefix("torch.")
+    precision = {"network_parameter_dtypes": dtypes(network), "codec_parameter_dtypes": dtypes(codec),
+                 "network_autocast_enabled": bool(network_autocast), "network_autocast_dtype": autocast_dtype,
+                 "ambient_autocast_enabled": bool(ambient_autocast), "device_type": device_type,
+                 "noise_dtype": "float32", "ode_state_dtype": "float64" if sampling["method"] == "rk45" else None,
+                 "cuda_matmul_allow_tf32": bool(torch.backends.cuda.matmul.allow_tf32),
+                 "cudnn_allow_tf32": bool(torch.backends.cudnn.allow_tf32),
+                 "torch_float32_matmul_precision": torch.get_float32_matmul_precision()}
+    return {"sampling": sampling, "generation_precision": precision}
 
 
 def codec_provenance(checkpoint, codec):
@@ -223,7 +304,8 @@ def evaluate(*, model_id: str, checkpoint: str | Path, dataset_manifest: str | P
                 raise FileNotFoundError(f"Required evaluation weights missing: {dependency}")
         summary["checkpoint_stat"] = checkpoint_stat(checkpoint)
         summary["codec"] = codec_provenance(checkpoint, codec)
-        summary["dataset_manifest_sha256"] = dataset_manifest_sha256 or sha256_file(dataset_manifest)
+        summary["dataset_manifest_sha256"] = dataset_manifest_sha256
+        summary["dataset_integrity_mode"] = "metadata"
         summary["dataset_manifest_stat"] = file_stat(dataset_manifest)
         dataset = HQDataset(dataset_manifest, random_flip=False, image_root=image_root)
         if len(dataset) < SAMPLE_COUNT:
@@ -242,12 +324,8 @@ def evaluate(*, model_id: str, checkpoint: str | Path, dataset_manifest: str | P
             raise ValueError("Loaded generator identity differs from the requested model")
         if getattr(generator, "state_role", None) != "ema":
             raise ValueError("Generator must confirm state_role='ema'; raw checkpoints are not evaluated silently")
-        ema_hash = getattr(generator, "ema_sha256", None)
-        if not isinstance(ema_hash, str) or len(ema_hash) != 64 or any(c not in "0123456789abcdef" for c in ema_hash):
-            raise ValueError("Generator must expose the selected EMA's sha256")
-        summary["ema_sha256"] = ema_hash
-        if ema_sha256 and ema_hash != ema_sha256:
-            raise ValueError("Loaded EMA identity differs from the verified replica")
+        summary.update(generator_identity(generator, checkpoint, ema_sha256))
+        summary.update(generator_protocol(generator))
         summary["state_role"] = "ema"
         summary["noise_protocol"] = {"kind": "per_sample_cpu_float32_torch_randn", "seed_rule": "seed + sample_index",
             "noise_shape": list(generator.noise_shape), "step_noise_count": int(getattr(generator, "step_noise_count", 0)),
@@ -355,12 +433,9 @@ def preview(*, model_id: str, checkpoint: str | Path, output: str | Path,
                                    **generator_options(model_id, ema_sha256))
         if getattr(generator, "model_id", model_id) != model_id:
             raise ValueError("Loaded generator identity differs from the requested model")
-        ema_hash = getattr(generator, "ema_sha256", None)
-        if getattr(generator, "state_role", None) != "ema" or not isinstance(ema_hash, str) or len(ema_hash) != 64 or any(c not in "0123456789abcdef" for c in ema_hash):
-            raise ValueError("Preview requires a confirmed EMA with its SHA256")
-        if ema_sha256 and ema_hash != ema_sha256:
-            raise ValueError("Loaded EMA identity differs from the verified replica")
-        summary.update(state_role="ema", ema_sha256=ema_hash,
+        summary.update(generator_identity(generator, checkpoint, ema_sha256))
+        summary.update(generator_protocol(generator))
+        summary.update(state_role="ema",
                        noise_protocol={"seed_rule": "seed + sample_index", "noise_shape": list(generator.noise_shape),
                                        "step_noise_count": int(getattr(generator, "step_noise_count", 0)),
                                        "step_noise_shape": list(getattr(generator, "step_noise_shape", generator.noise_shape))})

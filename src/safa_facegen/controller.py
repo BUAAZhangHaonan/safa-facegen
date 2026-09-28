@@ -46,6 +46,18 @@ def load_model_config(root, campaign, model_id):
     config.pop("max_steps", None)
     config.pop("max_epochs", None)
     config.pop("max_hq_epochs", None)
+    if campaign.get('bounded_stage', {}).get('schema_version') == 2:
+        stage = validate_stage(campaign)
+        config.update(stage['recipe'])
+        config.update(bounded_stage=stage, objective_id=stage['objective_id'],
+                      initialization_mode=stage['initialization_mode'], integrity_mode='metadata',
+                      configured_microbatch=stage['recipe']['microbatch'], recovery_scale=1.0)
+        # Explicit native parent path must supersede historical local overrides.
+        native = read_json(root / campaign['model_configs'][model_id])
+        for key in ('initial_checkpoint', 'teacher_checkpoint'):
+            value = native['paths'].get(key)
+            config['paths'][key] = str(root / value) if value else None
+        config['paths'].pop('resume', None)
     return config
 
 
@@ -128,8 +140,12 @@ def verify_launch(root, config, *, events=None):
     return devices
 
 
-def latest_state(root, model_id):
+def latest_state(root, model_id, stage=None):
     output = root / "runs" / model_id
+    if stage and stage.get('schema_version') == 2:
+        from .quality_stage import latest_path
+        path = latest_path(root, stage)
+        return read_json(path) if path.exists() else None
     path = output / ("latest.json" if model_id.startswith("MeanFlow-") else "last.json")
     return read_json(path) if path.exists() else None
 
@@ -158,6 +174,8 @@ def restore_torch_runtime(root, config, state):
         if not path.is_absolute():
             path = root / path
         expected = root / 'runs' / model / (identity + suffix)
+        if config.get('bounded_stage', {}).get('schema_version') == 2:
+            expected = root / 'runs' / model / identity / {'.state.pt': 'state.pt', '.config.json': 'config.json'}[suffix]
         if path != expected:
             raise ValueError('Torch checkpoint file is outside its named model identity')
         for item in (path, *path.parents):
@@ -177,15 +195,19 @@ def restore_torch_runtime(root, config, state):
         encoded = handle.read(1024 * 1024 + 1)
     if len(encoded) > 1024 * 1024:
         raise ValueError('Saved Torch configuration exceeds the small-JSON limit')
-    hashes = state.get('hashes')
-    if not isinstance(hashes, dict):
-        raise ValueError('Torch checkpoint has no committed configuration identity')
-    expected_hash = hashes.get('config')
-    if not isinstance(expected_hash, str) or hashlib.sha256(encoded).hexdigest() != expected_hash:
-        raise ValueError('Saved Torch configuration differs from its committed identity')
     saved = json.loads(encoded)
     if not isinstance(saved, dict) or saved.get('model_id') != model or saved.get('project_root') != str(root):
         raise ValueError('Saved Torch configuration model or project root differs')
+    if config.get('bounded_stage', {}).get('schema_version') == 2:
+        if saved.get('bounded_stage') != config['bounded_stage']:
+            raise ValueError('Torch recovery stage mismatch')
+        result = copy.deepcopy(config)
+        for key in ('microbatch', 'learning_rate', 'precision', 'num_workers', 'prefetch_factor', 'recovery_scale'):
+            if key in saved:
+                result[key] = saved[key]
+        validate_runtime_parameters(runtime_parameters(result), config)
+        result['paths']['resume'] = str(state_path)
+        return result
 
     def integer(value, minimum, name):
         if type(value) is not int or value < minimum:
@@ -350,7 +372,8 @@ def recovery_config(config, state, reason):
     if is_meanflow and state:
         saved = read_json(Path(state['checkpoint']) / 'manifest.json')
         previous_batch = min(previous_batch, int(saved['progress']['microbatch']))
-        previous_learning_rate = min(previous_learning_rate, float(saved['learning_rate']))
+        if config.get('bounded_stage', {}).get('schema_version') != 2:
+            previous_learning_rate = min(previous_learning_rate, float(saved['learning_rate']))
     if reason in ("gpu_memory", "out_of_memory"):
         changes["microbatch"] = max(1, previous_batch // 2)
         if changes["microbatch"] == previous_batch:
@@ -439,12 +462,20 @@ def checkpoint_runtime(root, bounds, state):
     if saved.get('model_id') != model or saved.get('step') != state.get('step'):
         raise ValueError('MeanFlow recovery checkpoint metadata differs')
     result = copy.deepcopy(bounds)
-    result.update(microbatch=saved['progress']['microbatch'], learning_rate=saved['learning_rate'], precision='fp32')
+    rate = saved['learning_rate']
+    if bounds.get('bounded_stage', {}).get('schema_version') == 2:
+        if saved['config'].get('bounded_stage') != bounds['bounded_stage']:
+            raise ValueError('MeanFlow recovery stage mismatch')
+        result['recovery_scale'] = saved['progress']['recovery_scale']
+        rate = bounds['bounded_stage']['recipe']['learning_rate'] * result['recovery_scale']
+    result.update(microbatch=saved['progress']['microbatch'], learning_rate=rate, precision='fp32')
     validate_runtime_parameters(runtime_parameters(result), bounds)
     return result
 
 
-def recovery_file(root, model):
+def recovery_file(root, model, stage_id=None):
+    if stage_id:
+        return Path(root) / 'runs/controller/quality-v1' / (model + '.' + stage_id + '.recovery.json')
     return stop_request_file(root, model).with_name(model + '.recovery.json')
 
 
@@ -455,7 +486,7 @@ def idle_recovery(model):
 
 def save_recovery(root, record):
     record['updated_at'] = utc_now()
-    path = recovery_file(root, record['model_id'])
+    path = recovery_file(root, record['model_id'], record.get('stage_id'))
     if path.is_symlink():
         raise ValueError('Symlink in persisted recovery path')
     atomic_json(path, record)
@@ -463,13 +494,17 @@ def save_recovery(root, record):
 
 def load_recovery(root, bounds, events, state, limit):
     model = bounds['model_id']
-    path = recovery_file(root, model)
+    stage = bounds.get('bounded_stage', {})
+    stage_id = stage.get('stage_id') if stage.get('schema_version') == 2 else None
+    path = recovery_file(root, model, stage_id)
     if path.is_symlink():
         raise ValueError('Symlink in persisted recovery path')
     if path.exists():
         record = read_json(path)
     else:
         record = idle_recovery(model)
+        if stage_id:
+            record['stage_id'] = stage_id
         # Older controllers journaled their recovery plan before launching it.
         # Only an explicit stable event clears that model's recovery history.
         scheduled = None
@@ -478,7 +513,7 @@ def load_recovery(root, bounds, events, state, limit):
             with events.open(encoding='utf-8') as handle:
                 for line in handle:
                     event = json.loads(line)
-                    if event.get('model_id') != model:
+                    if event.get('model_id') != model or (stage_id and event.get('stage_id') != stage_id):
                         continue
                     if event.get('event') == 'recovery_stable':
                         scheduled = failure = None
@@ -576,6 +611,8 @@ def settle_recovery(root, bounds, record, completed, events):
     apply_recovery_plan(root, bounds, completed, record)
     previous = record
     record = idle_recovery(record['model_id'])
+    if previous.get('stage_id'):
+        record['stage_id'] = previous['stage_id']
     save_recovery(root, record)
     append_event(events, 'recovery_stable', model_id=record['model_id'],
                  previous_failure=previous['failure_kind'], step=completed['step'])
@@ -606,6 +643,8 @@ def schedule_recovery(root, bounds, config, state, record, reason, limit):
               'recovery_origin_step': int((state or {}).get('step', 0)),
               'parameters': parameters, 'changes': changes,
               'source_identity': recovery_checkpoint_identity(state, config['model_id'])}
+    if config.get('bounded_stage', {}).get('schema_version') == 2:
+        record['stage_id'] = config['bounded_stage']['stage_id']
     save_recovery(root, record)
     return record
 
@@ -673,7 +712,7 @@ def run_campaign(root, campaign_path):
                     return
                 continue
             config = load_model_config(root, campaign, model_id)
-            if model_id == "LatentConsistency-LDM-UNet":
+            if model_id == "LatentConsistency-LDM-UNet" and campaign.get("bounded_stage", {}).get("schema_version") != 2:
                 teacher = read_lcm_teacher_approval(root)
                 config["teacher_approval"] = teacher
                 config["teacher_ema_sha256"] = teacher["ema_sha256"]
@@ -681,10 +720,10 @@ def run_campaign(root, campaign_path):
                 config["paths"]["initial_checkpoint"] = None
             verify_launch(root, config, events=events)
             bounds = copy.deepcopy(config)
-            recovery = load_recovery(root, bounds, events, latest_state(root, model_id),
+            recovery = load_recovery(root, bounds, events, latest_state(root, model_id, campaign.get('bounded_stage')),
                                      campaign['max_consecutive_recovery_failures'])
             while not stop_requested[0]:
-                state = latest_state(root, model_id)
+                state = latest_state(root, model_id, campaign.get('bounded_stage'))
                 recovery = settle_recovery(root, bounds, recovery, state, events)
                 config = apply_recovery_plan(root, bounds, state, recovery)
                 ensure_no_existing_trainer(root)
@@ -742,9 +781,10 @@ def run_campaign(root, campaign_path):
                     devices = gpu_snapshot(events=events)
                     peak_gpu = max(peak_gpu, max(x["used_bytes"] for x in devices))
                     approval = read_approval(root, model_id)
-                    completed = latest_state(root, model_id)
+                    completed = latest_state(root, model_id, campaign.get('bounded_stage'))
                     if time.monotonic() - retention_checked > 60:
-                        retire_states(root, model_id, protected_identities=protected_identities(campaign))
+                        if campaign.get("bounded_stage", {}).get("schema_version") != 2:
+                            retire_states(root, model_id, protected_identities=protected_identities(campaign))
                         retention_checked = time.monotonic()
                     recovery = settle_recovery(root, bounds, recovery, completed, events)
                     if stop_requested[0] or approval:
@@ -765,7 +805,7 @@ def run_campaign(root, campaign_path):
                 exit_code = process.wait()
                 process = None
                 tail = log_tail(log_path, start=log_offset).lower()
-                stop_exhausted_trainer(root, bounds, latest_state(root, model_id), recovery, exit_code, tail)
+                stop_exhausted_trainer(root, bounds, latest_state(root, model_id, campaign.get('bounded_stage')), recovery, exit_code, tail)
                 if stop_requested[0]:
                     atomic_json(state_dir / "status.json", {"status": "stopped", "model_id": model_id, "time": utc_now()})
                     return
@@ -777,7 +817,7 @@ def run_campaign(root, campaign_path):
                         return
                     break
                 if (exit_code == 0 and reason is None and
-                        finish_if_budget_met(root, campaign, latest_state(root, model_id), config, events)):
+                        finish_if_budget_met(root, campaign, latest_state(root, model_id, campaign.get('bounded_stage')), config, events)):
                     return
                 if reason is None:
                     if "gpu_memory_stop" in tail:
@@ -791,7 +831,7 @@ def run_campaign(root, campaign_path):
                         reason = "host_memory"
                     else:
                         reason = "runtime_error"
-                recovery_state = latest_state(root, model_id)
+                recovery_state = latest_state(root, model_id, campaign.get('bounded_stage'))
                 recovery = settle_recovery(root, bounds, recovery, recovery_state, events)
                 attempts = recovery['recoveries_scheduled'] + 1 if reason == recovery['failure_kind'] else 1
                 checkpoint_runtime(root, bounds, recovery_state)

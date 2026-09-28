@@ -156,7 +156,14 @@ class MeanFlowGenerator(nn.Module):
             raise ValueError("Export architecture does not match model_id")
         weights = root / "ema.safetensors"
         expected = manifest.get("sha256", {}).get(weights.name)
-        if (not isinstance(expected,str) or len(expected) != 64
+        integrity_mode = manifest.get("integrity_mode", "sha256")
+        if integrity_mode == "metadata":
+            from ..integrity import validate_files
+            records = manifest.get("files", [])
+            if "ema.safetensors" not in {row["path"] for row in records}:
+                raise ValueError("EMA is absent from metadata inventory")
+            validate_files(root, records)
+        elif (not isinstance(expected,str) or len(expected) != 64
                 or any(character not in "0123456789abcdef" for character in expected)
                 or not weights.is_file()):
             raise ValueError("EMA artifact identity or weights missing")
@@ -179,6 +186,17 @@ class MeanFlowGenerator(nn.Module):
         generator = cls(net, codec, model_id=manifest["model_id"],
                         latent_scale=manifest["latent_scale"]).to(device=device, dtype=dtype)
         generator.ema_sha256 = expected
+        generator.integrity_mode = integrity_mode
+        source = manifest.get("metadata", {})
+        identity_fields = {"checkpoint_id": source.get("checkpoint_id", source.get("checkpoint")),
+                           "stage_id": source.get("stage_id"), "objective_id": source.get("objective_id")}
+        for key, nested in identity_fields.items():
+            top = manifest.get(key)
+            if top is not None and nested is not None and top != nested:
+                raise ValueError(f"MeanFlow export conflicting {key}")
+            identity_fields[key] = top if top is not None else nested
+        generator.ema_identity = {"integrity_mode": integrity_mode, "model_id": manifest["model_id"],
+            "state_role": "ema", "path": weights.name, "bytes": weights.stat().st_size, **identity_fields}
         generator.codec_identity = codec_info
         return generator
 
@@ -200,3 +218,7 @@ class MeanFlowGenerator(nn.Module):
 
     def forward(self, noise):
         return self.sample(noise, grad_enabled=torch.is_grad_enabled())
+
+    def generate(self, num_images=1, seed=None):
+        from ..generation import generate_images
+        return generate_images(self, num_images, seed)

@@ -17,7 +17,7 @@ import time
 
 import numpy as np
 
-from .io import append_event, atomic_json, sha256_file
+from .io import append_event, atomic_json
 from .spec import FIXED_RECIPE, LATENT_SCALE, NULL_LABEL, UPSTREAM_COMMIT, get_spec, validate_recipe
 
 EXIT_RECOVERY_EXHAUSTED = 78
@@ -134,7 +134,7 @@ def check_runtime():
                                    err_msg=f"JAX backend convolution failed on {device}")
 
 
-def create_state(model, spec, initial, learning_rate, seed):
+def create_state(model, spec, initial, learning_rate, seed, initialization_mode=None):
     import jax
     import jax.numpy as jnp
     import optax
@@ -151,6 +151,9 @@ def create_state(model, spec, initial, learning_rate, seed):
     manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
     if manifest.get("format") != "safa-meanflow-torch" or manifest.get("architecture") != spec.to_dict():
         raise ValueError("Initial checkpoint architecture/format mismatch")
+    if manifest.get('integrity_mode') == 'metadata':
+        from ..integrity import validate_files
+        validate_files(root, [row for row in manifest['files'] if row['path'] == 'ema.safetensors'])
     # Migration/transfer validates these files once. Safetensors and strict tensor
     # shape/key checks below protect loading without repeating multi-GiB hashes.
     key = jax.random.PRNGKey(seed)
@@ -158,8 +161,10 @@ def create_state(model, spec, initial, learning_rate, seed):
                               jax.ShapeDtypeStruct((1, spec.input_size, spec.input_size, spec.in_channels), jnp.float32),
                               jax.ShapeDtypeStruct((1,), jnp.float32),
                               jax.ShapeDtypeStruct((1,), jnp.int32))["params"]
-    raw = canonical_to_flax(load_file(str(root/"raw.safetensors")), spec, template)
     ema = canonical_to_flax(load_file(str(root/"ema.safetensors")), spec, template)
+    raw = (jax.tree_util.tree_map(lambda x: jnp.array(x), ema)
+           if initialization_mode == 'ema_warm_start_new_optimizer' else
+           canonical_to_flax(load_file(str(root/"raw.safetensors")), spec, template))
     # Unit Adam normalization; scalar LR is a saved leaf so bounded recovery can
     # lower it without resetting moments or silently changing the optimizer.
     tx = optax.scale_by_adam(b1=FIXED_RECIPE["adam_betas"][0],
@@ -169,7 +174,7 @@ def create_state(model, spec, initial, learning_rate, seed):
     return state, manifest
 
 
-def make_train_step(model, ema_decay=FIXED_RECIPE["ema_decay"]):
+def make_train_step(model, ema_decay=FIXED_RECIPE["ema_decay"], objective_id='meanflow_original'):
     import jax
     import jax.numpy as jnp
     import optax
@@ -183,6 +188,14 @@ def make_train_step(model, ema_decay=FIXED_RECIPE["ema_decay"]):
         labels = jnp.full((images.shape[0],), NULL_LABEL, dtype=jnp.int32)
 
         def objective(params):
+            if objective_id == 'imf_boundary_v1':
+                from .improved import improved_loss
+                def apply_u(p, z, t, r):
+                    return model.apply({'params': p}, z, t, t-r, labels,
+                                       method=model.u_fn, rngs={'gen': objective_rng})
+                return improved_loss(params, apply_u, images, objective_rng)
+            if objective_id != 'meanflow_original':
+                raise ValueError('Unknown MeanFlow objective')
             return model.apply({"params": params}, imgs=images, labels=labels,
                                method=model.forward, rngs={"gen": objective_rng})
 
@@ -200,7 +213,17 @@ def make_train_step(model, ema_decay=FIXED_RECIPE["ema_decay"]):
                                  ema_params=ema, rng=next_rng)
         # No donation: a failed/OOM step must leave the last valid state usable.
         result = jax.lax.cond(finite, lambda _: proposed, lambda _: state, operand=None)
-        metrics = {"loss": jnp.mean(loss), "v_loss": jnp.mean(metrics["v_loss"]),
+        extra = {}
+        if objective_id == 'imf_boundary_v1':
+            extra = dict(metrics)
+            for part in ('boundary', 'interval'):
+                count = jax.lax.psum(metrics[part+'_count'], 'devices')
+                numerator = jax.lax.psum(metrics[part+'_residual_mse']*metrics[part+'_count'], 'devices')
+                extra[part+'_residual_mse'] = numerator/jnp.maximum(count, 1)
+                extra[part+'_count'] = count
+        else:
+            extra['v_loss'] = jnp.mean(metrics['v_loss'])
+        metrics = {**extra, "loss": jnp.mean(loss),
                    "grad_norm": grad_norm, "finite": finite.astype(jnp.float32),
                    "learning_rate": state.learning_rate}
         return result, jax.lax.pmean(metrics, "devices")
@@ -237,7 +260,11 @@ def save_checkpoint(state, progress, config, identity, *, export=False):
     # Unreplicate on device before copying: never transfer four full states.
     host_state = jax.device_get(jax_utils.unreplicate(state))
     host_progress = copy.deepcopy(progress)
-    metadata = {"schema_version": 1, "model_id": config["model_id"], "phase": "HQ",
+    stage = config.get('bounded_stage', {})
+    metadata = {"schema_version": 2, "model_id": config["model_id"], "phase": "HQ",
+                "integrity_mode": "metadata", "checkpoint_id": name, "state_role": "training_state",
+                "stage_id": stage.get('stage_id'), "objective_id": config.get('objective_id', 'meanflow_original'),
+                "parent_checkpoint_id": stage.get('parent_checkpoint_id'), "codec_registration": identity['codec'],
                 "temporary_calibration": temporary_calibration,
                 "upstream_commit": UPSTREAM_COMMIT, "identity": identity,
                 "progress": host_progress, "config": config,
@@ -251,8 +278,6 @@ def save_checkpoint(state, progress, config, identity, *, export=False):
     for path in sorted((staging/"state").rglob("*")):
         if path.is_file():
             entry = {"path": path.relative_to(staging/"state").as_posix(), "size": path.stat().st_size}
-            if not temporary_calibration:
-                entry["sha256"] = sha256_file(path)
             metadata["state_files"].append(entry)
     if not metadata["state_files"]:
         raise RuntimeError("Orbax checkpoint did not produce any state files")
@@ -262,48 +287,38 @@ def save_checkpoint(state, progress, config, identity, *, export=False):
                      flax_to_canonical(host_state.ema_params, get_spec(config["model_id"])),
                      register_identity=not temporary_calibration,
                      metadata={"checkpoint": name, "hq_epoch": epoch, "hq_step": int(host_state.step),
-                               "valid_samples": progress["valid_samples"], "identity": identity})
+                               "valid_samples": progress["valid_samples"], "identity": identity,
+                               "stage_id": stage.get('stage_id'), "objective_id": config.get('objective_id'),
+                               "parent_checkpoint_id": stage.get('parent_checkpoint_id'),
+                               "codec_registration": identity['codec']})
         export_path = str(final / "export")
     # COMPLETE only becomes visible after all state chunks and metadata exist.
     atomic_json(staging / "manifest.json", metadata)
-    manifest_sha = sha256_file(staging/"manifest.json")
-    atomic_json(staging / "COMPLETE.json", {"manifest_sha256": manifest_sha})
+    from ..integrity import completion_record, validate_files
+    validate_files(staging/'state', metadata['state_files'], exact=True)
+    atomic_json(staging / "COMPLETE.json", completion_record(staging/'manifest.json', name))
     os.replace(staging, final)
-    atomic_json(root / "latest.json", {"checkpoint": str(final), "step": int(host_state.step),
-                                       "name": name, "export": export_path})
+    pointer = {"checkpoint": str(final), "step": int(host_state.step), "checkpoint_id": name,
+               "name": name, "export": export_path, "complete": True, "model_id": config['model_id'],
+               "stage_id": stage.get('stage_id'), "objective_id": config.get('objective_id'),
+               "valid_samples": progress['valid_samples'], "integrity_mode": "metadata"}
+    atomic_json(root / "latest.json", pointer)
+    if stage.get('schema_version') == 2:
+        atomic_json(root / ('latest-' + stage['stage_id'] + '.json'), pointer)
     append_event(root/"events.jsonl", "checkpoint_complete", checkpoint=str(final),
                  step=int(host_state.step), valid_samples=progress["valid_samples"], export=export_path)
     if not config.get("validation_scope",False) and not config.get("calibration",False):
         append_event(root/"requests.jsonl", "save", model_id=config["model_id"],
                      checkpoint=str(final.resolve()), export=export_path,
                      step=int(host_state.step), hq_epoch=epoch,
-                     valid_samples=progress["valid_samples"], manifest_sha256=manifest_sha)
+                     valid_samples=progress["valid_samples"], integrity_mode='metadata',
+                     checkpoint_id=name, stage_id=stage.get('stage_id'))
     return final, export_path
 
 
 def verify_checkpoint(path):
-    """Verify the metadata and every persisted state chunk before restoration."""
-    path = Path(path)
-    if (path/"STATE_RETIRED.json").exists():
-        raise ValueError("Checkpoint state was retired and cannot be resumed")
-    complete = json.loads((path/"COMPLETE.json").read_text())
-    if complete["manifest_sha256"] != sha256_file(path/"manifest.json"):
-        raise ValueError("Checkpoint metadata checksum mismatch")
-    metadata = json.loads((path/"manifest.json").read_text())
-    if metadata.get("temporary_calibration"):
-        raise ValueError("Temporary calibration states are not registered for restoration")
-    entries = metadata.get("state_files")
-    if not entries:
-        raise ValueError("Checkpoint is missing complete state integrity metadata")
-    actual = {p.relative_to(path/"state").as_posix(): p
-              for p in (path/"state").rglob("*") if p.is_file()}
-    if set(actual) != {entry["path"] for entry in entries} or len(actual) != len(entries):
-        raise ValueError("Checkpoint state file inventory differs from manifest")
-    for entry in entries:
-        file = actual[entry["path"]]
-        if file.stat().st_size != entry["size"] or sha256_file(file) != entry["sha256"]:
-            raise ValueError(f"Checkpoint state file checksum mismatch: {entry['path']}")
-    return metadata
+    from ..integrity import verify_meanflow_checkpoint
+    return verify_meanflow_checkpoint(path)
 
 
 def restore_checkpoint(path, template, identity):
@@ -357,10 +372,21 @@ def apply_recovery_overrides(state, progress, config, *, checkpoint=None):
 
 def run(config, *, resume=None, max_steps=None):
     validate_recipe(config)
+    from ..bounded_stage import guard_trainer_launch
+    from ..quality_stage import is_v2, scheduled_learning_rate
+    stage = config.get('bounded_stage', {})
+    quality = is_v2(stage)
+    project = Path(config.get('project_root', Path(__file__).resolve().parents[3]))
+    if quality:
+        guard_trainer_launch(config, project)
+        from ..quality_stage import guard_initialization
+        guard_initialization(config, project, resume)
     # Must precede the first JAX import/device initialization.
     os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "true")
     os.environ.setdefault("XLA_PYTHON_CLIENT_MEM_FRACTION", "0.85")
     import jax
+    # Must be effective before device discovery, model init and all tracing.
+    jax.config.update('jax_default_matmul_precision', 'highest')
     import jax.numpy as jnp
     from flax import jax_utils
     from .official import create_model
@@ -385,34 +411,56 @@ def run(config, *, resume=None, max_steps=None):
     cache = LatentCache(config["paths"]["latent_cache"], config["paths"]["dataset_manifest"])
     if cache.count % devices:
         raise ValueError("Dataset count must divide device count for exact, unpadded epoch accounting")
-    state, initial = create_state(create_model(config["model_id"]), get_spec(config["model_id"]),
-                                  config["paths"]["initial_checkpoint"], config["learning_rate"], config["seed"])
+    model = create_model(config['model_id'], config)
+    state, initial = create_state(model, get_spec(config["model_id"]),
+                                  config["paths"]["initial_checkpoint"], config["learning_rate"], config["seed"],
+                                  config.get('initialization_mode'))
+    if quality and (initial.get('checkpoint_id') or initial.get('metadata', {}).get('checkpoint')) != stage['parent_checkpoint_id']:
+        raise ValueError('Warm-start export differs from the registered parent EMA')
     identity = {"model_id": config["model_id"], "dataset_count": cache.count,
                 "dataset_manifest_sha256": cache.dataset_sha256,
                 "dataset_manifest_stat": cache.dataset_stat,
                 "cache_manifest_stat": cache.manifest_stat,
-                "codec": cache.codec, "initial_weights": initial["sha256"],
+                "codec": cache.codec, "initial_weights": initial.get("sha256") or initial.get('files'),
                 "seed": config["seed"], "upstream_commit": UPSTREAM_COMMIT}
+    if quality:
+        identity.update(stage_contract=stage, parent_checkpoint_id=stage['parent_checkpoint_id'],
+                        objective_id=stage['objective_id'], matmul_precision=str(jax.config.jax_default_matmul_precision))
     now = time.time()
     rng = np.random.default_rng(config["seed"])
     progress = {"sampler_epoch": 0, "position": 0, "samples_seen": 0, "valid_samples": 0,
                 "attempted_samples": 0, "rejected_steps": 0, "oom_events": 0,
                 "numpy_rng": rng.bit_generator.state, "microbatch": config["microbatch"],
                 "last_save": now, "last_preview": now, "last_review": now}
+    if quality:
+        progress['recovery_scale'] = float(config.get('recovery_scale', 1))
     if resume == "latest":
-        resume = json.loads((output/"latest.json").read_text())["checkpoint"]
+        pointer = ('latest-' + stage['stage_id'] + '.json') if quality else 'latest.json'
+        resume = json.loads((output/pointer).read_text())["checkpoint"]
     if resume:
         state, progress = restore_checkpoint(resume, state, identity)
         rng.bit_generator.state = progress["numpy_rng"]
-    elif (output/"latest.json").exists():
+    elif (output/('latest-' + stage['stage_id'] + '.json' if quality else 'latest.json')).exists():
         raise FileExistsError("Output already has a checkpoint; pass --resume latest")
-    state, progress = apply_recovery_overrides(state,progress,config,checkpoint=resume)
+    if quality:
+        progress['recovery_scale'] = min(progress['recovery_scale'], config.get('recovery_scale', 1))
+        config['recovery_scale'] = progress['recovery_scale']
+        config['learning_rate'] = stage['recipe']['learning_rate'] * progress['recovery_scale']
+        overrides = copy.deepcopy(config.get('recovery_overrides', {}))
+        overrides.pop('learning_rate', None)
+        recovery_config = {**config, 'recovery_overrides': overrides}
+        state, progress = apply_recovery_overrides(state, progress, recovery_config, checkpoint=resume)
+    else:
+        state, progress = apply_recovery_overrides(state,progress,config,checkpoint=resume)
     actual_learning_rate = float(np.asarray(state.learning_rate))
     state = jax_utils.replicate(state)
-    step_fn = make_train_step(create_model(config["model_id"]))
+    step_fn = make_train_step(model, config['ema_decay'], config.get('objective_id', 'meanflow_original'))
     append_event(output/"events.jsonl", "training_start", identity=identity, resume=resume,
                  microbatch=progress["microbatch"], learning_rate=actual_learning_rate, device_count=devices,
-                 jax=jax.__version__, devices=[str(d) for d in jax.local_devices()])
+                 jax=jax.__version__, devices=[str(d) for d in jax.local_devices()],
+                 matmul_precision=str(jax.config.jax_default_matmul_precision), bounded_stage=stage)
+    if quality and not resume:
+        save_checkpoint(state, progress, config, identity, export=True)
     stop = {"requested": False}
     def request_stop(*_):
         stop["requested"] = True
@@ -424,6 +472,14 @@ def run(config, *, resume=None, max_steps=None):
     completed = 0
     started = time.monotonic()
     while not stop["requested"] and (max_steps is None or completed < max_steps):
+        committed_step = int(np.asarray(jax.device_get(state.step))[0])
+        if quality:
+            if not stage['source_step'] <= committed_step <= stage['stop_step']:
+                raise ValueError('State step outside immutable stage budget')
+            if committed_step == stage['stop_step']:
+                break
+            rate = scheduled_learning_rate(config, committed_step, progress['recovery_scale'])
+            state = state.replace(learning_rate=jnp.full((devices,), rate, dtype=jnp.float32))
         if config.get("max_epochs") is not None and progress["sampler_epoch"] >= config["max_epochs"]:
             break
         level, ram = memory_status(limits)
@@ -474,6 +530,10 @@ def run(config, *, resume=None, max_steps=None):
                 progress["microbatch"] = max(1, old_batch//2)
             else:
                 state = state.replace(learning_rate=jnp.full((devices,), old_lr*0.5, dtype=jnp.float32))
+                if quality:
+                    progress['recovery_scale'] *= .5
+                    config['recovery_scale'] = progress['recovery_scale']
+                    config['learning_rate'] = stage['recipe']['learning_rate'] * progress['recovery_scale']
             append_event(output/"events.jsonl", "automatic_recovery", reason=type(exc).__name__, detail=str(exc),
                          old_microbatch=old_batch, new_microbatch=progress["microbatch"],
                          old_learning_rate=old_lr, new_learning_rate=old_lr if is_oom else old_lr*0.5,
@@ -481,7 +541,7 @@ def run(config, *, resume=None, max_steps=None):
             del batch
             gc.collect()
             jax.clear_caches()
-            if failures >= config.get("max_recovery_failures", 2) or (is_oom and old_batch == 1):
+            if failures >= config.get("max_recovery_failures", 2) or (is_oom and old_batch <= (2 if quality else 1)):
                 progress["numpy_rng"] = rng.bit_generator.state
                 save_checkpoint(state, progress, config, identity, export=False)
                 raise RecoveryExhausted("Bounded automatic recovery exhausted; last valid state saved") from exc
@@ -528,7 +588,9 @@ def run(config, *, resume=None, max_steps=None):
                 if due and not config.get("validation_scope",False) and not config.get("calibration",False):
                     append_event(output/"requests.jsonl", kind, model_id=config["model_id"],
                                  checkpoint=str(checkpoint), export=export_path, codec=config["paths"]["codec"],
-                                 seed=config["seed"], valid_samples=progress["valid_samples"])
+                                 seed=config["seed"], valid_samples=progress["valid_samples"],
+                                 integrity_mode='metadata', checkpoint_id=checkpoint.name,
+                                 stage_id=stage.get('stage_id'), step=int(np.asarray(jax.device_get(state.step))[0]))
     progress["numpy_rng"] = rng.bit_generator.state
     checkpoint, export_path = save_checkpoint(state, progress, config, identity, export=True)
     append_event(output/"events.jsonl", "training_stopped", checkpoint=str(checkpoint),

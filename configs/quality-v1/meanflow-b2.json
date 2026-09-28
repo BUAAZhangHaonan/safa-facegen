@@ -1,0 +1,73 @@
+{
+  "model_id": "MeanFlow-B-2",
+  "learning_rate": 3e-05,
+  "microbatch": 64,
+  "device_count": 4,
+  "required_world_size": 4,
+  "seed": 42,
+  "save_interval_seconds": 900,
+  "preview_interval_seconds": 1800,
+  "review_interval_seconds": 7200,
+  "limits": {
+    "gpu_gib": 72,
+    "memory_soft_gib": 242,
+    "memory_hard_gib": 243
+  },
+  "paths": {
+    "dataset_manifest": "data/hq256/manifest.json",
+    "latent_cache": "data/hq256/cache/meanflow/manifest.json",
+    "initial_checkpoint": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0679ep-20260926T041357192035Z/export",
+    "codec": "models/codecs/SD-VAE-EMA",
+    "output": "runs/MeanFlow-B-2"
+  },
+  "max_recovery_failures": 2,
+  "precision": "fp32",
+  "adam_betas": [
+    0.9,
+    0.95
+  ],
+  "adam_eps": 1e-08,
+  "weight_decay": 0.0,
+  "ema_decay": 0.999,
+  "time_sampling": {
+    "distribution": "logit_normal",
+    "mean": -0.4,
+    "std": 1.0
+  },
+  "data_proportion": 0.5,
+  "norm_p": 1.0,
+  "norm_eps": 0.01,
+  "null_label": 1000,
+  "guidance": "none",
+  "class_dropout_prob": 0.0,
+  "latent_scale": 0.18215,
+  "end_learning_rate": 3e-06,
+  "warmup_steps": 500,
+  "objective_id": "imf_boundary_v1",
+  "bounded_stage": {
+    "schema_version": 2,
+    "stage_id": "qv1-mf-b2",
+    "model_id": "MeanFlow-B-2",
+    "parent_checkpoint_id": "MeanFlow-B-2-0679ep-20260926T041357192035Z",
+    "objective_id": "imf_boundary_v1",
+    "source_step": 0,
+    "stop_step": 20000,
+    "initialization_mode": "ema_warm_start_new_optimizer",
+    "recipe": {
+      "ema_decay": 0.999,
+      "microbatch": 64,
+      "adam_betas": [
+        0.9,
+        0.95
+      ],
+      "weight_decay": 0.0,
+      "learning_rate": 3e-05,
+      "end_learning_rate": 3e-06,
+      "warmup_steps": 500,
+      "precision": "fp32"
+    }
+  },
+  "initialization_mode": "ema_warm_start_new_optimizer",
+  "integrity_mode": "metadata",
+  "matmul_precision": "highest"
+}

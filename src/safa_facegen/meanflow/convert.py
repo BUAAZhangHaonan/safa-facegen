@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .io import atomic_json, sha256_file
+from .io import atomic_json
 from .spec import FORMAT_VERSION, LATENT_SCALE, UPSTREAM_COMMIT, get_spec
 
 
@@ -168,8 +168,10 @@ def flax_to_canonical(params, spec):
     return output
 
 
-def write_export(output, model_id, ema, *, raw=None, metadata=None, register_identity=True):
+def write_export(output, model_id, ema, *, raw=None, metadata=None, register_identity=True, integrity_mode="metadata"):
     from safetensors.numpy import save_file
+    if integrity_mode != "metadata":
+        raise ValueError("New exports require metadata integrity")
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
     strict_check(ema, canonical_shapes(get_spec(model_id)))
@@ -183,10 +185,18 @@ def write_export(output, model_id, ema, *, raw=None, metadata=None, register_ide
                 "model_id": model_id, "architecture": get_spec(model_id).to_dict(),
                 "upstream_commit": UPSTREAM_COMMIT, "latent_scale": LATENT_SCALE,
                 "null_label": 1000, "ema_weights": "ema.safetensors",
-                "sha256": {name: sha256_file(output/name) for name in names} if register_identity else {},
+                "integrity_mode": integrity_mode,
+                "files": [{"path": name, "bytes": (output/name).stat().st_size} for name in names],
+                "sha256": {},
                 "temporary_calibration": not register_identity,
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "metadata": metadata or {}}
+    source = metadata or {}
+    manifest.update(state_role="ema", checkpoint_id=source.get("checkpoint", source.get("checkpoint_id")),
+                    stage_id=source.get("stage_id"), objective_id=source.get("objective_id"),
+                    step=source.get("hq_step", source.get("step")),
+                    parent_checkpoint_id=source.get("parent_checkpoint_id"),
+                    codec_registration=source.get("codec_registration", source.get("identity", {}).get("codec")))
     atomic_json(output / "manifest.json", manifest)
     return manifest
 
@@ -239,7 +249,7 @@ def main():
     raw = convert_legacy_state(payload[args.raw_key], spec)
     ema = convert_legacy_state(payload[args.ema_key], spec)
     metadata = {"source_path": str(Path(args.checkpoint).resolve()),
-                "source_sha256": sha256_file(args.checkpoint),
+                "source_bytes": Path(args.checkpoint).stat().st_size,
                 **source_progress(payload),
                 "phase": "HQ", "hq_epoch": 0, "hq_step": 0,
                 "optimizer_reset": True, "position_conversion": "residual_half_permutation",

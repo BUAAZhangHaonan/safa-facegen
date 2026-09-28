@@ -28,8 +28,10 @@ from .common import atomic_json, sha256_file, checkpoint_name, check_limits, git
 from .data import HQDataset, CachedLatentDataset
 from .torch_models.models import family, load_backbone, LDM_ID,registered_ema_sha256
 from .torch_models.codec import read_checkpoint,registered_codec
-from .torch_models.objectives import TrainingObjective
+from .torch_models.objectives import TrainingObjective, resolve_objective
 from .bounded_stage import validate_training_resume, guard_trainer_launch, append_event, validate_journal
+from .quality_stage import is_v2, scheduled_learning_rate, latest_path as stage_latest_path
+from .integrity import file_record, validate_files, completion_record, validate_completion
 
 
 class ResumableDistributedSampler(DistributedSampler):
@@ -176,13 +178,67 @@ def _recipe(config,paths,world):
     def identity(path):
         value=Path(path).resolve();info=value.stat()
         return {"path":str(value),"bytes":info.st_size,"mtime_ns":info.st_mtime_ns}
+    quality_stage = is_v2(config.get("bounded_stage"))
+    teacher_path = Path(paths["teacher_checkpoint"]) if paths.get("teacher_checkpoint") else None
     result.update(world_size=world,dataset_identity=identity(paths["dataset_manifest"]),
                   codec_sha256=registered_codec(paths["codec"])["sha256"] if paths.get("codec") else None,
                   teacher_sha256=(config.get("teacher_ema_sha256") or registered_ema_sha256(paths["teacher_checkpoint"]))
-                      if paths.get("teacher_checkpoint") else None)
+                      if teacher_path is not None and not quality_stage else None)
     for key in ("codec","latent_cache","teacher_checkpoint","initial_checkpoint"):
         if paths.get(key):result[key+"_identity"]=identity(paths[key])
+    if quality_stage:
+        for key in ("bounded_stage", "objective_id", "initialization_mode", "lr_schedule",
+                    "min_snr_gamma", "lcf_skip", "ot_global_batch"):
+            result[key] = copy.deepcopy(config.get(key))
+        if teacher_path is not None:
+            manifest = _validate_metadata_checkpoint(teacher_path, role="ema")
+            result["teacher_registration"] = {key:manifest[key] for key in (
+                "checkpoint_id", "model_id", "stage_id", "objective_id", "codec_registration")}
+            result["teacher_registration"].update(integrity_mode="metadata", file=manifest["files"]["ema"])
     return result
+
+
+def _validate_metadata_checkpoint(path, *, role):
+    """Validate a new atomic checkpoint's inventory without scanning its bytes."""
+    path = Path(path)
+    manifest_path = path.parent / "manifest.json"
+    complete_path = path.parent / "COMPLETE.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    complete = json.loads(complete_path.read_text(encoding="utf-8"))
+    validate_completion(manifest, complete, manifest_bytes=manifest_path.stat().st_size,
+                        checkpoint_id=path.parent.name)
+    if manifest.get("integrity_mode") != "metadata" or manifest.get("files", {}).get(role, {}).get("path") != path.name:
+        raise ValueError("Checkpoint inventory role does not match the requested file")
+    validate_files(path.parent, manifest["files"].values() if role == "state" else [manifest["files"][role]])
+    return manifest
+
+
+def _parent_ema(config, paths):
+    """A quality stage starts only from the registered project EMA, never raw/Adam."""
+    path = Path(paths["initial_checkpoint"])
+    stage = config["bounded_stage"]
+    declared_id = path.parent.name if path.name == "ema.pt" else path.name.removesuffix(".ema.pt")
+    if declared_id != stage["parent_checkpoint_id"]:
+        raise ValueError("Initial EMA path differs from the immutable parent checkpoint")
+    if path.name == "ema.pt":
+        _validate_metadata_checkpoint(path, role="ema")
+    payload = read_checkpoint(path)
+    if (payload.get("format") != "safa-facegen-ema-v1" or payload.get("state_role") != "ema"
+            or payload.get("model_id") != config["model_id"]
+            or payload.get("checkpoint_id", declared_id) != declared_id):
+        raise ValueError("Quality initialization requires this model's registered parent EMA")
+    if paths.get("codec") and payload.get("codec_sha256") != registered_codec(paths["codec"])["sha256"]:
+        raise ValueError("Parent EMA and frozen codec registration differ")
+    return payload
+
+
+def _reduced_metrics(values, device, count):
+    keys = sorted(values)
+    totals = torch.stack([torch.as_tensor(values[key], device=device, dtype=torch.float64).detach() * count
+                          for key in keys] + [torch.tensor(float(count), device=device, dtype=torch.float64)])
+    if dist.is_initialized():
+        dist.all_reduce(totals)
+    return {key: float(totals[index] / totals[-1]) for index, key in enumerate(keys)}
 
 
 def all_finite(net, optimizer=None, ema=None):
@@ -213,10 +269,39 @@ def run(config,callbacks=None):
     config.update(overrides)
     model_id=config["model_id"]
     kind=family(model_id)
+    quality_stage = is_v2(config.get("bounded_stage"))
+    objective_id = resolve_objective(kind, config.get("objective_id"))
+    if quality_stage:
+        # A selected new teacher is identified by its registered metadata; an
+        # inherited legacy teacher digest must not describe this different EMA.
+        config.pop("teacher_ema_sha256", None)
+        if config.get("initialization_mode") != "ema_warm_start_new_optimizer":
+            raise ValueError("Quality stage requires EMA warm start with a fresh optimizer")
+        if config.get("integrity_mode") != "metadata":
+            raise ValueError("Quality stage requires metadata checkpoint integrity")
+        stage_recipe = config["bounded_stage"]["recipe"]
+        scale = float(config.get("recovery_scale", 1.0))
+        if not math.isfinite(scale) or not 0 < scale <= 1 or not math.isclose(
+                float(config["learning_rate"]), float(stage_recipe["learning_rate"]) * scale, rel_tol=1e-12):
+            raise ValueError("Quality learning_rate must be its peak times the persisted recovery scale")
+        for key in ("ema_decay", "weight_decay", "adam_betas"):
+            if config.get(key) != stage_recipe[key]:
+                raise ValueError(f"Quality stage runtime {key} differs from its immutable recipe")
+        if int(config["microbatch"]) > stage_recipe["microbatch"]:
+            raise ValueError("Quality stage microbatch cannot exceed its registered batch")
+        if (objective_id == "rf_batch_ot_v1" and config.get("ot_global_batch", 48) != 48
+                or objective_id == "min_snr_epsilon_v1" and config.get("min_snr_gamma", 5.0) != 5.0
+                or objective_id == "lcf_real_v1" and config.get("lcf_skip", 20) != 20):
+            raise ValueError("Objective settings differ from the authorized quality recipe")
+    elif objective_id not in ("diffusion", "rectified_flow", "latent_consistency"):
+        raise ValueError("Quality objectives require a registered schema-v2 stage")
     root=Path(config.get("project_root",Path(__file__).resolve().parents[2])).resolve()
     validate_journal(root/"runs"/model_id/"events.jsonl")
     validate_journal(root/"runs"/model_id/"requests.jsonl")
     guard_trainer_launch(config, root)
+    if config.get('bounded_stage', {}).get('schema_version') == 2:
+        from .quality_stage import guard_initialization
+        guard_initialization(config, root, config['paths'].get('resume'))
     stop_request_path=_stop_request_path(config,root,model_id)
     world=int(os.environ.get("WORLD_SIZE","1"))
     rank=int(os.environ.get("RANK","0"))
@@ -294,19 +379,36 @@ def run(config,callbacks=None):
     if not usable_batches:
         raise ValueError("No complete gradient accumulation group")
     teacher=None;teacher_metadata=None
-    if kind=="latent_consistency":
+    if kind=="latent_consistency" and objective_id != "lcf_real_v1":
         if not paths.get("teacher_checkpoint"):
             raise ValueError("LCM requires project LDM teacher_checkpoint")
+        if Path(paths["teacher_checkpoint"]).name == "ema.pt":
+            _validate_metadata_checkpoint(paths["teacher_checkpoint"], role="ema")
         payload=read_checkpoint(paths["teacher_checkpoint"])
-        if payload.get("format")!="safa-facegen-ema-v1" or family(payload["model_id"])!="diffusion":
+        if (payload.get("format")!="safa-facegen-ema-v1" or payload.get("state_role") != "ema"
+                or family(payload["model_id"])!="diffusion"):
             raise ValueError("LCM teacher must be this project's LDM EMA export")
+        if objective_id == "lcd_teacher_v2" and (payload.get("objective_id") != "min_snr_epsilon_v1"
+                or not is_v2(payload.get("config", {}).get("bounded_stage"))):
+            raise ValueError("LCD v2 requires the newly selected Min-SNR Diffusion EMA")
+        if objective_id == "lcd_teacher_v2" and payload.get("checkpoint_id") != config["bounded_stage"].get(
+                "selection", {}).get("candidate", {}).get("checkpoint_id"):
+            raise ValueError("LCD teacher does not match the quality gate's selected checkpoint")
         if payload.get("codec_sha256")!=registered_codec(paths["codec"])["sha256"]:
             raise ValueError("LCM teacher and latent cache must use the same codec")
-        teacher_metadata={key:payload.get(key) for key in ("model_id","state_role","step","samples_seen","codec_sha256")}
+        teacher_metadata={key:payload.get(key) for key in ("model_id","state_role","checkpoint_id","stage_id",
+                          "objective_id","step","samples_seen","codec_sha256")}
         teacher=load_backbone(LDM_ID,paths["teacher_checkpoint"],payload=payload).requires_grad_(False).eval()
         del payload
+    if objective_id == "lcf_real_v1" and paths.get("teacher_checkpoint"):
+        raise ValueError("Teacher-free LCF cannot include a teacher path")
+    if quality_stage:
+        parent_payload = _parent_ema(config, paths)
+        net = load_backbone(model_id, paths["initial_checkpoint"], payload=parent_payload).requires_grad_(True)
+        del parent_payload
+    elif kind == "latent_consistency":
         net=(load_backbone(model_id,paths["initial_checkpoint"]) if paths.get("initial_checkpoint")
-             else copy.deepcopy(teacher).requires_grad_(True))
+             else copy.deepcopy(teacher)).requires_grad_(True)
     else:
         net=load_backbone(model_id,paths["initial_checkpoint"]).requires_grad_(True)
     # Do not unfreeze the official RF Fourier frequencies (requires_grad=False upstream).
@@ -318,7 +420,9 @@ def run(config,callbacks=None):
     ema=copy.deepcopy(net).eval().requires_grad_(False)
     if teacher is not None:
         teacher.to(device=device,dtype=torch.float32)
-    objective=TrainingObjective(net,kind,teacher,ema if teacher is not None else None).to(device)
+    objective=TrainingObjective(net,kind,teacher,ema if kind == "latent_consistency" else None,
+        objective_id=objective_id, gamma=float(config.get("min_snr_gamma", 5.0)),
+        lcf_skip=int(config.get("lcf_skip", 20)), ot_global_batch=int(config.get("ot_global_batch", 48))).to(device)
     optimizer=torch.optim.AdamW([p for p in net.parameters() if p.requires_grad],
                 lr=float(config["learning_rate"]),betas=tuple(config.get("adam_betas",[0.9,0.999])),
                 weight_decay=float(config.get("weight_decay",0)),eps=1e-8)
@@ -326,20 +430,47 @@ def run(config,callbacks=None):
     now=time.time()
     progress={"epoch":0,"next_batch":0,"step":0,"samples_seen":0,"samples_in_epoch_per_rank":0,
               "event_times_utc_seconds":{"save":now,"preview":now,"review":now}}
+    if quality_stage:
+        progress.update(stage_step=0, recovery_scale=float(config.get("recovery_scale", 1.0)))
     resume=paths.get("resume")
     if resume:
+        resume_manifest = None
+        if quality_stage:
+            resume_manifest = _validate_metadata_checkpoint(resume, role="state")
         payload=read_checkpoint(resume)
         if payload.get("format")!="safa-facegen-train-v1":
             raise ValueError("Resume requires a complete training checkpoint")
         validate_training_resume(config, payload, root)
         previous_recipe=payload["recipe"]
         differences={key for key in set(previous_recipe)|set(recipe) if previous_recipe.get(key)!=recipe.get(key)}
-        if differences-set(overrides):
-            raise ValueError(f"Resume recipe differs without explicit recovery authorization: {sorted(differences-set(overrides))}")
+        allowed_differences = set(overrides)
+        if quality_stage:
+            stage = config["bounded_stage"]
+            if (payload.get("model_id") != model_id or payload.get("state_role") != "full_training_state"
+                    or payload.get("checkpoint_id") != resume_manifest["checkpoint_id"]
+                    or payload.get("stage_id") != stage["stage_id"]
+                    or payload.get("objective_id") != objective_id
+                    or payload.get("step") != payload["progress"]["step"]
+                    or payload.get("step") != resume_manifest["step"]):
+                raise ValueError("Full-state payload, stage, and manifest identities differ")
+            saved_scale = float(payload["progress"]["recovery_scale"])
+            requested_scale = float(config.get("recovery_scale", 1.0))
+            if not 0 < requested_scale <= saved_scale <= 1:
+                raise ValueError("Recovery scale cannot increase or leave (0,1]")
+            if payload["progress"].get("stage_step") != payload["progress"]["step"]:
+                raise ValueError("Saved stage step and optimizer progress differ")
+            expected_peak = float(config["bounded_stage"]["recipe"]["learning_rate"]) * requested_scale
+            if not math.isclose(float(config["learning_rate"]), expected_peak, rel_tol=1e-12):
+                raise ValueError("Runtime learning_rate must record the scaled peak, not instantaneous LR")
+            allowed_differences.add("learning_rate")
+        if differences-allowed_differences:
+            raise ValueError(f"Resume recipe differs without explicit recovery authorization: {sorted(differences-allowed_differences)}")
         net.load_state_dict(payload["model_state"],strict=True)
         ema.load_state_dict(payload["ema_state"],strict=True)
         optimizer.load_state_dict(payload["optimizer_state"])
         progress=payload["progress"]
+        if quality_stage:
+            progress["recovery_scale"] = float(config.get("recovery_scale", 1.0))
         if "event_times_utc_seconds" not in progress:
             raise ValueError("Resume checkpoint lacks absolute event schedule timestamps")
         consumed=int(progress["samples_in_epoch_per_rank"])
@@ -352,6 +483,9 @@ def run(config,callbacks=None):
                 group["lr"]=float(overrides["learning_rate"])
         restore_rng(payload["rng_by_rank"][rank],device)
         del payload
+    if quality_stage and progress["step"] < config["max_steps"]:
+        for group in optimizer.param_groups:
+            group["lr"] = scheduled_learning_rate(config, progress["stage_step"], progress["recovery_scale"])
     train_module=DistributedDataParallel(objective,device_ids=[local_rank] if device.type=="cuda" else None,
             broadcast_buffers=False,find_unused_parameters=False) if world>1 else objective
     train_module.train()
@@ -412,19 +546,31 @@ def run(config,callbacks=None):
             rngs[0]=rng
         if rank==0:
             name=checkpoint_name(model_id,progress["samples_seen"],len(dataset))
-            if (output/(name+".state.pt")).exists():
+            if (output/(name+".state.pt")).exists() or (output/name).exists() or (output/(name+".partial")).exists():
                 # Identity is immutable; wait for a distinct UTC second, never overwrite.
                 time.sleep(1.05)
                 name=checkpoint_name(model_id,progress["samples_seen"],len(dataset))
             state_path=output/(name+".state.pt")
             ema_path=output/(name+".ema.pt")
             config_path=output/(name+".config.json")
+            metadata_mode = config.get("integrity_mode") == "metadata"
+            if metadata_mode:
+                partial = output/(name+".partial")
+                partial.mkdir(exist_ok=False)
+                state_path, ema_path, config_path = [partial/file for file in ("state.pt", "ema.pt", "config.json")]
             metadata={"model_id":model_id,"config":config,"progress":dict(progress),
                       "step":progress["step"],"samples_seen":progress["samples_seen"],
                       "dataset_size":len(dataset),"codec_sha256":recipe["codec_sha256"],
                       "teacher_sha256":recipe["teacher_sha256"],"teacher":teacher_metadata,"code_commit":code_revision,
                       "stop_reason":stop_reason[0] if reason=="stop_requested" else None}
-            atomic_torch_save({"format":"safa-facegen-train-v1",**metadata,"recipe":recipe,
+            if metadata_mode:
+                stage = config.get("bounded_stage", {})
+                metadata.update(checkpoint_id=name, integrity_mode="metadata", complete=True,
+                    stage_id=stage.get("stage_id"), objective_id=objective_id,
+                    stage_step=progress.get("stage_step", progress["step"]),
+                    parent_checkpoint_id=stage.get("parent_checkpoint_id"),
+                    codec_registration=registered_codec(paths["codec"]) if paths.get("codec") else None)
+            atomic_torch_save({"format":"safa-facegen-train-v1",**metadata,"recipe":recipe,"state_role":"full_training_state",
                 "model_state":net.state_dict(),"ema_state":ema.state_dict(),
                 "optimizer_state":optimizer.state_dict(),"rng_by_rank":rngs,
                 "dataloader":{"epoch":progress["epoch"],"next_batch":progress["next_batch"],
@@ -434,23 +580,47 @@ def run(config,callbacks=None):
             atomic_torch_save({"format":"safa-facegen-ema-v1",**metadata,
                               "state_role":"ema","model_state":ema.state_dict()},ema_path)
             atomic_json(config_path,config)
-            # Production exports are hashed once for transport. Temporary numerical
-            # acceptance checkpoints are compared directly and are never replicated.
-            hashes={"ema":None,"state":None,"config":sha256_file(config_path)} if config.get("validation_scope") else {
-                "ema":sha256_file(ema_path),"state":sha256_file(state_path),"config":sha256_file(config_path)}
+            if metadata_mode:
+                files={role:file_record(path) for role,path in
+                       (("state",state_path),("ema",ema_path),("config",config_path))}
+                validate_files(partial, files.values())
+                manifest={key:metadata[key] for key in ("checkpoint_id","model_id","stage_id","objective_id",
+                    "parent_checkpoint_id","codec_registration","integrity_mode","step","stage_step",
+                    "samples_seen","complete","code_commit")}
+                manifest.update(files=files, roles={"state":"full_training_state","ema":"ema","config":"configuration"},
+                                configuration=config, hashes={})
+                manifest_path=partial/"manifest.json"
+                atomic_json(manifest_path,manifest)
+                atomic_json(partial/"COMPLETE.json",completion_record(manifest_path,name))
+                fsync_directory(partial)
+                os.rename(partial,output/name)
+                fsync_directory(output)
+                state_path,ema_path,config_path=[output/name/file for file in ("state.pt","ema.pt","config.json")]
+                hashes={}
+            else:
+                # Historical stage format is retained; quality stages never scan weights.
+                hashes={"ema":None,"state":None,"config":sha256_file(config_path)} if config.get("validation_scope") else {
+                    "ema":sha256_file(ema_path),"state":sha256_file(state_path),"config":sha256_file(config_path)}
             latest={"checkpoint_id":name,"identity":name,"root":str(root),"complete":True,
                     "checkpoint":str(state_path.relative_to(root)),"state_path":str(state_path.relative_to(root)),
                     "ema_path":str(ema_path.relative_to(root)),"config_path":str(config_path.relative_to(root)),
-                    "sha256":hashes["ema"],"state_sha256":hashes["state"],"state_role":"ema","hashes":hashes,
-                    "ema_sha256":hashes["ema"],"step":progress["step"],"completed_epochs":progress["samples_seen"]//len(dataset),
+                    "sha256":hashes.get("ema"),"state_sha256":hashes.get("state"),"state_role":"ema","hashes":hashes,
+                    "ema_sha256":hashes.get("ema"),"step":progress["step"],"completed_epochs":progress["samples_seen"]//len(dataset),
                     "created_at_utc":datetime.now(timezone.utc).isoformat(),
                     "samples_seen":progress["samples_seen"],"reason":reason,"model_id":model_id,
                     "stop_reason":metadata["stop_reason"]}
+            if metadata_mode:
+                latest.update({key:metadata[key] for key in ("integrity_mode","stage_id","objective_id",
+                    "parent_checkpoint_id","codec_registration","stage_step")})
+                latest.update(files=files,manifest_path=str((output/name/"manifest.json").relative_to(root)),
+                              complete_path=str((output/name/"COMPLETE.json").relative_to(root)))
             atomic_json(output/(name+".json"),latest)
             publish("save",latest)
             for event in scheduled_events:
                 publish(event,latest)
             # Requests become durable before advancing the resumable pointer.
+            if quality_stage:
+                atomic_json(stage_latest_path(root,config["bounded_stage"]),latest)
             atomic_json(run_dir/"last.json",latest)
             # Serialization and transport hashing otherwise accumulate clean RAM
             # pages for every retained checkpoint, even after Python frees tensors.
@@ -505,6 +675,10 @@ def run(config,callbacks=None):
             sampler.start_index=int(progress["samples_in_epoch_per_rank"])
             optimizer.zero_grad(set_to_none=True)
             for batch_index,batch in enumerate(loader):
+                if quality_stage:
+                    rate = scheduled_learning_rate(config, progress["stage_step"], progress["recovery_scale"])
+                    for group in optimizer.param_groups:
+                        group["lr"] = rate
                 boundary=(batch_index+1)%accumulation==0
                 sync=train_module.no_sync() if world>1 and not boundary else __import__('contextlib').nullcontext()
                 with sync:
@@ -528,12 +702,16 @@ def run(config,callbacks=None):
                 if _reduce_flag(not all_finite(ema),device):
                     raise FloatingPointError("Non-finite EMA after update; previous latest retained")
                 progress["step"]+=1
+                if quality_stage:
+                    progress["stage_step"] = progress["step"]
                 progress["samples_seen"]+=int(batch.shape[0])*world
                 progress["samples_in_epoch_per_rank"]+=int(batch.shape[0])
                 progress["next_batch"]+=1
-                if rank==0 and progress["step"]%int(config.get("log_interval_steps",10))==0:
-                    publish("metrics",{**progress,"model_id":model_id,"loss":float(loss.detach()),"grad_norm":float(norm),
-                                               "learning_rate":optimizer.param_groups[0]["lr"]})
+                if progress["step"]%int(config.get("log_interval_steps",10))==0:
+                    metrics = _reduced_metrics({"loss":loss, "grad_norm":norm, **objective.last_metrics},
+                                               device, int(batch.shape[0]))
+                    publish("metrics",{**progress,"model_id":model_id,"objective_id":objective_id,**metrics,
+                                       "learning_rate":optimizer.param_groups[0]["lr"]})
                 now=time.time()
                 due=torch.tensor([int(now-progress["event_times_utc_seconds"][event]>=intervals[event]) if rank==0 else 0
                                   for event in ("save","preview","review")],device=device)

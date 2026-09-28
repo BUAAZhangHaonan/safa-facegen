@@ -1,0 +1,377 @@
+{
+  "format": "SAFA_quality_plan_spec_v1_NOT_NATIVE_CAMPAIGN",
+  "purpose": "six_unconditional_face_pretraining_models_only",
+  "base_record_commit": "e983e9cdfef3221b785783d936df631b3ba25379",
+  "last_recorded_at_utc": "2026-09-27T17:03:23.792281+00:00",
+  "server_live_state_checked": false,
+  "requires_codex_integration_before_dispatch": true,
+  "limits": {
+    "gpu_count": 4,
+    "one_model_at_a_time": true,
+    "gpu_gib": 72,
+    "memory_soft_gib": 242,
+    "memory_hard_gib": 243,
+    "restore_transfer_interval_seconds": 7200
+  },
+  "existing_lcm": {
+    "stage_id": "LatentConsistency-LDM-UNet-teacher741-20260927T065043Z",
+    "source_step": 0,
+    "absolute_stop_step": 30000,
+    "latest_recorded_complete_step": 23846,
+    "latest_recorded_log_step": 24330,
+    "teacher_approval_already_granted": true,
+    "change_active_recipe": false
+  },
+  "total_new_update_upper_bound": 95000,
+  "ordered_new_stages": [
+    {
+      "dataset": "existing_HQ_100000",
+      "semantic_condition": null,
+      "resolution": [
+        256,
+        256
+      ],
+      "initialization_mode": "ema_warm_start_new_optimizer",
+      "stage_source_step": 0,
+      "optimizer_step_on_start": 0,
+      "weight_decay": 0.0,
+      "warmup_steps": 500,
+      "schedule": "cosine_by_restored_absolute_stage_step",
+      "initial_ema": "copy_parent_ema",
+      "codec": "keep_current_frozen",
+      "save_interval_seconds": 900,
+      "review_interval_seconds": 7200,
+      "preview_interval_seconds": 1800,
+      "integrity_mode": "metadata",
+      "seed": 42,
+      "new_independent_seeds": 0,
+      "allow_auto_second_budget": false,
+      "allow_parameter_grid": false,
+      "protocol": "preserve_current_per_model_protocol; new recipe records separate",
+      "stage_id": "qv1-mf-b2",
+      "model_id": "MeanFlow-B-2",
+      "parent_selector": {
+        "hq_review_epoch_approx": 679,
+        "source": "existing_best_review_ema",
+        "fallback": "highest_quality_existing_ema_after_reading_actual_records; do_not_guess_a_complete_state"
+      },
+      "objective_id": "imf_boundary_v1",
+      "max_new_updates": 20000,
+      "stage_stop_step": 20000,
+      "microbatch": 64,
+      "effective_batch": 256,
+      "peak_lr": 3e-05,
+      "end_lr": 3e-06,
+      "ema_decay": 0.999,
+      "precision": "fp32_highest",
+      "adam_betas": [
+        0.9,
+        0.95
+      ],
+      "norm_p": 1.0,
+      "norm_eps": 0.01,
+      "time_logit_normal": [
+        -0.4,
+        1.0
+      ],
+      "boundary_fraction": 0.5,
+      "sampling_steps": 1,
+      "enable": "first_new_training_after_existing_LCD_exits"
+    },
+    {
+      "dataset": "existing_HQ_100000",
+      "semantic_condition": null,
+      "resolution": [
+        256,
+        256
+      ],
+      "initialization_mode": "ema_warm_start_new_optimizer",
+      "stage_source_step": 0,
+      "optimizer_step_on_start": 0,
+      "weight_decay": 0.0,
+      "warmup_steps": 500,
+      "schedule": "cosine_by_restored_absolute_stage_step",
+      "initial_ema": "copy_parent_ema",
+      "codec": "keep_current_frozen",
+      "save_interval_seconds": 900,
+      "review_interval_seconds": 7200,
+      "preview_interval_seconds": 1800,
+      "integrity_mode": "metadata",
+      "seed": 42,
+      "new_independent_seeds": 0,
+      "allow_auto_second_budget": false,
+      "allow_parameter_grid": false,
+      "protocol": "preserve_current_per_model_protocol; new recipe records separate",
+      "stage_id": "qv1-diffusion",
+      "model_id": "Diffusion-LDM-UNet",
+      "parent_selector": {
+        "checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+        "state_role": "ema"
+      },
+      "objective_id": "min_snr_epsilon_v1",
+      "max_new_updates": 15000,
+      "stage_stop_step": 15000,
+      "microbatch": 64,
+      "effective_batch": 256,
+      "peak_lr": 3e-06,
+      "end_lr": 3e-07,
+      "ema_decay": 0.999,
+      "precision": "bf16_forward_fp32_parameters",
+      "adam_betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip": 1.0,
+      "gamma": 5.0,
+      "sampling": {
+        "ddim_steps": 200,
+        "eta": 1.0
+      },
+      "enable": "if_current_diffusion_not_release_ready"
+    },
+    {
+      "dataset": "existing_HQ_100000",
+      "semantic_condition": null,
+      "resolution": [
+        256,
+        256
+      ],
+      "initialization_mode": "ema_warm_start_new_optimizer",
+      "stage_source_step": 0,
+      "optimizer_step_on_start": 0,
+      "weight_decay": 0.0,
+      "warmup_steps": 500,
+      "schedule": "cosine_by_restored_absolute_stage_step",
+      "initial_ema": "copy_parent_ema",
+      "codec": "keep_current_frozen",
+      "save_interval_seconds": 900,
+      "review_interval_seconds": 7200,
+      "preview_interval_seconds": 1800,
+      "integrity_mode": "metadata",
+      "seed": 42,
+      "new_independent_seeds": 0,
+      "allow_auto_second_budget": false,
+      "allow_parameter_grid": false,
+      "protocol": "preserve_current_per_model_protocol; new recipe records separate",
+      "stage_id": "qv1-lcm-refine",
+      "model_id": "LatentConsistency-LDM-UNet",
+      "parent_selector": {
+        "source": "best_ema_from_completed_current_LCD",
+        "must_resolve_after_original_stage_end": true
+      },
+      "objective_id": "choose_exactly_one_lcm_branch",
+      "max_new_updates": 15000,
+      "stage_stop_step": 15000,
+      "microbatch": 64,
+      "effective_batch": 256,
+      "peak_lr": 5e-06,
+      "end_lr": 5.000000000000001e-07,
+      "ema_decay": 0.95,
+      "precision": "bf16_forward_fp32_parameters",
+      "adam_betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip": 1.0,
+      "sampling_steps": 4,
+      "sampling_grid": [
+        999,
+        759,
+        499,
+        259
+      ],
+      "enable": "only_if_LCM_not_release_ready",
+      "exclusive_branches": [
+        {
+          "objective_id": "lcd_teacher_v2",
+          "condition": "new_diffusion_selected_as_better_by_quality_gates",
+          "teacher": "selected_qv1_diffusion_ema",
+          "max_new_updates": 15000,
+          "peak_lr": 5e-06,
+          "end_lr": 5e-07,
+          "stage_source_step": 0,
+          "stage_stop_step": 15000,
+          "ema_decay": 0.95
+        },
+        {
+          "objective_id": "lcf_real_v1",
+          "condition": "otherwise",
+          "teacher": null,
+          "skip": 20,
+          "high_time_range": [
+            20,
+            999
+          ],
+          "same_clean_and_same_noise": true,
+          "max_new_updates": 10000,
+          "peak_lr": 2e-06,
+          "end_lr": 2e-07,
+          "stage_source_step": 0,
+          "stage_stop_step": 10000,
+          "ema_decay": 0.9999
+        }
+      ]
+    },
+    {
+      "dataset": "existing_HQ_100000",
+      "semantic_condition": null,
+      "resolution": [
+        256,
+        256
+      ],
+      "initialization_mode": "ema_warm_start_new_optimizer",
+      "stage_source_step": 0,
+      "optimizer_step_on_start": 0,
+      "weight_decay": 0.0,
+      "warmup_steps": 500,
+      "schedule": "cosine_by_restored_absolute_stage_step",
+      "initial_ema": "copy_parent_ema",
+      "codec": "keep_current_frozen",
+      "save_interval_seconds": 900,
+      "review_interval_seconds": 7200,
+      "preview_interval_seconds": 1800,
+      "integrity_mode": "metadata",
+      "seed": 42,
+      "new_independent_seeds": 0,
+      "allow_auto_second_budget": false,
+      "allow_parameter_grid": false,
+      "protocol": "preserve_current_per_model_protocol; new recipe records separate",
+      "stage_id": "qv1-rf",
+      "model_id": "RectifiedFlow-NCSNpp",
+      "parent_selector": {
+        "hq_review_epoch_approx": 7,
+        "source": "corrected_upstream-time-fp32_diagnostic_selected_ema",
+        "never_attach_later_optimizer": true
+      },
+      "objective_id": "rf_batch_ot_v1",
+      "max_new_updates": 10000,
+      "stage_stop_step": 10000,
+      "microbatch": 12,
+      "effective_batch": 48,
+      "peak_lr": 3e-06,
+      "end_lr": 3e-07,
+      "ema_decay": 0.999,
+      "precision": "fp32",
+      "adam_betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip": 1.0,
+      "time_uniform": [
+        0.001,
+        1.0
+      ],
+      "coupling": "global_current_batch_exact_one_to_one_pixel_squared_cost",
+      "sampler": "existing_RK45_atol_rtol_1e-5",
+      "enable": "if_RF_not_release_ready"
+    },
+    {
+      "dataset": "existing_HQ_100000",
+      "semantic_condition": null,
+      "resolution": [
+        256,
+        256
+      ],
+      "initialization_mode": "ema_warm_start_new_optimizer",
+      "stage_source_step": 0,
+      "optimizer_step_on_start": 0,
+      "weight_decay": 0.0,
+      "warmup_steps": 500,
+      "schedule": "cosine_by_restored_absolute_stage_step",
+      "initial_ema": "copy_parent_ema",
+      "codec": "keep_current_frozen",
+      "save_interval_seconds": 900,
+      "review_interval_seconds": 7200,
+      "preview_interval_seconds": 1800,
+      "integrity_mode": "metadata",
+      "seed": 42,
+      "new_independent_seeds": 0,
+      "allow_auto_second_budget": false,
+      "allow_parameter_grid": false,
+      "protocol": "preserve_current_per_model_protocol; new recipe records separate",
+      "stage_id": "qv1-mf-b4",
+      "model_id": "MeanFlow-B-4",
+      "parent_selector": {
+        "hq_review_epoch_approx": 1908,
+        "source": "existing_best_review_ema"
+      },
+      "objective_id": "imf_boundary_v1",
+      "max_new_updates": 15000,
+      "stage_stop_step": 15000,
+      "microbatch": 64,
+      "effective_batch": 256,
+      "peak_lr": 3e-05,
+      "end_lr": 3e-06,
+      "ema_decay": 0.999,
+      "precision": "fp32_highest",
+      "adam_betas": [
+        0.9,
+        0.95
+      ],
+      "norm_p": 1.0,
+      "norm_eps": 0.01,
+      "time_logit_normal": [
+        -0.4,
+        1.0
+      ],
+      "boundary_fraction": 0.5,
+      "sampling_steps": 1,
+      "enable": "only_if_qv1-mf-b2_has_practical_quality_gain_and_B4_not_ready"
+    },
+    {
+      "dataset": "existing_HQ_100000",
+      "semantic_condition": null,
+      "resolution": [
+        256,
+        256
+      ],
+      "initialization_mode": "ema_warm_start_new_optimizer",
+      "stage_source_step": 0,
+      "optimizer_step_on_start": 0,
+      "weight_decay": 0.0,
+      "warmup_steps": 500,
+      "schedule": "cosine_by_restored_absolute_stage_step",
+      "initial_ema": "copy_parent_ema",
+      "codec": "keep_current_frozen",
+      "save_interval_seconds": 900,
+      "review_interval_seconds": 7200,
+      "preview_interval_seconds": 1800,
+      "integrity_mode": "metadata",
+      "seed": 42,
+      "new_independent_seeds": 0,
+      "allow_auto_second_budget": false,
+      "allow_parameter_grid": false,
+      "protocol": "preserve_current_per_model_protocol; new recipe records separate",
+      "stage_id": "qv1-mf-l2",
+      "model_id": "MeanFlow-L-2",
+      "parent_selector": {
+        "checkpoint_id": "MeanFlow-L-2-0249ep-20260926T152318241736Z",
+        "state_role": "ema"
+      },
+      "objective_id": "imf_boundary_v1",
+      "max_new_updates": 20000,
+      "stage_stop_step": 20000,
+      "microbatch": 64,
+      "effective_batch": 256,
+      "peak_lr": 2e-05,
+      "end_lr": 2.0000000000000003e-06,
+      "ema_decay": 0.999,
+      "precision": "fp32_highest",
+      "adam_betas": [
+        0.9,
+        0.95
+      ],
+      "norm_p": 1.0,
+      "norm_eps": 0.01,
+      "time_logit_normal": [
+        -0.4,
+        1.0
+      ],
+      "boundary_fraction": 0.5,
+      "sampling_steps": 1,
+      "enable": "only_if_qv1-mf-b2_has_practical_quality_gain_and_L2_not_ready"
+    }
+  ],
+  "exhaustion_policy": "preserve_candidate_and_mark_pending_no_auto_new_budget",
+  "research_experiments_authorized": false
+}

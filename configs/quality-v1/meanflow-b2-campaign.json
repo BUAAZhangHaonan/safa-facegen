@@ -1,0 +1,47 @@
+{
+  "model_order": [
+    "MeanFlow-B-2"
+  ],
+  "model_configs": {
+    "MeanFlow-B-2": "configs/quality-v1/meanflow-b2.json"
+  },
+  "gpu_ids": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "limits": {
+    "gpu_gib": 72,
+    "memory_soft_gib": 242,
+    "memory_hard_gib": 243
+  },
+  "save_interval_seconds": 900,
+  "preview_interval_seconds": 1800,
+  "review_interval_seconds": 7200,
+  "review_policy": "quality_v1_lexicographic_release_gate_no_auto_second_budget",
+  "max_consecutive_recovery_failures": 2,
+  "bounded_stage": {
+    "schema_version": 2,
+    "stage_id": "qv1-mf-b2",
+    "model_id": "MeanFlow-B-2",
+    "parent_checkpoint_id": "MeanFlow-B-2-0679ep-20260926T041357192035Z",
+    "objective_id": "imf_boundary_v1",
+    "source_step": 0,
+    "stop_step": 20000,
+    "initialization_mode": "ema_warm_start_new_optimizer",
+    "recipe": {
+      "ema_decay": 0.999,
+      "microbatch": 64,
+      "adam_betas": [
+        0.9,
+        0.95
+      ],
+      "weight_decay": 0.0,
+      "learning_rate": 3e-05,
+      "end_learning_rate": 3e-06,
+      "warmup_steps": 500,
+      "precision": "fp32"
+    }
+  }
+}
