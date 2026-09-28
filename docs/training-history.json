@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-09-28T11:29:01.296480+00:00",
+  "recorded_at": "2026-09-28T12:03:35.703050+00:00",
   "phase": "historical_initialization_and_HQ_pretraining",
   "scope": "The records array retains historical log statistics. HQ stages record actual production training, committed checkpoints, interruptions, and explicit image acceptance.",
   "selected_weight_provenance": "initializations.json",
@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-28T11:29:01.296480+00:00",
+    "recorded_at_utc": "2026-09-28T12:03:35.703050+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -493,7 +493,7 @@
     "active_training": {
       "model_id": "Diffusion-LDM-UNet",
       "stage_id": "qv1-diffusion",
-      "status": "quality_v1_min_snr_training",
+      "status": "bounded_stage_complete_pending_evaluation",
       "training_code_commit": "01a030d16d46cb117860437f969bafb31103abb5",
       "initial_training_code_commit": "957d64c9f4b227be331fe12cc8c314caf6acef71",
       "controller_pid": 3920752,
@@ -538,46 +538,38 @@
       "save_interval_seconds": 900,
       "preview_interval_seconds": 1800,
       "review_interval_seconds": 7200,
-      "latest_observed_at_utc": "2026-09-28T11:29:00.295810+00:00",
-      "latest_observed_step": 12150,
-      "latest_observed_samples_seen": 3107424,
+      "latest_observed_at_utc": "2026-09-28T12:03:35.703050+00:00",
+      "latest_observed_step": 15000,
+      "latest_observed_samples_seen": 3836352,
       "latest_logged_metrics": {
-        "event": "metrics",
-        "epoch": 31,
-        "next_batch": 29,
-        "step": 12150,
-        "samples_seen": 3107424,
-        "samples_in_epoch_per_rank": 1856,
+        "status": "complete",
+        "epoch": 38,
+        "next_batch": 142,
+        "step": 15000,
+        "samples_seen": 3836352,
+        "samples_in_epoch_per_rank": 9088,
         "event_times_utc_seconds": {
-          "save": 1790594920.0031443,
-          "preview": 1790594019.875843,
+          "save": 1790596524.8659837,
+          "preview": 1790595820.100218,
           "review": 1790593450.937943
         },
-        "stage_step": 12150,
-        "recovery_scale": 1.0,
-        "model_id": "Diffusion-LDM-UNet",
-        "objective_id": "min_snr_epsilon_v1",
-        "epsilon_mse": 0.15718304738402367,
-        "grad_norm": 0.009982004761695862,
-        "loss": 0.11720610596239567,
-        "weight_mean": 0.9426219314336777,
-        "weighted_loss": 0.11720610596239567,
-        "learning_rate": 5.49328443857735e-07
+        "stage_step": 15000,
+        "recovery_scale": 1.0
       },
-      "latest_observation_is_a_complete_checkpoint": false,
+      "latest_observation_is_a_complete_checkpoint": true,
       "latest_complete_checkpoint": {
-        "checkpoint_id": "Diffusion-LDM-UNet-0031ep-20260928T112840Z",
-        "optimizer_step": 12122,
-        "samples_seen": 3100256,
-        "exact_HQ_exposure": 31.00256,
-        "saved_at_utc": "2026-09-28T11:28:44.783905+00:00",
+        "checkpoint_id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z",
+        "optimizer_step": 15000,
+        "samples_seen": 3836352,
+        "exact_HQ_exposure": 38.36352,
+        "saved_at_utc": "2026-09-28T11:55:29.324808+00:00",
         "training_code_commit": "01a030d16d46cb117860437f969bafb31103abb5",
         "integrity_mode": "metadata",
         "raw_EMA_Adam_RNG_cursor": true
       },
-      "unsaved_optimizer_steps_after_latest_complete": 28,
-      "stage_budget_remaining_after_latest_logged_step": 2850,
-      "current_training_process_running": true,
+      "unsaved_optimizer_steps_after_latest_complete": 0,
+      "stage_budget_remaining_after_latest_logged_step": 0,
+      "current_training_process_running": false,
       "observed_peak_gpu_gib": 30.6083984375,
       "observed_peak_memory_gib": 91.34256744384766,
       "recovery_attempt": 0,
@@ -589,22 +581,32 @@
         "restore_transfer_interval_seconds": 7200,
         "poll_seconds": 300,
         "transfer_separate_previews": false,
-        "active_restore_copy": "copying: Diffusion-LDM-UNet-0000ep-20260928T090448Z-save",
+        "active_restore_copy": "paused_transfer: Diffusion-LDM-UNet-0000ep-20260928T090448Z-save",
         "restore_exercised": false,
         "evaluation_deployment_status": "waiting_for_transfer_idle",
         "deployed_evaluation_commit": "900e06850b902cc78f4c61a9a4e7b828f4f585e8",
         "temporary_evaluation_hold": "Only new 20260928 Diffusion reviews become awaiting_worker_reload after transfer; drop hold and release queued reviews exactly once after idle worker reload. No images regenerated.",
-        "observed_at_utc": "2026-09-28T11:29:01.296480+00:00",
+        "observed_at_utc": "2026-09-28T11:59:28.789628+00:00",
         "transfer_queue": [
           {
             "id": "Diffusion-LDM-UNet-0000ep-20260928T090448Z-save",
+            "status": "paused_transfer"
+          },
+          {
+            "id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z-review",
             "status": "copying"
           }
         ],
         "first_review_status": "awaiting_worker_reload; EMA transferred, no generation yet",
-        "partial_mtime_active": true
+        "partial_mtime_active": true,
+        "final_review_status": "copying",
+        "final_complete_state_status": "received"
       },
-      "scheduling_policy": "Existing stage only 0..15000; no second round; conditional later stages retain explicit quality gates."
+      "scheduling_policy": "Fixed15000 stage completed. No new updates. LCM branch requires actual complete quality evidence; missing review is not NOT_BETTER.",
+      "final_review_request_count": 1,
+      "final_review_request_id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z-review",
+      "all_four_GPU_released": true,
+      "stage_completed_at_utc": "2026-09-28T11:55:32+00:00"
     },
     "interruptions": [
       {
@@ -4511,6 +4513,18 @@
         "samples_seen": 3100256,
         "exact_HQ_exposure": 31.00256,
         "saved_at_utc": "2026-09-28T11:28:44.783905+00:00",
+        "training_code_commit": "01a030d16d46cb117860437f969bafb31103abb5",
+        "integrity_mode": "metadata",
+        "raw_EMA_Adam_RNG_cursor": true
+      },
+      {
+        "model_id": "Diffusion-LDM-UNet",
+        "stage_id": "qv1-diffusion",
+        "checkpoint_id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z",
+        "optimizer_step": 15000,
+        "samples_seen": 3836352,
+        "exact_HQ_exposure": 38.36352,
+        "saved_at_utc": "2026-09-28T11:55:29.324808+00:00",
         "training_code_commit": "01a030d16d46cb117860437f969bafb31103abb5",
         "integrity_mode": "metadata",
         "raw_EMA_Adam_RNG_cursor": true
@@ -13847,10 +13861,19 @@
     "pending_quality_reviews": {
       "model_id": "Diffusion-LDM-UNet",
       "stage_id": "qv1-diffusion",
-      "status": "awaiting_worker_reload; original EMA received, no generation; partial full-state transfer still active",
+      "observed_at_utc": "2026-09-28T11:59:28.789628+00:00",
+      "reviews": [
+        {
+          "request_id": "Diffusion-LDM-UNet-0023ep-20260928T110410Z-review",
+          "status": "awaiting_worker_reload"
+        },
+        {
+          "request_id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z-review",
+          "status": "copying"
+        }
+      ],
       "new_formal_review_completed": false,
-      "request_id": "Diffusion-LDM-UNet-0023ep-20260928T110410Z-review",
-      "observed_at_utc": "2026-09-28T11:29:01.296480+00:00"
+      "deployment_hold": "Leave active transfer intact; original reload helper removes hold and queues reviews after idle worker replacement."
     },
     "visual_quality_observations": [
       {
@@ -15336,10 +15359,10 @@
       }
     },
     "dispatch_policy": {
-      "observed_at_utc": "2026-09-28T11:29:00.295810+00:00",
-      "status": "quality_v1_Diffusion_active_after_B2_cap",
-      "current_training_model": "Diffusion-LDM-UNet",
-      "current_stage_id": "qv1-diffusion",
+      "observed_at_utc": "2026-09-28T12:03:35.703050+00:00",
+      "status": "quality_v1_Diffusion_cap_complete_waiting_quality_evidence",
+      "current_training_model": null,
+      "current_stage_id": null,
       "absolute_stop_step": 15000,
       "model_quality_approval_remains_explicit": true,
       "new_stage_policy": "Explicit 2026-09-28 owner plan; bounded slots and conditional quality selection govern subsequent stages, without changing any sealed legacy budget."
