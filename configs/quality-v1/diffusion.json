@@ -1,0 +1,67 @@
+{
+  "model_id": "Diffusion-LDM-UNet",
+  "learning_rate": 3e-06,
+  "microbatch": 64,
+  "gradient_accumulation_steps": 1,
+  "required_world_size": 4,
+  "precision": "bf16",
+  "ema_decay": 0.999,
+  "adam_betas": [
+    0.9,
+    0.999
+  ],
+  "weight_decay": 0,
+  "gradient_clip": 1.0,
+  "num_workers": 4,
+  "prefetch_factor": 2,
+  "seed": 42,
+  "save_interval_seconds": 900,
+  "preview_interval_seconds": 1800,
+  "review_interval_seconds": 7200,
+  "log_interval_steps": 10,
+  "paths": {
+    "dataset_manifest": "data/hq256/manifest.json",
+    "latent_cache": "data/latents/LDM-VQ4/manifest.json",
+    "initial_checkpoint": "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z.ema.pt",
+    "codec": "models/codecs/LDM-VQ4.pt",
+    "output": "runs/Diffusion-LDM-UNet"
+  },
+  "limits": {
+    "gpu_gib": 72,
+    "memory_soft_gib": 242,
+    "memory_hard_gib": 243
+  },
+  "sampling": {
+    "steps": 200,
+    "eta": 1.0
+  },
+  "objective_id": "min_snr_epsilon_v1",
+  "bounded_stage": {
+    "schema_version": 2,
+    "stage_id": "qv1-diffusion",
+    "model_id": "Diffusion-LDM-UNet",
+    "parent_checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+    "objective_id": "min_snr_epsilon_v1",
+    "source_step": 0,
+    "stop_step": 15000,
+    "initialization_mode": "ema_warm_start_new_optimizer",
+    "recipe": {
+      "learning_rate": 3e-06,
+      "end_learning_rate": 3e-07,
+      "warmup_steps": 500,
+      "ema_decay": 0.999,
+      "microbatch": 64,
+      "precision": "bf16",
+      "adam_betas": [
+        0.9,
+        0.999
+      ],
+      "weight_decay": 0.0
+    }
+  },
+  "initialization_mode": "ema_warm_start_new_optimizer",
+  "integrity_mode": "metadata",
+  "warmup_steps": 500,
+  "end_learning_rate": 3e-07,
+  "min_snr_gamma": 5.0
+}

@@ -29,7 +29,9 @@ warmup rate. The original controller, lock and resource rules remain authoritati
 `configs/quality-v1/production-plan.json` is a plan specification, not a native
 campaign. The native training entries support Min-SNR epsilon weighting,
 global-batch RF OT, teacher LCD and real-data LCF. New native campaigns must
-resolve real parent artifacts before execution. No other model starts as a
+resolve real parent artifacts before execution. Native `diffusion-campaign.json`
+and `rectified_flow-campaign.json` are prepared with their retained 741/7 EMA
+paths; preparation does not register or launch those slots. No other model starts as a
 side effect of completing B/2.
 
 B/4 and L/2 require an applicable B/2 quality comparison returning BETTER.
