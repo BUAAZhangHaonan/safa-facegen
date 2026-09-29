@@ -1,0 +1,170 @@
+{
+  "recorded_at_utc": "2026-09-29T09:29:56.498404+00:00",
+  "status": "PERSISTENT_SOURCE_VERIFIED",
+  "archive_action": "reuse_existing_project_NFS_volume",
+  "source_root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+  "checkpoint_identities": 11,
+  "checkpoint_files": 85,
+  "checkpoint_bytes": 38113077366,
+  "checks": [
+    "existence",
+    "registered_bytes",
+    "JSON_parse",
+    "PyTorch_ZIP_container"
+  ],
+  "errors": [],
+  "assets": [
+    {
+      "path": "/home/apulis-dev/code/meanflow_e15_h100_bundle/data/hq256/manifest.json",
+      "resolved": "/home/apulis-dev/code/meanflow_e15_h100_bundle/data/hq256/manifest.json",
+      "storage": {
+        "target": "/home/apulis-dev/code",
+        "source": "172.16.16.21:/share/apulis/localstorage/apulis/pvc/app-data/ai-arts/1/project/427/meanflow_0622/code",
+        "fstype": "nfs4"
+      }
+    },
+    {
+      "path": "/home/apulis-dev/code/meanflow_e15_h100_bundle/data/hq256/images",
+      "resolved": "/home/apulis-dev/code/meanflow_e15_h100_bundle/data/hq256/images",
+      "storage": {
+        "target": "/home/apulis-dev/code",
+        "source": "172.16.16.21:/share/apulis/localstorage/apulis/pvc/app-data/ai-arts/1/project/427/meanflow_0622/code",
+        "fstype": "nfs4"
+      }
+    },
+    {
+      "path": "/home/apulis-dev/code/meanflow_e15_h100_bundle/data/latents",
+      "resolved": "/home/apulis-dev/code/meanflow_e15_h100_bundle/data/latents",
+      "storage": {
+        "target": "/home/apulis-dev/code",
+        "source": "172.16.16.21:/share/apulis/localstorage/apulis/pvc/app-data/ai-arts/1/project/427/meanflow_0622/code",
+        "fstype": "nfs4"
+      }
+    },
+    {
+      "path": "/home/apulis-dev/code/meanflow_e15_h100_bundle/models/codecs",
+      "resolved": "/home/apulis-dev/code/meanflow_e15_h100_bundle/models/codecs",
+      "storage": {
+        "target": "/home/apulis-dev/code",
+        "source": "172.16.16.21:/share/apulis/localstorage/apulis/pvc/app-data/ai-arts/1/project/427/meanflow_0622/code",
+        "fstype": "nfs4"
+      }
+    },
+    {
+      "path": "/home/apulis-dev/code/meanflow_e15_h100_bundle/models/initialization",
+      "resolved": "/home/apulis-dev/code/meanflow_e15_h100_bundle/models/initialization",
+      "storage": {
+        "target": "/home/apulis-dev/code",
+        "source": "172.16.16.21:/share/apulis/localstorage/apulis/pvc/app-data/ai-arts/1/project/427/meanflow_0622/code",
+        "fstype": "nfs4"
+      }
+    },
+    {
+      "path": "/home/apulis-dev/code/meanflow_e15_h100_bundle/reports",
+      "resolved": "/home/apulis-dev/code/meanflow_e15_h100_bundle/reports",
+      "storage": {
+        "target": "/home/apulis-dev/code",
+        "source": "172.16.16.21:/share/apulis/localstorage/apulis/pvc/app-data/ai-arts/1/project/427/meanflow_0622/code",
+        "fstype": "nfs4"
+      }
+    },
+    {
+      "path": "/home/apulis-dev/code/meanflow_e15_h100_bundle/runs",
+      "resolved": "/home/apulis-dev/code/meanflow_e15_h100_bundle/runs",
+      "storage": {
+        "target": "/home/apulis-dev/code",
+        "source": "172.16.16.21:/share/apulis/localstorage/apulis/pvc/app-data/ai-arts/1/project/427/meanflow_0622/code",
+        "fstype": "nfs4"
+      }
+    }
+  ],
+  "model_files": [
+    {
+      "path": "models/initialization/RectifiedFlow-NCSNpp-CelebAHQ-official.pth",
+      "bytes": 1050061777
+    },
+    {
+      "path": "models/initialization/MeanFlow-B-4-0000ep-20260922T074031Z/ema.safetensors",
+      "bytes": 524674000
+    },
+    {
+      "path": "models/initialization/MeanFlow-B-4-0000ep-20260922T074031Z/raw.safetensors",
+      "bytes": 524674000
+    },
+    {
+      "path": "models/initialization/MeanFlow-L-2-0000ep-20260922T074210Z/ema.safetensors",
+      "bytes": 1836573368
+    },
+    {
+      "path": "models/initialization/MeanFlow-L-2-0000ep-20260922T074210Z/raw.safetensors",
+      "bytes": 1836573368
+    },
+    {
+      "path": "models/initialization/MeanFlow-B-2-0000ep-20260922T080959Z/ema.safetensors",
+      "bytes": 524378896
+    },
+    {
+      "path": "models/initialization/MeanFlow-B-2-0000ep-20260922T080959Z/raw.safetensors",
+      "bytes": 524378896
+    },
+    {
+      "path": "models/initialization/Diffusion-LDM-UNet-FFHQ-official/model.ckpt",
+      "bytes": 2414158083
+    },
+    {
+      "path": "models/codecs/LDM-VQ4.pt",
+      "bytes": 221354341
+    },
+    {
+      "path": "models/codecs/SD-VAE-EMA/diffusion_pytorch_model.safetensors",
+      "bytes": 334643276
+    }
+  ],
+  "latent_manifests": [
+    {
+      "path": "/home/apulis-dev/code/meanflow_e15_h100_bundle/data/latents/meanflow-96a0122b0ae5ef83-bbabc8bf00d5b92e/manifest.json",
+      "bytes": 1346,
+      "keys": [
+        "schema_version",
+        "status",
+        "dataset_manifest_sha256",
+        "codec",
+        "array",
+        "shape",
+        "dtype",
+        "layout",
+        "representation",
+        "flip_axis",
+        "scaled",
+        "rows_completed",
+        "created_at_utc",
+        "dataset_manifest_stat",
+        "array_bytes"
+      ]
+    },
+    {
+      "path": "/home/apulis-dev/code/meanflow_e15_h100_bundle/data/latents/ldm-e1e9fa899b40a098-bbabc8bf00d5b92e/manifest.json",
+      "bytes": 956,
+      "keys": [
+        "schema_version",
+        "status",
+        "dataset_manifest_sha256",
+        "codec",
+        "array",
+        "shape",
+        "dtype",
+        "layout",
+        "representation",
+        "flip_axis",
+        "scaled",
+        "rows_completed",
+        "created_at_utc",
+        "dataset_manifest_stat",
+        "array_bytes"
+      ]
+    }
+  ],
+  "training_updates": 0,
+  "compute_release_status": "owner_action_pending",
+  "release_instruction": "Stop/release H100 compute while retaining the project NFS PVC and project directory; volume-deletion policy must remain retain."
+}

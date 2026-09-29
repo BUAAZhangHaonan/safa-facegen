@@ -1,5 +1,9 @@
 # 六模型结果与训练判断
 
+## 预训练发布
+
+`SAFA FaceGen v1.0-pretrained` 锁定本文六个保留候选：默认 Diffusion 741 轮，少步调用原 LCD 19,732 步。发布目标、EMA 与 codec 配对、采样及噪声接口见 [发布规格](../configs/pretrained-release.json)，模型用途见 [模型卡](model_cards/)，可迁移调用见 [交付说明](pretrained-release.md)。预训练交付采用独立验收记录；本文历史质量选择和原始 `quality_approved` 值原样保存。
+
 建议结束现有配方的追加训练。四项画质适配已完成 55,000 次更新；完整评价中，局部纹理、肤色覆盖、软化和口眼问题仍持续。B/2 改善了分布指标，后续推广所需的实用结构改善仍待解决。
 
 ## 本轮终点

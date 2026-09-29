@@ -1,15 +1,30 @@
-# safa-facegen
+# SAFA FaceGen v1.0-pretrained
 
 六种无条件人脸生成器的训练、评价与 PyTorch 可微生成接口。输出为 256×256 RGB；训练数据由 FFHQ 70,000 张和 CelebA-HQ 30,000 张组成。
 
-| 模型 | 实现目标 | 采样 |
-| --- | --- | --- |
-| MeanFlow-B-4 | 原始 MeanFlow | 单步 |
-| MeanFlow-B-2 | iMF 边界速度 | 单步 |
-| MeanFlow-L-2 | 原始 MeanFlow | 单步 |
-| RectifiedFlow-NCSNpp | 四卡当前批次全局 OT | 自适应 RK45 |
-| Diffusion-LDM-UNet | Min-SNR epsilon | 200 步 DDIM |
-| LatentConsistency-LDM-UNet | 真实数据一致性细化 | 4 步 |
+默认调用采用 Diffusion 741 轮 EMA，少步调用采用原 LCD 19,732 步 EMA。本版训练新增更新数为 0。
+
+## 发布权重
+
+| 模型 | 精确 checkpoint ID | 该权重的训练目标 | 采样 |
+| --- | --- | --- | --- |
+| MeanFlow-B-4 | `MeanFlow-B-4-1908ep-20260925T161053653638Z` | 原始 MeanFlow | 一步 |
+| MeanFlow-B-2 | `MeanFlow-B-2-0679ep-20260926T041357192035Z` | 原始 MeanFlow | 一步 |
+| MeanFlow-L-2 | `MeanFlow-L-2-0249ep-20260926T152318241736Z` | 原始 MeanFlow | 一步 |
+| Diffusion-LDM-UNet | `Diffusion-LDM-UNet-0741ep-20260924T143627Z` | epsilon MSE | DDIM200，eta=1 |
+| RectifiedFlow-NCSNpp | `RectifiedFlow-NCSNpp-0007ep-20260925T040519Z` | 独立噪声配对 RF 速度目标 | RK45，atol/rtol=1e-5 |
+| LatentConsistency-LDM-UNet | `LatentConsistency-LDM-UNet-0100ep-20260927T145104Z` | 教师 741 轮的 LCD | 四步 999/759/499/259 |
+
+权重、EMA 角色、codec 和噪声接口固定于 [发布规格](configs/pretrained-release.json)。[六张模型卡](docs/model_cards/)保留已有画质记录。[交付说明](docs/pretrained-release.md)给出可迁移目录、验收与分包用法；[许可记录](docs/pretrained-licenses.md)和[公开页草稿](docs/pretrained-publication-draft.md)列出分项来源。
+
+## 已完成适配
+
+| 模型 | 已完成目标适配 | 更新数 |
+| --- | --- | ---: |
+| MeanFlow-B-2 | iMF 边界速度 | 20,000 |
+| Diffusion-LDM-UNet | Min-SNR epsilon | 15,000 |
+| RectifiedFlow-NCSNpp | 四卡当前批次全局 OT | 10,000 |
+| LatentConsistency-LDM-UNet | 真实数据一致性细化 LCF | 10,000 |
 
 B/2、Diffusion、Rectified Flow 和 Latent Consistency 的四项适配共 55,000 次更新，训练、正式评价和最终副本同步均已完成。B/4 与 L/2 保留各自选中的 EMA，未进入本轮适配。H100 当前没有训练作业；K100 的空闲复制与评价 worker 已于 2026-09-29 06:00 UTC 停止。H100 保留六模型候选、最新完整恢复状态及原始初始化。K100 每个模型仅保留一份选中 EMA，共六份、5.34 GB；训练过程副本和重复权重已清理。
 
