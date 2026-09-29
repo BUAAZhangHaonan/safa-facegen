@@ -1,0 +1,264 @@
+{
+  "release_name": "SAFA FaceGen v1.0-pretrained",
+  "recorded_at_utc": "2026-09-29T09:38:28.670196+00:00",
+  "status": "PRETRAINED_READY",
+  "source_commit": "742758d1d58f465f5f9bd5edfbd3d1ce10320a51",
+  "source_tag": "v1.0-pretrained",
+  "additional_training_updates": 0,
+  "default_model": "Diffusion-LDM-UNet",
+  "few_step_model": "LatentConsistency-LDM-UNet",
+  "selected_models": [
+    {
+      "model_id": "MeanFlow-B-4",
+      "checkpoint_id": "MeanFlow-B-4-1908ep-20260925T161053653638Z",
+      "step": 38168,
+      "hq_epochs": 1908.4096,
+      "selected_training_objective": "original_meanflow",
+      "checkpoint_kind": "directory",
+      "codec_key": "sd_vae_ema",
+      "noise_shape": [
+        4,
+        32,
+        32
+      ],
+      "step_noise_count": 0,
+      "sampling": {},
+      "known_quality": "轻量一步生成；既有记录持续出现纹理、肤色及局部口眼问题。",
+      "metrics": {
+        "fid_1024": 45.272318,
+        "kid": 0.011767952,
+        "generated_count": 1024,
+        "real_count": 1024,
+        "source": "2026-09-29 handoff section 9.1",
+        "protocol": "historical_recorded_protocol",
+        "historical_precision_fields": "partially_recorded"
+      },
+      "state_role": "ema",
+      "parameterization": "average_velocity",
+      "latent_scale": 0.18215,
+      "null_label": 1000,
+      "checkpoint": "weights/MeanFlow-B-4/MeanFlow-B-4-1908ep-20260925T161053653638Z",
+      "codec": "models/codecs/SD-VAE-EMA",
+      "weight_bytes": 524674000
+    },
+    {
+      "model_id": "MeanFlow-B-2",
+      "checkpoint_id": "MeanFlow-B-2-0679ep-20260926T041357192035Z",
+      "step": 66599,
+      "hq_epochs": 679.58368,
+      "selected_training_objective": "original_meanflow",
+      "checkpoint_kind": "directory",
+      "codec_key": "sd_vae_ema",
+      "noise_shape": [
+        4,
+        32,
+        32
+      ],
+      "step_noise_count": 0,
+      "sampling": {},
+      "known_quality": "一步主力；父候选 AI 标签为 acceptable169、minor57、severe5、uncertain25。",
+      "metrics": {
+        "fid_1024": 38.04357,
+        "kid": 0.00569139,
+        "generated_count": 1024,
+        "real_count": 1024,
+        "source": "2026-09-29 handoff section 9.1",
+        "protocol": "historical_recorded_protocol",
+        "historical_precision_fields": "partially_recorded"
+      },
+      "state_role": "ema",
+      "parameterization": "average_velocity",
+      "latent_scale": 0.18215,
+      "null_label": 1000,
+      "checkpoint": "weights/MeanFlow-B-2/MeanFlow-B-2-0679ep-20260926T041357192035Z",
+      "codec": "models/codecs/SD-VAE-EMA",
+      "weight_bytes": 524378896
+    },
+    {
+      "model_id": "MeanFlow-L-2",
+      "checkpoint_id": "MeanFlow-L-2-0249ep-20260926T152318241736Z",
+      "step": 65069,
+      "hq_epochs": 249.3072,
+      "selected_training_objective": "original_meanflow",
+      "checkpoint_kind": "directory",
+      "codec_key": "sd_vae_ema",
+      "noise_shape": [
+        4,
+        32,
+        32
+      ],
+      "step_noise_count": 0,
+      "sampling": {},
+      "known_quality": "保留大骨干一步接口；既有多次审核处于平台。",
+      "metrics": {
+        "fid_1024": 39.625066,
+        "kid": 0.007341482,
+        "generated_count": 1024,
+        "real_count": 1024,
+        "source": "2026-09-29 handoff section 9.1",
+        "protocol": "historical_recorded_protocol",
+        "historical_precision_fields": "partially_recorded"
+      },
+      "state_role": "ema",
+      "parameterization": "average_velocity",
+      "latent_scale": 0.18215,
+      "null_label": 1000,
+      "checkpoint": "weights/MeanFlow-L-2/MeanFlow-L-2-0249ep-20260926T152318241736Z",
+      "codec": "models/codecs/SD-VAE-EMA",
+      "weight_bytes": 1836573368
+    },
+    {
+      "model_id": "Diffusion-LDM-UNet",
+      "checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+      "step": 147178,
+      "hq_epochs": 741.48128,
+      "selected_training_objective": "epsilon_mse",
+      "checkpoint_kind": "file",
+      "codec_key": "ldm_vq4",
+      "noise_shape": [
+        3,
+        64,
+        64
+      ],
+      "step_noise_count": 200,
+      "sampling": {
+        "bf16": false,
+        "checkpoint_sampling": true,
+        "steps": 200,
+        "eta": 1.0
+      },
+      "known_quality": "默认生成入口；父候选固定256张 AI 标签为 acceptable197、minor59、severe0、uncertain0，细节软化和局部纹理持续。",
+      "metrics": {
+        "fid_1024": 33.887628,
+        "kid": 0.00265398,
+        "generated_count": 1024,
+        "real_count": 1024,
+        "source": "2026-09-29 handoff section 9.1",
+        "protocol": "diffusion_741_special_fp32_tf32_off",
+        "historical_precision_fields": "documented"
+      },
+      "metrics_10k": {
+        "fid": 8.9103761611,
+        "kid": 0.003036061369,
+        "generated_count": 10000,
+        "real_count": 10000,
+        "sampler": "DDIM200_eta1_FP32_TF32off"
+      },
+      "state_role": "ema",
+      "parameterization": "epsilon",
+      "latent_scale": 1.0,
+      "checkpoint": "weights/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z/Diffusion-LDM-UNet-0741ep-20260924T143627Z.ema.pt",
+      "codec": "models/codecs/LDM-VQ4.pt",
+      "weight_bytes": 1096370399
+    },
+    {
+      "model_id": "RectifiedFlow-NCSNpp",
+      "checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+      "step": 7309,
+      "hq_epochs": 7.0144,
+      "selected_training_objective": "rectified_flow_independent_pairing",
+      "checkpoint_kind": "file",
+      "codec_key": null,
+      "noise_shape": [
+        3,
+        256,
+        256
+      ],
+      "step_noise_count": 0,
+      "sampling": {
+        "bf16": false,
+        "checkpoint_sampling": true,
+        "ode_tol": 1e-05
+      },
+      "known_quality": "保留像素空间速度场；已有审核记录局部口部和肤色覆盖问题。",
+      "metrics": {
+        "fid_1024": 48.393999,
+        "kid": 0.012405135,
+        "generated_count": 1024,
+        "real_count": 1024,
+        "source": "2026-09-29 handoff section 9.1",
+        "protocol": "historical_recorded_protocol",
+        "historical_precision_fields": "partially_recorded"
+      },
+      "state_role": "ema",
+      "parameterization": "pixel_velocity",
+      "checkpoint": "weights/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z.ema.pt",
+      "codec": null,
+      "weight_bytes": 262536563
+    },
+    {
+      "model_id": "LatentConsistency-LDM-UNet",
+      "checkpoint_id": "LatentConsistency-LDM-UNet-0100ep-20260927T145104Z",
+      "step": 19732,
+      "hq_epochs": 100.67584,
+      "selected_training_objective": "latent_consistency_distillation",
+      "checkpoint_kind": "file",
+      "codec_key": "ldm_vq4",
+      "noise_shape": [
+        3,
+        64,
+        64
+      ],
+      "step_noise_count": 3,
+      "sampling": {
+        "bf16": false,
+        "checkpoint_sampling": true,
+        "steps": 4
+      },
+      "known_quality": "四步生成入口；原 LCD 候选，教师为 Diffusion 741 轮，保留已有纹理、软化与口眼疑点记录。",
+      "metrics": {
+        "fid_1024": 37.879198,
+        "kid": 0.005962783,
+        "generated_count": 1024,
+        "real_count": 1024,
+        "source": "2026-09-29 handoff section 9.1",
+        "protocol": "historical_recorded_protocol",
+        "historical_precision_fields": "partially_recorded"
+      },
+      "teacher_checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+      "state_role": "ema",
+      "parameterization": "epsilon",
+      "latent_scale": 1.0,
+      "sampling_grid": [
+        999,
+        759,
+        499,
+        259
+      ],
+      "checkpoint": "weights/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.ema.pt",
+      "codec": "models/codecs/LDM-VQ4.pt",
+      "weight_bytes": 1096372063
+    }
+  ],
+  "assembled_at": "/home/k100/releases/staging/SAFA_FaceGen_v1.0-pretrained",
+  "relocated_release": "/home/k100/releases/validated/SAFA_FaceGen_v1.0-pretrained",
+  "acceptance": {
+    "status": "passed",
+    "finished_at_utc": "2026-09-29T09:34:20.497426+00:00",
+    "models_passed": 6,
+    "interface_outputs": 12,
+    "device": "cuda:0",
+    "precision": "FP32_TF32off_highest",
+    "new_python_process": true,
+    "working_directory": "/home/k100/closeout",
+    "report": "reports/pretrained/release-smoke.json"
+  },
+  "assets_index": "docs/pretrained-assets.json",
+  "archive_receipt": "docs/pretrained-archive-receipt.json",
+  "quality_records": "reports/final/gallery.html",
+  "historical_quality_fields": "preserved",
+  "public_distribution": {
+    "status": "DRAFT",
+    "pending": [
+      "platform",
+      "visibility",
+      "project_source_license",
+      "initialization_and_derived_weight_distribution_terms"
+    ],
+    "document": "docs/pretrained-publication-draft.md"
+  },
+  "h100_compute_release": "owner_action_pending_retain_project_NFS_PVC",
+  "controller": "stopped",
+  "replication_worker": "stopped",
+  "monitoring_automation": "deleted"
+}

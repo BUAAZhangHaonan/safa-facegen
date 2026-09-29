@@ -469,6 +469,24 @@
           }
         }
       }
+    },
+    {
+      "event": "pretrained_release_completed",
+      "recorded_at_utc": "2026-09-29T09:38:28.670196+00:00",
+      "release_name": "SAFA FaceGen v1.0-pretrained",
+      "source_commit": "742758d1d58f465f5f9bd5edfbd3d1ce10320a51",
+      "additional_training_updates": 0,
+      "selected_checkpoint_ids": [
+        "MeanFlow-B-4-1908ep-20260925T161053653638Z",
+        "MeanFlow-B-2-0679ep-20260926T041357192035Z",
+        "MeanFlow-L-2-0249ep-20260926T152318241736Z",
+        "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+        "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+        "LatentConsistency-LDM-UNet-0100ep-20260927T145104Z"
+      ],
+      "delivery_record": "docs/pretrained-release.json",
+      "asset_index": "docs/pretrained-assets.json",
+      "archive_record": "docs/pretrained-archive-receipt.json"
     }
   ],
   "hq_pretraining": {

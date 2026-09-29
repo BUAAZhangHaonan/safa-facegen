@@ -24,4 +24,35 @@ H100 计算实例可由用户停止/释放，平台操作保留项目 NFS PVC �
 
 本地预训练交付的来源、可加载性、生成和噪声梯度验收单独记录。历史质量门、AI 标签、uncertain 和 reviewer 保留原值。许可依据见 [分项许可](pretrained-licenses.md)；公开平台、可见性及部分权重分发授权见 [公开页草稿](pretrained-publication-draft.md)。
 
-实际运行验收及 ZIP 大小将在完成后写入收尾回执。
+实际验收于 2026-09-29T09:34:20.497426+00:00 完成，六模型全部通过，12 张接口输出已保存。发布状态为 `PRETRAINED_READY`；完整记录见 [交付记录](pretrained-release.json) 和 [ZIP 索引](pretrained-assets.json)。
+
+## 实际验收
+
+源码及打包内容使用提交 `742758d1d58f465f5f9bd5edfbd3d1ce10320a51`，标签 `v1.0-pretrained`。本文件及收尾回执随后的提交用于登记产物。
+
+| 模型 | 初始噪声梯度范数 | 有限逐步噪声梯度数量 | 结果 |
+| --- | ---: | ---: | --- |
+| MeanFlow-B-4 | 0.001994830789 | 0 | passed |
+| MeanFlow-B-2 | 0.004089429043 | 0 | passed |
+| MeanFlow-L-2 | 0.003040174721 | 0 | passed |
+| Diffusion-LDM-UNet | 0.000114947361 | 200 | passed |
+| RectifiedFlow-NCSNpp | 0.001324526034 | 0 | passed |
+| LatentConsistency-LDM-UNet | 0.0008015792118 | 3 | passed |
+
+输出均为 float32 `[1,3,256,256]`、RGB、有限、范围 [-1,1]。生成器参数冻结，参数梯度为空。验收一次通过；记录在 K100 发布目录的 `release-smoke.json`，本地副本为 `reports/pretrained/release-smoke.json`。
+
+## 七份实际 ZIP
+
+共同目录：`/home/k100/releases/release-assets`。总大小 5899236695 字节。
+
+| 文件名 | 字节数 | ZIP 条目数 |
+| --- | ---: | ---: |
+| `SAFA_FaceGen_v1.0-pretrained__runtime_and_codecs.zip` | 558,299,779 | 137 |
+| `SAFA_FaceGen_v1.0-pretrained__MeanFlow-B-4.zip` | 524,678,652 | 3 |
+| `SAFA_FaceGen_v1.0-pretrained__MeanFlow-B-2.zip` | 524,383,546 | 3 |
+| `SAFA_FaceGen_v1.0-pretrained__MeanFlow-L-2.zip` | 1,836,578,024 | 3 |
+| `SAFA_FaceGen_v1.0-pretrained__Diffusion-LDM-UNet.zip` | 1,096,377,894 | 5 |
+| `SAFA_FaceGen_v1.0-pretrained__RectifiedFlow-NCSNpp.zip` | 262,540,523 | 3 |
+| `SAFA_FaceGen_v1.0-pretrained__LatentConsistency-LDM-UNet.zip` | 1,096,378,277 | 3 |
+
+七份文件解压到同一父目录，即组成 `SAFA_FaceGen_v1.0-pretrained`。已核对每份 ZIP 的字节数、中央目录条目数及共同根目录。

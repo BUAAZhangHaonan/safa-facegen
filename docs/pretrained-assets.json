@@ -1,0 +1,58 @@
+{
+  "release": "SAFA_FaceGen_v1.0-pretrained",
+  "assets": [
+    {
+      "component": "runtime_and_codecs",
+      "file": "SAFA_FaceGen_v1.0-pretrained__runtime_and_codecs.zip",
+      "bytes": 558299779,
+      "entries": 137,
+      "absolute_path": "/home/k100/releases/release-assets/SAFA_FaceGen_v1.0-pretrained__runtime_and_codecs.zip"
+    },
+    {
+      "component": "MeanFlow-B-4",
+      "file": "SAFA_FaceGen_v1.0-pretrained__MeanFlow-B-4.zip",
+      "bytes": 524678652,
+      "entries": 3,
+      "absolute_path": "/home/k100/releases/release-assets/SAFA_FaceGen_v1.0-pretrained__MeanFlow-B-4.zip"
+    },
+    {
+      "component": "MeanFlow-B-2",
+      "file": "SAFA_FaceGen_v1.0-pretrained__MeanFlow-B-2.zip",
+      "bytes": 524383546,
+      "entries": 3,
+      "absolute_path": "/home/k100/releases/release-assets/SAFA_FaceGen_v1.0-pretrained__MeanFlow-B-2.zip"
+    },
+    {
+      "component": "MeanFlow-L-2",
+      "file": "SAFA_FaceGen_v1.0-pretrained__MeanFlow-L-2.zip",
+      "bytes": 1836578024,
+      "entries": 3,
+      "absolute_path": "/home/k100/releases/release-assets/SAFA_FaceGen_v1.0-pretrained__MeanFlow-L-2.zip"
+    },
+    {
+      "component": "Diffusion-LDM-UNet",
+      "file": "SAFA_FaceGen_v1.0-pretrained__Diffusion-LDM-UNet.zip",
+      "bytes": 1096377894,
+      "entries": 5,
+      "absolute_path": "/home/k100/releases/release-assets/SAFA_FaceGen_v1.0-pretrained__Diffusion-LDM-UNet.zip"
+    },
+    {
+      "component": "RectifiedFlow-NCSNpp",
+      "file": "SAFA_FaceGen_v1.0-pretrained__RectifiedFlow-NCSNpp.zip",
+      "bytes": 262540523,
+      "entries": 3,
+      "absolute_path": "/home/k100/releases/release-assets/SAFA_FaceGen_v1.0-pretrained__RectifiedFlow-NCSNpp.zip"
+    },
+    {
+      "component": "LatentConsistency-LDM-UNet",
+      "file": "SAFA_FaceGen_v1.0-pretrained__LatentConsistency-LDM-UNet.zip",
+      "bytes": 1096378277,
+      "entries": 3,
+      "absolute_path": "/home/k100/releases/release-assets/SAFA_FaceGen_v1.0-pretrained__LatentConsistency-LDM-UNet.zip"
+    }
+  ],
+  "extraction": "Extract all seven ZIP files into one parent directory",
+  "source_commit": "742758d1d58f465f5f9bd5edfbd3d1ce10320a51",
+  "release_tag": "v1.0-pretrained",
+  "total_bytes": 5899236695
+}

@@ -166,5 +166,17 @@
   ],
   "training_updates": 0,
   "compute_release_status": "owner_action_pending",
-  "release_instruction": "Stop/release H100 compute while retaining the project NFS PVC and project directory; volume-deletion policy must remain retain."
+  "release_instruction": "Stop/release H100 compute while retaining the project NFS PVC and project directory; volume-deletion policy must remain retain.",
+  "formal_evaluation_storage": {
+    "host": "K100",
+    "path": "/home/k100/projects/safa-facegen/reports/evaluation",
+    "gallery": "/home/k100/projects/safa-facegen/reports/final",
+    "filesystem": "ext4",
+    "device": "/dev/sda3"
+  },
+  "persistence_lifecycle": {
+    "observed": "project NFS PVC, separate from compute container root",
+    "compute_action": "stop/release compute, retain project PVC",
+    "provider_volume_deletion_policy": "owner must retain volume/project at release"
+  }
 }
