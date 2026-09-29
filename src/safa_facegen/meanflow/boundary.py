@@ -14,7 +14,7 @@ def configure_precision() -> None:
     jax.config.update("jax_default_matmul_precision", "highest")
 
 
-def improved_loss(params, apply_u: Callable, clean, key, *, equal_fraction: float = 0.5,
+def boundary_loss(params, apply_u: Callable, clean, key, *, equal_fraction: float = 0.5,
                   time_mean: float = -0.4, time_std: float = 1.0,
                   norm_p: float = 1.0, norm_eps: float = 0.01):
     if clean.ndim != 4 or clean.shape[0] < 2:

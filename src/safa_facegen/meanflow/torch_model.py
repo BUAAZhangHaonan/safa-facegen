@@ -12,6 +12,7 @@ import numpy as np
 import torch
 from torch import nn
 
+from ..contracts import MEANFLOW_EXPORT_FORMAT, MEANFLOW_EXPORT_FORMAT_VERSION
 from .spec import LATENT_SCALE, NULL_LABEL, UPSTREAM_COMMIT, ModelSpec, get_spec
 
 
@@ -141,7 +142,7 @@ class MeanFlowGenerator(nn.Module):
                         expected_model_id=None):
         root = Path(export_dir)
         manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
-        if manifest.get("format") != "safa-meanflow-torch" or manifest.get("format_version") != 1:
+        if manifest.get("format") != MEANFLOW_EXPORT_FORMAT or manifest.get("format_version") != MEANFLOW_EXPORT_FORMAT_VERSION:
             raise ValueError("Unsupported MeanFlow export format")
         if expected_model_id is not None and manifest.get("model_id") != expected_model_id:
             raise ValueError("MeanFlow export differs from the requested model_id")

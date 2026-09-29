@@ -3,7 +3,7 @@
     "LatentConsistency-LDM-UNet"
   ],
   "model_configs": {
-    "LatentConsistency-LDM-UNet": "configs/quality-v1/latent_consistency.json"
+    "LatentConsistency-LDM-UNet": "configs/quality/latent_consistency.json"
   },
   "gpu_ids": [
     0,
@@ -19,7 +19,7 @@
   "save_interval_seconds": 900,
   "preview_interval_seconds": 1800,
   "review_interval_seconds": 7200,
-  "review_policy": "quality_v1_lexicographic_release_gate_no_auto_second_budget",
+  "review_policy": "lexicographic_release_gate_no_auto_second_budget",
   "max_consecutive_recovery_failures": 2,
   "bounded_stage": {
     "schema_version": 2,

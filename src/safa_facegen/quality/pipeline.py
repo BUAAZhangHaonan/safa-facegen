@@ -1,5 +1,6 @@
-"""Serial post-evaluation quality panel for registered quality-v1 objectives."""
+"""Serial post-evaluation quality panel for registered quality objectives."""
 from __future__ import annotations
+from ..contracts import QUALITY_OBJECTIVES, QUALITY_PROTOCOL_SCHEMA
 
 import json
 from pathlib import Path
@@ -7,8 +8,7 @@ from pathlib import Path
 from ..common import utc_now
 from ..data import atomic_json
 
-OBJECTIVES = {"imf_boundary_v1", "min_snr_epsilon_v1", "rf_batch_ot_v1",
-              "lcf_real_v1", "lcd_teacher_v2"}
+OBJECTIVES = QUALITY_OBJECTIVES
 WEIGHTS = "models/evaluation/cfanet_nr_koniq_res50-9a73138b.pth"
 
 
@@ -35,7 +35,7 @@ def protocol(review: Path, summary: dict) -> dict:
         if "id" not in record or "bytes" not in record:
             raise ValueError("Reference record identity is incomplete")
         identities.append({"id": record["id"], "bytes": record["bytes"]})
-    return {"schema_version": 1, "model_id": summary["model_id"],
+    return {"schema_version": QUALITY_PROTOCOL_SCHEMA, "model_id": summary["model_id"],
             "sampling": summary["sampling"], "generation_precision": summary["generation_precision"],
             "noise_protocol": summary["noise_protocol"], "seed": summary["seed"],
             "reference_seed": reference.get("seed"), "reference_indices": indices,
@@ -62,7 +62,7 @@ def run_panel(root: Path, review: Path, summary: dict, *, device: str = "cuda:0"
     """
     if not eligible(summary):
         return None
-    output = review / "quality-v1"
+    output = review / "quality"
     output.mkdir(parents=True, exist_ok=True)
     status_path = output / "status.json"
     if status_path.exists():

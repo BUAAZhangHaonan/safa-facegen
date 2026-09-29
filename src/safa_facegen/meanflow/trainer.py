@@ -3,6 +3,7 @@
 Launch only after a strict legacy conversion. No torch, VAE or Inception GPU
 context is created here. Completed EMA exports queue K100 preview/review work.
 """
+from ..contracts import MEANFLOW_ORIGINAL, IMF_BOUNDARY, MEANFLOW_CACHE_SCHEMA, MEANFLOW_CHECKPOINT_SCHEMA, MEANFLOW_EXPORT_FORMAT, QUALITY_STAGE_SCHEMA
 import argparse
 import copy
 from datetime import datetime, timezone
@@ -48,7 +49,7 @@ class LatentCache:
     def __init__(self, manifest_path, dataset_path):
         manifest_path, dataset_path = Path(manifest_path), Path(dataset_path)
         self.manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        expected = {"schema_version": 1, "layout": "N,F,C,H,W", "representation": "mean_std",
+        expected = {"schema_version": MEANFLOW_CACHE_SCHEMA, "layout": "N,F,C,H,W", "representation": "mean_std",
                     "dtype": "float32", "status": "complete"}
         for key, value in expected.items():
             if self.manifest.get(key) != value:
@@ -140,7 +141,7 @@ def create_state(model, spec, initial, learning_rate, seed, initialization_mode=
     import optax
     from flax.training import train_state
     from safetensors.numpy import load_file
-    from .convert import canonical_to_flax
+    from .parameters import canonical_to_flax
 
     class State(train_state.TrainState):
         ema_params: object
@@ -149,7 +150,7 @@ def create_state(model, spec, initial, learning_rate, seed, initialization_mode=
 
     root = Path(initial)
     manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
-    if manifest.get("format") != "safa-meanflow-torch" or manifest.get("architecture") != spec.to_dict():
+    if manifest.get("format") != MEANFLOW_EXPORT_FORMAT or manifest.get("architecture") != spec.to_dict():
         raise ValueError("Initial checkpoint architecture/format mismatch")
     if manifest.get('integrity_mode') == 'metadata':
         from ..integrity import validate_files
@@ -174,7 +175,7 @@ def create_state(model, spec, initial, learning_rate, seed, initialization_mode=
     return state, manifest
 
 
-def make_train_step(model, ema_decay=FIXED_RECIPE["ema_decay"], objective_id='meanflow_original'):
+def make_train_step(model, ema_decay=FIXED_RECIPE["ema_decay"], objective_id=MEANFLOW_ORIGINAL):
     import jax
     import jax.numpy as jnp
     import optax
@@ -188,13 +189,13 @@ def make_train_step(model, ema_decay=FIXED_RECIPE["ema_decay"], objective_id='me
         labels = jnp.full((images.shape[0],), NULL_LABEL, dtype=jnp.int32)
 
         def objective(params):
-            if objective_id == 'imf_boundary_v1':
-                from .improved import improved_loss
+            if objective_id == IMF_BOUNDARY:
+                from .boundary import boundary_loss
                 def apply_u(p, z, t, r):
                     return model.apply({'params': p}, z, t, t-r, labels,
                                        method=model.u_fn, rngs={'gen': objective_rng})
-                return improved_loss(params, apply_u, images, objective_rng)
-            if objective_id != 'meanflow_original':
+                return boundary_loss(params, apply_u, images, objective_rng)
+            if objective_id != MEANFLOW_ORIGINAL:
                 raise ValueError('Unknown MeanFlow objective')
             return model.apply({"params": params}, imgs=images, labels=labels,
                                method=model.forward, rngs={"gen": objective_rng})
@@ -214,7 +215,7 @@ def make_train_step(model, ema_decay=FIXED_RECIPE["ema_decay"], objective_id='me
         # No donation: a failed/OOM step must leave the last valid state usable.
         result = jax.lax.cond(finite, lambda _: proposed, lambda _: state, operand=None)
         extra = {}
-        if objective_id == 'imf_boundary_v1':
+        if objective_id == IMF_BOUNDARY:
             extra = dict(metrics)
             for part in ('boundary', 'interval'):
                 count = jax.lax.psum(metrics[part+'_count'], 'devices')
@@ -247,7 +248,7 @@ def save_checkpoint(state, progress, config, identity, *, export=False):
     import jax
     from flax import jax_utils, serialization
     import orbax.checkpoint as ocp
-    from .convert import flax_to_canonical, write_export
+    from .parameters import flax_to_canonical, write_export
 
     root = Path(config["paths"]["output"])
     temporary_calibration = config.get("calibration",False) and not config.get("resume_validation",False)
@@ -261,9 +262,9 @@ def save_checkpoint(state, progress, config, identity, *, export=False):
     host_state = jax.device_get(jax_utils.unreplicate(state))
     host_progress = copy.deepcopy(progress)
     stage = config.get('bounded_stage', {})
-    metadata = {"schema_version": 2, "model_id": config["model_id"], "phase": "HQ",
+    metadata = {"schema_version": MEANFLOW_CHECKPOINT_SCHEMA, "model_id": config["model_id"], "phase": "HQ",
                 "integrity_mode": "metadata", "checkpoint_id": name, "state_role": "training_state",
-                "stage_id": stage.get('stage_id'), "objective_id": config.get('objective_id', 'meanflow_original'),
+                "stage_id": stage.get('stage_id'), "objective_id": config.get('objective_id', MEANFLOW_ORIGINAL),
                 "parent_checkpoint_id": stage.get('parent_checkpoint_id'), "codec_registration": identity['codec'],
                 "temporary_calibration": temporary_calibration,
                 "upstream_commit": UPSTREAM_COMMIT, "identity": identity,
@@ -303,7 +304,7 @@ def save_checkpoint(state, progress, config, identity, *, export=False):
                "stage_id": stage.get('stage_id'), "objective_id": config.get('objective_id'),
                "valid_samples": progress['valid_samples'], "integrity_mode": "metadata"}
     atomic_json(root / "latest.json", pointer)
-    if stage.get('schema_version') == 2:
+    if stage.get('schema_version') == QUALITY_STAGE_SCHEMA:
         atomic_json(root / ('latest-' + stage['stage_id'] + '.json'), pointer)
     append_event(root/"events.jsonl", "checkpoint_complete", checkpoint=str(final),
                  step=int(host_state.step), valid_samples=progress["valid_samples"], export=export_path)
@@ -373,9 +374,9 @@ def apply_recovery_overrides(state, progress, config, *, checkpoint=None):
 def run(config, *, resume=None, max_steps=None):
     validate_recipe(config)
     from ..bounded_stage import guard_trainer_launch
-    from ..quality_stage import is_v2, scheduled_learning_rate
+    from ..quality_stage import is_quality_stage, scheduled_learning_rate
     stage = config.get('bounded_stage', {})
-    quality = is_v2(stage)
+    quality = is_quality_stage(stage)
     project = Path(config.get('project_root', Path(__file__).resolve().parents[3]))
     if quality:
         guard_trainer_launch(config, project)
@@ -454,7 +455,7 @@ def run(config, *, resume=None, max_steps=None):
         state, progress = apply_recovery_overrides(state,progress,config,checkpoint=resume)
     actual_learning_rate = float(np.asarray(state.learning_rate))
     state = jax_utils.replicate(state)
-    step_fn = make_train_step(model, config['ema_decay'], config.get('objective_id', 'meanflow_original'))
+    step_fn = make_train_step(model, config['ema_decay'], config.get('objective_id', MEANFLOW_ORIGINAL))
     append_event(output/"events.jsonl", "training_start", identity=identity, resume=resume,
                  microbatch=progress["microbatch"], learning_rate=actual_learning_rate, device_count=devices,
                  jax=jax.__version__, devices=[str(d) for d in jax.local_devices()],
@@ -602,7 +603,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True)
     parser.add_argument("--resume", help="Complete checkpoint directory or latest")
-    parser.add_argument("--max-steps", type=int, help="Bounded smoke/profile run; still saves full state")
+    parser.add_argument("--max-steps", type=int, help="Absolute update limit for this invocation; registered stages enforce their fixed cap")
     parser.add_argument("--microbatch", type=int)
     args = parser.parse_args()
     config = read_config(args.config)

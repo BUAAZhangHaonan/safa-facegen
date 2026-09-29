@@ -1,5 +1,6 @@
 """Build codec-specific float32 mmap caches; original and flip are encoded separately."""
 from __future__ import annotations
+from .contracts import CACHE_RECORD_SCHEMA
 
 import argparse
 from datetime import datetime, timezone
@@ -112,7 +113,7 @@ def build_cache(*, manifest: str | Path, output_root: str | Path, family: str,
     if not previous and shutil.disk_usage(output).free < required_bytes:
         raise OSError(f"Insufficient free disk space for {required_bytes} byte cache")
     cache_manifest = previous or {
-        "schema_version": 1, "status": "building", "dataset_manifest_sha256": dataset_hash,
+        "schema_version": CACHE_RECORD_SCHEMA, "status": "building", "dataset_manifest_sha256": dataset_hash,
         "codec": {"family": family, **identity}, "array": "latents.npy",
         "shape": shape, "dtype": "float32", "layout": "N,F,C,H,W",
         "representation": representation, "flip_axis": ["original", "horizontal_flip_before_encoding"],

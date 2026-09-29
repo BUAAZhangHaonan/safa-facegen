@@ -1,0 +1,1236 @@
+{
+  "recorded_at_utc": "2026-09-29T06:07:31.388446+00:00",
+  "training_status": "complete",
+  "total_adaptation_updates": 55000,
+  "gallery": "reports/final/gallery.html",
+  "models": [
+    {
+      "model_id": "MeanFlow-B-4",
+      "retained_ema": "/home/k100/projects/safa-facegen/models/replicas/MeanFlow-B-4/ema/MeanFlow-B-4-1908ep-20260925T161053653638Z",
+      "visuals": [
+        {
+          "role": "retained",
+          "checkpoint_id": "MeanFlow-B-4-1908ep-20260925T161053653638Z",
+          "step": 38168,
+          "hq_epochs": 1908.4096,
+          "method": "保留候选",
+          "image": "MeanFlow-B-4/retained/samples.png",
+          "images": 256,
+          "sample_indices": "0..255",
+          "image_transform": "none"
+        }
+      ],
+      "checkpoints": [
+        {
+          "host": "h100",
+          "root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+          "checkpoint_id": "MeanFlow-B-4-1908ep-20260925T161053653638Z",
+          "paths": [
+            "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-1908ep-20260925T161053653638Z"
+          ],
+          "bytes": 524682192,
+          "files": [
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-1908ep-20260925T161053653638Z/manifest.json",
+              "bytes": 5547
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-1908ep-20260925T161053653638Z/COMPLETE.json",
+              "bytes": 92
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-1908ep-20260925T161053653638Z/STATE_RETIRED.json",
+              "bytes": 175
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-1908ep-20260925T161053653638Z/export/ema.safetensors",
+              "bytes": 524674000
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-1908ep-20260925T161053653638Z/export/manifest.json",
+              "bytes": 2378
+            }
+          ]
+        },
+        {
+          "host": "h100",
+          "root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+          "checkpoint_id": "MeanFlow-B-4-3147ep-20260925T200506405495Z",
+          "paths": [
+            "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z"
+          ],
+          "bytes": 2455469076,
+          "files": [
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/manifest.json",
+              "bytes": 5545
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/COMPLETE.json",
+              "bytes": 92
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/_CHECKPOINT_METADATA",
+              "bytes": 258
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/_METADATA",
+              "bytes": 255977
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/manifest.ocdbt",
+              "bytes": 118
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/manifest.ocdbt",
+              "bytes": 321
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/d/5baabeaf96e01376c1c9259b1291325a",
+              "bytes": 225
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/d/c1b937cef9de8028c8feb3b35d45e62d",
+              "bytes": 18184
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/d/136b1affe104218b6f6e2ef834bdec21",
+              "bytes": 2198411
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/d/8ff8d194e4f8b6c50a484970d420e335",
+              "bytes": 1579012096
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/d/1cff2b61bcdd0d718c80a15b28d4f9d9",
+              "bytes": 349294592
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/d/66d85f27b17511dcb59132a7299a6687",
+              "bytes": 6879
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/export/ema.safetensors",
+              "bytes": 524674000
+            },
+            {
+              "path": "runs/MeanFlow-B-4/checkpoints/MeanFlow-B-4-3147ep-20260925T200506405495Z/export/manifest.json",
+              "bytes": 2378
+            }
+          ]
+        },
+        {
+          "host": "rtx_pro_6000",
+          "root": "/home/k100/projects/safa-facegen",
+          "checkpoint_id": "MeanFlow-B-4-1908ep-20260925T161053653638Z",
+          "paths": [
+            "models/replicas/MeanFlow-B-4/ema/MeanFlow-B-4-1908ep-20260925T161053653638Z"
+          ],
+          "bytes": 524677764,
+          "files": [
+            {
+              "path": "models/replicas/MeanFlow-B-4/ema/MeanFlow-B-4-1908ep-20260925T161053653638Z/REPLICA.json",
+              "bytes": 1386
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/ema/MeanFlow-B-4-1908ep-20260925T161053653638Z/manifest.json",
+              "bytes": 2378
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/ema/MeanFlow-B-4-1908ep-20260925T161053653638Z/ema.safetensors",
+              "bytes": 524674000
+            }
+          ]
+        },
+        {
+          "host": "rtx_pro_6000",
+          "root": "/home/k100/projects/safa-facegen",
+          "checkpoint_id": "MeanFlow-B-4-3147ep-20260925T200506405495Z",
+          "paths": [
+            "models/replicas/MeanFlow-B-4/ema/MeanFlow-B-4-3147ep-20260925T200506405495Z",
+            "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z"
+          ],
+          "bytes": 2980155528,
+          "files": [
+            {
+              "path": "models/replicas/MeanFlow-B-4/ema/MeanFlow-B-4-3147ep-20260925T200506405495Z/REPLICA.json",
+              "bytes": 1387
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/ema/MeanFlow-B-4-3147ep-20260925T200506405495Z/manifest.json",
+              "bytes": 2378
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/ema/MeanFlow-B-4-3147ep-20260925T200506405495Z/ema.safetensors",
+              "bytes": 524674000
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/REPLICA.json",
+              "bytes": 8687
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/COMPLETE.json",
+              "bytes": 92
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/manifest.json",
+              "bytes": 5545
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/export/manifest.json",
+              "bytes": 2378
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/export/ema.safetensors",
+              "bytes": 524674000
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/manifest.ocdbt",
+              "bytes": 118
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/_METADATA",
+              "bytes": 255977
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/_CHECKPOINT_METADATA",
+              "bytes": 258
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/manifest.ocdbt",
+              "bytes": 321
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/d/c1b937cef9de8028c8feb3b35d45e62d",
+              "bytes": 18184
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/d/8ff8d194e4f8b6c50a484970d420e335",
+              "bytes": 1579012096
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/d/1cff2b61bcdd0d718c80a15b28d4f9d9",
+              "bytes": 349294592
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/d/136b1affe104218b6f6e2ef834bdec21",
+              "bytes": 2198411
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/ocdbt.process_0/d/5baabeaf96e01376c1c9259b1291325a",
+              "bytes": 225
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-4/restore/MeanFlow-B-4-3147ep-20260925T200506405495Z/state/d/66d85f27b17511dcb59132a7299a6687",
+              "bytes": 6879
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "model_id": "MeanFlow-B-2",
+      "retained_ema": "/home/k100/projects/safa-facegen/models/replicas/MeanFlow-B-2/ema/MeanFlow-B-2-0679ep-20260926T041357192035Z",
+      "visuals": [
+        {
+          "role": "retained",
+          "checkpoint_id": "MeanFlow-B-2-0679ep-20260926T041357192035Z",
+          "step": 66599,
+          "hq_epochs": 679.58368,
+          "method": "保留候选",
+          "image": "MeanFlow-B-2/retained/samples.png",
+          "images": 256,
+          "sample_indices": "0..255",
+          "image_transform": "none"
+        },
+        {
+          "role": "adapted",
+          "checkpoint_id": "MeanFlow-B-2-0051ep-20260928T082059626310Z",
+          "step": 20000,
+          "hq_epochs": 51.15104,
+          "method": "iMF boundary",
+          "image": "MeanFlow-B-2/adapted/samples.png",
+          "images": 256,
+          "sample_indices": "0..255",
+          "image_transform": "none"
+        }
+      ],
+      "checkpoints": [
+        {
+          "host": "h100",
+          "root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+          "checkpoint_id": "MeanFlow-B-2-0051ep-20260928T082059626310Z",
+          "paths": [
+            "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z"
+          ],
+          "bytes": 2459656038,
+          "files": [
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/manifest.json",
+              "bytes": 7532
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/COMPLETE.json",
+              "bytes": 126
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/_CHECKPOINT_METADATA",
+              "bytes": 258
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/_METADATA",
+              "bytes": 255977
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/manifest.ocdbt",
+              "bytes": 118
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/manifest.ocdbt",
+              "bytes": 322
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/d/d989a3aa8923ab4780e82f2525147842",
+              "bytes": 225
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/d/71a2dba62c68c92a9fb1f37cb217f3ab",
+              "bytes": 18176
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/d/c1d29acd336d4064c89a8cd049017095",
+              "bytes": 88031232
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/d/dbdab19585b27a32d344726c3aa37b03",
+              "bytes": 1833775104
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/d/0c91cd12150fa7f682f6bd517a5f9767",
+              "bytes": 13176832
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/d/521e1ffc47713ff6fc94c31a809f2017",
+              "bytes": 6155
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/export/ema.safetensors",
+              "bytes": 524378896
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0051ep-20260928T082059626310Z/export/manifest.json",
+              "bytes": 5085
+            }
+          ]
+        },
+        {
+          "host": "h100",
+          "root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+          "checkpoint_id": "MeanFlow-B-2-0679ep-20260926T041357192035Z",
+          "paths": [
+            "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0679ep-20260926T041357192035Z"
+          ],
+          "bytes": 524387074,
+          "files": [
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0679ep-20260926T041357192035Z/manifest.json",
+              "bytes": 5535
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0679ep-20260926T041357192035Z/COMPLETE.json",
+              "bytes": 92
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0679ep-20260926T041357192035Z/STATE_RETIRED.json",
+              "bytes": 175
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0679ep-20260926T041357192035Z/export/ema.safetensors",
+              "bytes": 524378896
+            },
+            {
+              "path": "runs/MeanFlow-B-2/checkpoints/MeanFlow-B-2-0679ep-20260926T041357192035Z/export/manifest.json",
+              "bytes": 2376
+            }
+          ]
+        },
+        {
+          "host": "rtx_pro_6000",
+          "root": "/home/k100/projects/safa-facegen",
+          "checkpoint_id": "MeanFlow-B-2-0051ep-20260928T082059626310Z",
+          "paths": [
+            "models/replicas/MeanFlow-B-2/ema/MeanFlow-B-2-0051ep-20260928T082059626310Z",
+            "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z"
+          ],
+          "bytes": 2984049745,
+          "files": [
+            {
+              "path": "models/replicas/MeanFlow-B-2/ema/MeanFlow-B-2-0051ep-20260928T082059626310Z/REPLICA.json",
+              "bytes": 1368
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/ema/MeanFlow-B-2-0051ep-20260928T082059626310Z/manifest.json",
+              "bytes": 5085
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/ema/MeanFlow-B-2-0051ep-20260928T082059626310Z/ema.safetensors",
+              "bytes": 524378896
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/REPLICA.json",
+              "bytes": 8358
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/COMPLETE.json",
+              "bytes": 126
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/manifest.json",
+              "bytes": 7532
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/export/manifest.json",
+              "bytes": 5085
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/export/ema.safetensors",
+              "bytes": 524378896
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/manifest.ocdbt",
+              "bytes": 118
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/_METADATA",
+              "bytes": 255977
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/_CHECKPOINT_METADATA",
+              "bytes": 258
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/manifest.ocdbt",
+              "bytes": 322
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/d/0c91cd12150fa7f682f6bd517a5f9767",
+              "bytes": 13176832
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/d/c1d29acd336d4064c89a8cd049017095",
+              "bytes": 88031232
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/d/dbdab19585b27a32d344726c3aa37b03",
+              "bytes": 1833775104
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/d/71a2dba62c68c92a9fb1f37cb217f3ab",
+              "bytes": 18176
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/ocdbt.process_0/d/d989a3aa8923ab4780e82f2525147842",
+              "bytes": 225
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/restore/MeanFlow-B-2-0051ep-20260928T082059626310Z/state/d/521e1ffc47713ff6fc94c31a809f2017",
+              "bytes": 6155
+            }
+          ]
+        },
+        {
+          "host": "rtx_pro_6000",
+          "root": "/home/k100/projects/safa-facegen",
+          "checkpoint_id": "MeanFlow-B-2-0679ep-20260926T041357192035Z",
+          "paths": [
+            "models/replicas/MeanFlow-B-2/ema/MeanFlow-B-2-0679ep-20260926T041357192035Z"
+          ],
+          "bytes": 524382658,
+          "files": [
+            {
+              "path": "models/replicas/MeanFlow-B-2/ema/MeanFlow-B-2-0679ep-20260926T041357192035Z/REPLICA.json",
+              "bytes": 1386
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/ema/MeanFlow-B-2-0679ep-20260926T041357192035Z/manifest.json",
+              "bytes": 2376
+            },
+            {
+              "path": "models/replicas/MeanFlow-B-2/ema/MeanFlow-B-2-0679ep-20260926T041357192035Z/ema.safetensors",
+              "bytes": 524378896
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "model_id": "MeanFlow-L-2",
+      "retained_ema": "/home/k100/projects/safa-facegen/models/replicas/MeanFlow-L-2/ema/MeanFlow-L-2-0249ep-20260926T152318241736Z",
+      "visuals": [
+        {
+          "role": "retained",
+          "checkpoint_id": "MeanFlow-L-2-0249ep-20260926T152318241736Z",
+          "step": 65069,
+          "hq_epochs": 249.3072,
+          "method": "保留候选",
+          "image": "MeanFlow-L-2/retained/samples.png",
+          "images": 256,
+          "sample_indices": "0..255",
+          "image_transform": "none"
+        }
+      ],
+      "checkpoints": [
+        {
+          "host": "h100",
+          "root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+          "checkpoint_id": "MeanFlow-L-2-0249ep-20260926T152318241736Z",
+          "paths": [
+            "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z"
+          ],
+          "bytes": 8653297003,
+          "files": [
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/manifest.json",
+              "bytes": 6283
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/COMPLETE.json",
+              "bytes": 92
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/_CHECKPOINT_METADATA",
+              "bytes": 258
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/_METADATA",
+              "bytes": 486569
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/manifest.ocdbt",
+              "bytes": 118
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/manifest.ocdbt",
+              "bytes": 389
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/87bca2e5e454c6959f0060a571e6ec60",
+              "bytes": 225
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/56637871be0e69eb1072028ebbd1469e",
+              "bytes": 989
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/678e751bcb4e5466ef3d17535a221154",
+              "bytes": 960
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/a123ee79c801d264c80469ff6a87710b",
+              "bytes": 1106
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/43e20c9bb6c44ba0a99e1c2831f903fe",
+              "bytes": 4016801
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/debb06c82f3fbabc89bcc6f344ad0e70",
+              "bytes": 1160769536
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/9f056461f75f9c8083f9e4b369fa712d",
+              "bytes": 2153156608
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/2a5eec07b09c20b10e5bb25bb4529d54",
+              "bytes": 2169618432
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/928cae0d95f7ac68c86fbb50fd56d2de",
+              "bytes": 1328652288
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/d/f7a50ed3eb51610e982eb2180a222b1a",
+              "bytes": 10604
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/export/ema.safetensors",
+              "bytes": 1836573368
+            },
+            {
+              "path": "runs/MeanFlow-L-2/checkpoints/MeanFlow-L-2-0249ep-20260926T152318241736Z/export/manifest.json",
+              "bytes": 2377
+            }
+          ]
+        },
+        {
+          "host": "rtx_pro_6000",
+          "root": "/home/k100/projects/safa-facegen",
+          "checkpoint_id": "MeanFlow-L-2-0249ep-20260926T152318241736Z",
+          "paths": [
+            "models/replicas/MeanFlow-L-2/ema/MeanFlow-L-2-0249ep-20260926T152318241736Z",
+            "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z"
+          ],
+          "bytes": 10489885574,
+          "files": [
+            {
+              "path": "models/replicas/MeanFlow-L-2/ema/MeanFlow-L-2-0249ep-20260926T152318241736Z/REPLICA.json",
+              "bytes": 1391
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/ema/MeanFlow-L-2-0249ep-20260926T152318241736Z/manifest.json",
+              "bytes": 2377
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/ema/MeanFlow-L-2-0249ep-20260926T152318241736Z/ema.safetensors",
+              "bytes": 1836573368
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/REPLICA.json",
+              "bytes": 11435
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/COMPLETE.json",
+              "bytes": 92
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/manifest.json",
+              "bytes": 6283
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/export/manifest.json",
+              "bytes": 2377
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/export/ema.safetensors",
+              "bytes": 1836573368
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/manifest.ocdbt",
+              "bytes": 118
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/_METADATA",
+              "bytes": 486569
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/_CHECKPOINT_METADATA",
+              "bytes": 258
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/manifest.ocdbt",
+              "bytes": 389
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/2a5eec07b09c20b10e5bb25bb4529d54",
+              "bytes": 2169618432
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/43e20c9bb6c44ba0a99e1c2831f903fe",
+              "bytes": 4016801
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/56637871be0e69eb1072028ebbd1469e",
+              "bytes": 989
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/9f056461f75f9c8083f9e4b369fa712d",
+              "bytes": 2153156608
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/a123ee79c801d264c80469ff6a87710b",
+              "bytes": 1106
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/928cae0d95f7ac68c86fbb50fd56d2de",
+              "bytes": 1328652288
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/87bca2e5e454c6959f0060a571e6ec60",
+              "bytes": 225
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/678e751bcb4e5466ef3d17535a221154",
+              "bytes": 960
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/ocdbt.process_0/d/debb06c82f3fbabc89bcc6f344ad0e70",
+              "bytes": 1160769536
+            },
+            {
+              "path": "models/replicas/MeanFlow-L-2/restore/MeanFlow-L-2-0249ep-20260926T152318241736Z/state/d/f7a50ed3eb51610e982eb2180a222b1a",
+              "bytes": 10604
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "model_id": "Diffusion-LDM-UNet",
+      "retained_ema": "/home/k100/projects/safa-facegen/models/retained/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z/Diffusion-LDM-UNet-0741ep-20260924T143627Z.ema.pt",
+      "visuals": [
+        {
+          "role": "retained",
+          "checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+          "step": 147178,
+          "hq_epochs": 741.48128,
+          "method": "保留候选",
+          "image": "Diffusion-LDM-UNet/retained/samples.png",
+          "images": 256,
+          "sample_indices": "0..255",
+          "image_transform": "none"
+        },
+        {
+          "role": "adapted",
+          "checkpoint_id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z",
+          "step": 15000,
+          "hq_epochs": 38.36352,
+          "method": "Min-SNR",
+          "image": "Diffusion-LDM-UNet/adapted/samples.png",
+          "images": 256,
+          "sample_indices": "0..255",
+          "image_transform": "none"
+        }
+      ],
+      "checkpoints": [
+        {
+          "host": "h100",
+          "root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+          "checkpoint_id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z",
+          "paths": [
+            "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0038ep-20260928T115524Z",
+            "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0038ep-20260928T115524Z.json"
+          ],
+          "bytes": 5481938643,
+          "files": [
+            {
+              "path": "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0038ep-20260928T115524Z/state.pt",
+              "bytes": 4385558243
+            },
+            {
+              "path": "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0038ep-20260928T115524Z/ema.pt",
+              "bytes": 1096371935
+            },
+            {
+              "path": "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0038ep-20260928T115524Z/config.json",
+              "bytes": 2590
+            },
+            {
+              "path": "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0038ep-20260928T115524Z/manifest.json",
+              "bytes": 3880
+            },
+            {
+              "path": "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0038ep-20260928T115524Z/COMPLETE.json",
+              "bytes": 126
+            },
+            {
+              "path": "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0038ep-20260928T115524Z.json",
+              "bytes": 1869
+            }
+          ]
+        },
+        {
+          "host": "h100",
+          "root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+          "checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+          "paths": [
+            "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z.config.json",
+            "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z.ema.pt",
+            "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z.json",
+            "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z.state.pt"
+          ],
+          "bytes": 5481930740,
+          "files": [
+            {
+              "path": "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z.config.json",
+              "bytes": 1576
+            },
+            {
+              "path": "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z.ema.pt",
+              "bytes": 1096370399
+            },
+            {
+              "path": "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z.json",
+              "bytes": 1354
+            },
+            {
+              "path": "runs/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z.state.pt",
+              "bytes": 4385557411
+            }
+          ]
+        },
+        {
+          "host": "rtx_pro_6000",
+          "root": "/home/k100/projects/safa-facegen",
+          "checkpoint_id": "Diffusion-LDM-UNet-0038ep-20260928T115524Z",
+          "paths": [
+            "models/replicas/Diffusion-LDM-UNet/ema/Diffusion-LDM-UNet-0038ep-20260928T115524Z",
+            "models/replicas/Diffusion-LDM-UNet/restore/Diffusion-LDM-UNet-0038ep-20260928T115524Z"
+          ],
+          "bytes": 6578320285,
+          "files": [
+            {
+              "path": "models/replicas/Diffusion-LDM-UNet/ema/Diffusion-LDM-UNet-0038ep-20260928T115524Z/REPLICA.json",
+              "bytes": 2252
+            },
+            {
+              "path": "models/replicas/Diffusion-LDM-UNet/ema/Diffusion-LDM-UNet-0038ep-20260928T115524Z/ema.pt",
+              "bytes": 1096371935
+            },
+            {
+              "path": "models/replicas/Diffusion-LDM-UNet/ema/Diffusion-LDM-UNet-0038ep-20260928T115524Z/COMPLETE.json",
+              "bytes": 126
+            },
+            {
+              "path": "models/replicas/Diffusion-LDM-UNet/ema/Diffusion-LDM-UNet-0038ep-20260928T115524Z/manifest.json",
+              "bytes": 3880
+            },
+            {
+              "path": "models/replicas/Diffusion-LDM-UNet/ema/Diffusion-LDM-UNet-0038ep-20260928T115524Z/config.json",
+              "bytes": 2590
+            },
+            {
+              "path": "models/replicas/Diffusion-LDM-UNet/restore/Diffusion-LDM-UNet-0038ep-20260928T115524Z/REPLICA.json",
+              "bytes": 2728
+            },
+            {
+              "path": "models/replicas/Diffusion-LDM-UNet/restore/Diffusion-LDM-UNet-0038ep-20260928T115524Z/ema.pt",
+              "bytes": 1096371935
+            },
+            {
+              "path": "models/replicas/Diffusion-LDM-UNet/restore/Diffusion-LDM-UNet-0038ep-20260928T115524Z/COMPLETE.json",
+              "bytes": 126
+            },
+            {
+              "path": "models/replicas/Diffusion-LDM-UNet/restore/Diffusion-LDM-UNet-0038ep-20260928T115524Z/state.pt",
+              "bytes": 4385558243
+            },
+            {
+              "path": "models/replicas/Diffusion-LDM-UNet/restore/Diffusion-LDM-UNet-0038ep-20260928T115524Z/manifest.json",
+              "bytes": 3880
+            },
+            {
+              "path": "models/replicas/Diffusion-LDM-UNet/restore/Diffusion-LDM-UNet-0038ep-20260928T115524Z/config.json",
+              "bytes": 2590
+            }
+          ]
+        },
+        {
+          "host": "rtx_pro_6000",
+          "root": "/home/k100/projects/safa-facegen",
+          "checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+          "paths": [
+            "models/retained/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z"
+          ],
+          "bytes": 5481933951,
+          "files": [
+            {
+              "path": "models/retained/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z/REPLICA.json",
+              "bytes": 2215
+            },
+            {
+              "path": "models/retained/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z/Diffusion-LDM-UNet-0741ep-20260924T143627Z.config.json",
+              "bytes": 1576
+            },
+            {
+              "path": "models/retained/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z/SOURCE-CHECKPOINT.json",
+              "bytes": 1354
+            },
+            {
+              "path": "models/retained/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z/Diffusion-LDM-UNet-0741ep-20260924T143627Z.ema.pt",
+              "bytes": 1096370399
+            },
+            {
+              "path": "models/retained/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z/Diffusion-LDM-UNet-0741ep-20260924T143627Z.state.pt",
+              "bytes": 4385557411
+            },
+            {
+              "path": "models/retained/Diffusion-LDM-UNet/Diffusion-LDM-UNet-0741ep-20260924T143627Z/RETENTION.json",
+              "bytes": 996
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "model_id": "RectifiedFlow-NCSNpp",
+      "retained_ema": "/home/k100/projects/safa-facegen/models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z.ema.pt",
+      "visuals": [
+        {
+          "role": "retained",
+          "checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+          "step": 7309,
+          "hq_epochs": 7.0144,
+          "method": "保留候选",
+          "image": "RectifiedFlow-NCSNpp/retained/samples.png",
+          "images": 256,
+          "sample_indices": "0..255",
+          "image_transform": "none"
+        },
+        {
+          "role": "adapted",
+          "checkpoint_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
+          "step": 10000,
+          "hq_epochs": 4.79872,
+          "method": "global-batch OT",
+          "image": "RectifiedFlow-NCSNpp/adapted/samples.png",
+          "images": 256,
+          "sample_indices": "0..255",
+          "image_transform": "none"
+        }
+      ],
+      "checkpoints": [
+        {
+          "host": "h100",
+          "root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+          "checkpoint_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
+          "paths": [
+            "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
+            "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z.json"
+          ],
+          "bytes": 1304411780,
+          "files": [
+            {
+              "path": "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/state.pt",
+              "bytes": 1041866791
+            },
+            {
+              "path": "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/ema.pt",
+              "bytes": 262537779
+            },
+            {
+              "path": "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/config.json",
+              "bytes": 2260
+            },
+            {
+              "path": "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/manifest.json",
+              "bytes": 3237
+            },
+            {
+              "path": "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/COMPLETE.json",
+              "bytes": 128
+            },
+            {
+              "path": "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z.json",
+              "bytes": 1585
+            }
+          ]
+        },
+        {
+          "host": "h100",
+          "root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+          "checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+          "paths": [
+            "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z.config.json",
+            "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z.ema.pt",
+            "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z.json"
+          ],
+          "bytes": 262539313,
+          "files": [
+            {
+              "path": "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z.config.json",
+              "bytes": 1248
+            },
+            {
+              "path": "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z.ema.pt",
+              "bytes": 262536563
+            },
+            {
+              "path": "runs/RectifiedFlow-NCSNpp/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z.json",
+              "bytes": 1502
+            }
+          ]
+        },
+        {
+          "host": "rtx_pro_6000",
+          "root": "/home/k100/projects/safa-facegen",
+          "checkpoint_id": "RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
+          "paths": [
+            "models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z",
+            "models/replicas/RectifiedFlow-NCSNpp/restore/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z"
+          ],
+          "bytes": 1566958615,
+          "files": [
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/REPLICA.json",
+              "bytes": 2268
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/ema.pt",
+              "bytes": 262537779
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/COMPLETE.json",
+              "bytes": 128
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/manifest.json",
+              "bytes": 3237
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/config.json",
+              "bytes": 2260
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/restore/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/REPLICA.json",
+              "bytes": 2748
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/restore/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/ema.pt",
+              "bytes": 262537779
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/restore/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/COMPLETE.json",
+              "bytes": 128
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/restore/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/state.pt",
+              "bytes": 1041866791
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/restore/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/manifest.json",
+              "bytes": 3237
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/restore/RectifiedFlow-NCSNpp-0004ep-20260928T203134Z/config.json",
+              "bytes": 2260
+            }
+          ]
+        },
+        {
+          "host": "rtx_pro_6000",
+          "root": "/home/k100/projects/safa-facegen",
+          "checkpoint_id": "RectifiedFlow-NCSNpp-0007ep-20260925T040519Z",
+          "paths": [
+            "models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z"
+          ],
+          "bytes": 262539417,
+          "files": [
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z/REPLICA.json",
+              "bytes": 1606
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z.config.json",
+              "bytes": 1248
+            },
+            {
+              "path": "models/replicas/RectifiedFlow-NCSNpp/ema/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z/RectifiedFlow-NCSNpp-0007ep-20260925T040519Z.ema.pt",
+              "bytes": 262536563
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "model_id": "LatentConsistency-LDM-UNet",
+      "retained_ema": "/home/k100/projects/safa-facegen/models/replicas/LatentConsistency-LDM-UNet/ema/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.ema.pt",
+      "visuals": [
+        {
+          "role": "retained",
+          "checkpoint_id": "LatentConsistency-LDM-UNet-0100ep-20260927T145104Z",
+          "step": 19732,
+          "hq_epochs": 100.67584,
+          "method": "保留候选",
+          "image": "LatentConsistency-LDM-UNet/retained/samples.png",
+          "images": 256,
+          "sample_indices": "0..255",
+          "image_transform": "none"
+        },
+        {
+          "role": "adapted",
+          "checkpoint_id": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z",
+          "step": 10000,
+          "hq_epochs": 25.576,
+          "method": "real-data LCF",
+          "image": "LatentConsistency-LDM-UNet/adapted/samples.png",
+          "images": 256,
+          "sample_indices": "0..255",
+          "image_transform": "none"
+        }
+      ],
+      "checkpoints": [
+        {
+          "host": "h100",
+          "root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+          "checkpoint_id": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z",
+          "paths": [
+            "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z",
+            "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z.json"
+          ],
+          "bytes": 5482830833,
+          "files": [
+            {
+              "path": "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/state.pt",
+              "bytes": 4385770147
+            },
+            {
+              "path": "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/ema.pt",
+              "bytes": 1096540575
+            },
+            {
+              "path": "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/config.json",
+              "bytes": 253568
+            },
+            {
+              "path": "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/manifest.json",
+              "bytes": 264414
+            },
+            {
+              "path": "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/COMPLETE.json",
+              "bytes": 136
+            },
+            {
+              "path": "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z.json",
+              "bytes": 1993
+            }
+          ]
+        },
+        {
+          "host": "h100",
+          "root": "/home/apulis-dev/code/meanflow_e15_h100_bundle",
+          "checkpoint_id": "LatentConsistency-LDM-UNet-0100ep-20260927T145104Z",
+          "paths": [
+            "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.config.json",
+            "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.ema.pt",
+            "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.json",
+            "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.state.pt"
+          ],
+          "bytes": 5481934674,
+          "files": [
+            {
+              "path": "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.config.json",
+              "bytes": 3331
+            },
+            {
+              "path": "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.ema.pt",
+              "bytes": 1096372063
+            },
+            {
+              "path": "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.json",
+              "bytes": 1421
+            },
+            {
+              "path": "runs/LatentConsistency-LDM-UNet/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.state.pt",
+              "bytes": 4385557859
+            }
+          ]
+        },
+        {
+          "host": "rtx_pro_6000",
+          "root": "/home/k100/projects/safa-facegen",
+          "checkpoint_id": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z",
+          "paths": [
+            "models/replicas/LatentConsistency-LDM-UNet/ema/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z",
+            "models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z"
+          ],
+          "bytes": 6579892713,
+          "files": [
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/ema/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/REPLICA.json",
+              "bytes": 2344
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/ema/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/ema.pt",
+              "bytes": 1096540575
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/ema/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/COMPLETE.json",
+              "bytes": 136
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/ema/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/manifest.json",
+              "bytes": 264414
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/ema/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/config.json",
+              "bytes": 253568
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/REPLICA.json",
+              "bytes": 2836
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/ema.pt",
+              "bytes": 1096540575
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/COMPLETE.json",
+              "bytes": 136
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/state.pt",
+              "bytes": 4385770147
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/manifest.json",
+              "bytes": 264414
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/config.json",
+              "bytes": 253568
+            }
+          ]
+        },
+        {
+          "host": "rtx_pro_6000",
+          "root": "/home/k100/projects/safa-facegen",
+          "checkpoint_id": "LatentConsistency-LDM-UNet-0100ep-20260927T145104Z",
+          "paths": [
+            "models/replicas/LatentConsistency-LDM-UNet/ema/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z"
+          ],
+          "bytes": 1096377075,
+          "files": [
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/ema/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z/REPLICA.json",
+              "bytes": 1681
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/ema/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.config.json",
+              "bytes": 3331
+            },
+            {
+              "path": "models/replicas/LatentConsistency-LDM-UNet/ema/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z/LatentConsistency-LDM-UNet-0100ep-20260927T145104Z.ema.pt",
+              "bytes": 1096372063
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preserved_assets": [
+    "100000 training images and source manifests",
+    "latent caches",
+    "dataset annotations",
+    "formal generated images and review labels",
+    "initialization weights and licenses",
+    "codecs and metric weights"
+  ],
+  "storage": {
+    "h100": {
+      "removed_checkpoint_groups": 510,
+      "removed_bytes": 856088040326,
+      "completed_at_utc": "2026-09-29T06:03:52.564100+00:00"
+    },
+    "rtx_pro_6000": {
+      "removed_checkpoint_groups": 165,
+      "removed_bytes": 154654864976,
+      "completed_at_utc": "2026-09-29T06:00:08.866474+00:00"
+    }
+  },
+  "cleanup": {
+    "completed_at_utc": "2026-09-29T06:15:20+00:00",
+    "removed_checkpoint_groups": 675,
+    "removed_checkpoint_file_bytes": 1010742905302,
+    "removed_temporary_file_bytes": 26929876731,
+    "worker_status": "stopped_after_empty_queue",
+    "retained_checkpoint_identities": 11,
+    "historical_path_map": "reports/path-relocations.json",
+    "validation": [
+      "retained file paths and byte sizes checked after deletion",
+      "four stage contracts unchanged",
+      "configuration JSON and source syntax checked"
+    ],
+    "serialized_provenance": "original checkpoint, objective, stage and format identities retained"
+  }
+}

@@ -1,0 +1,31 @@
+"""Serialized training identities. Keep these values stable for saved checkpoints."""
+
+BOUNDED_STAGE_SCHEMA = 1
+BOUNDED_REGISTRATION_SCHEMA = 1
+QUALITY_STAGE_SCHEMA = 2
+RECOVERY_RECORD_SCHEMA = 1
+EVALUATION_RECORD_SCHEMA = 1
+DATA_RECORD_SCHEMA = 1
+CACHE_RECORD_SCHEMA = 1
+REPLICATION_RECORD_SCHEMA = 1
+QUALITY_PROTOCOL_SCHEMA = 1
+MEANFLOW_CACHE_SCHEMA = 1
+MEANFLOW_CHECKPOINT_SCHEMA = 2
+MEANFLOW_EXPORT_FORMAT_VERSION = 1
+MEANFLOW_EXPORT_FORMAT = "safa-meanflow-torch"
+
+MEANFLOW_ORIGINAL = "meanflow_original"
+IMF_BOUNDARY = "imf_boundary_v1"
+DIFFUSION_ORIGINAL = "diffusion"
+MIN_SNR_EPSILON = "min_snr_epsilon_v1"
+RECTIFIED_FLOW_ORIGINAL = "rectified_flow"
+RF_BATCH_OT = "rf_batch_ot_v1"
+LATENT_CONSISTENCY_ORIGINAL = "latent_consistency"
+LCF_REAL = "lcf_real_v1"
+LCD_TEACHER = "lcd_teacher_v2"
+
+QUALITY_OBJECTIVES = frozenset({IMF_BOUNDARY, MIN_SNR_EPSILON, RF_BATCH_OT,
+                                LCF_REAL, LCD_TEACHER})
+
+TORCH_TRAIN_FORMAT = "safa-facegen-train-v1"
+TORCH_EMA_FORMAT = "safa-facegen-ema-v1"

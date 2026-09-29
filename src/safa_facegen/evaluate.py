@@ -1,5 +1,6 @@
 """Fixed 1024-sample EMA evaluation without image rejection or metric fallbacks."""
 from __future__ import annotations
+from .contracts import MIN_SNR_EPSILON, EVALUATION_RECORD_SCHEMA
 
 import argparse
 from contextlib import ExitStack, contextmanager
@@ -169,20 +170,20 @@ def fp32_tf32_disabled(device: str):
         torch.backends.cudnn.allow_tf32 = previous[2]
 
 
-def quality_v1_plan(generator, settings, *, seed, batch_size, real_indices, real_records, weights, codec_info):
+def quality_evaluation_plan(generator, settings, *, seed, batch_size, real_indices, real_records, weights, codec_info):
     """Require an explicit protocol only for the new metadata Min-SNR objective."""
     identity = getattr(generator, "ema_identity", None) or {}
     if (getattr(generator, "integrity_mode", None) != "metadata"
-            or identity.get("objective_id") != "min_snr_epsilon_v1"):
+            or identity.get("objective_id") != MIN_SNR_EPSILON):
         return None
     if generator.model_id != "Diffusion-LDM-UNet":
         raise ValueError("Min-SNR evaluation requires the Diffusion model identity")
     if not isinstance(settings, dict):
-        raise ValueError("min_snr_epsilon_v1 requires explicit quality_v1_evaluation settings")
-    required = {"objective_id": "min_snr_epsilon_v1", "seed": 42,
+        raise ValueError("Min-SNR requires explicit quality_evaluation settings")
+    required = {"objective_id": MIN_SNR_EPSILON, "seed": 42,
                 "generation_batch_size": 8, "feature_batch_size": 32, "precision": "fp32"}
     if any(settings.get(key) != value for key, value in required.items()):
-        raise ValueError("quality_v1_evaluation differs from the registered Diffusion protocol")
+        raise ValueError("quality_evaluation differs from the registered Diffusion protocol")
     if (settings.get("cuda_matmul_allow_tf32") is not False
             or settings.get("cudnn_allow_tf32") is not False
             or not isinstance(settings.get("protocol_id"), str) or not settings["protocol_id"].strip()):
@@ -390,13 +391,13 @@ def evaluate(*, model_id: str, checkpoint: str | Path, dataset_manifest: str | P
              detector_size: int = 256, detector_threshold: float = 0.5,
              cpu_threads: int = 8, ema_sha256: str | None = None,
              dataset_manifest_sha256: str | None = None,
-             quality_v1_evaluation: dict | None = None) -> dict:
+             quality_evaluation: dict | None = None) -> dict:
     if batch_size < 1 or cpu_threads < 1 or detector_size < 1 or not 0 < detector_threshold < 1:
         raise ValueError("Batch size, CPU threads and detector size must be positive; threshold must be in (0,1)")
     torch.set_num_threads(cpu_threads)
     output, checkpoint = Path(output).resolve(), Path(checkpoint).resolve()
     output.mkdir(parents=True, exist_ok=False)
-    summary = {"schema_version": 1, "status": "running", "model_id": model_id,
+    summary = {"schema_version": EVALUATION_RECORD_SCHEMA, "status": "running", "model_id": model_id,
                "started_at_utc": datetime.now(timezone.utc).isoformat(),
                "samples_required": SAMPLE_COUNT, "preview_count": GRID_COUNT,
                "seed": seed, "batch_size": batch_size, "device": device,
@@ -435,12 +436,12 @@ def evaluate(*, model_id: str, checkpoint: str | Path, dataset_manifest: str | P
         if getattr(generator, "state_role", None) != "ema":
             raise ValueError("Generator must confirm state_role='ema'; raw checkpoints are not evaluated silently")
         summary.update(generator_identity(generator, checkpoint, ema_sha256))
-        quality_plan = quality_v1_plan(generator, quality_v1_evaluation, seed=seed, batch_size=batch_size,
+        quality_plan = quality_evaluation_plan(generator, quality_evaluation, seed=seed, batch_size=batch_size,
                                       real_indices=real_indices, real_records=real_records, weights=inception_weights,
                                       codec_info=summary["codec"])
         if quality_plan is not None:
             precision_scope.enter_context(fp32_tf32_disabled(device))
-            summary["quality_v1_evaluation"] = quality_plan["record"]
+            summary["quality_evaluation"] = quality_plan["record"]
         summary.update(generator_protocol(generator))
         if quality_plan is not None:
             precision = summary["generation_precision"]
@@ -545,7 +546,7 @@ def preview(*, model_id: str, checkpoint: str | Path, output: str | Path,
     torch.set_num_threads(cpu_threads)
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=False)
-    summary = {"schema_version": 1, "mode": "preview64", "status": "running",
+    summary = {"schema_version": EVALUATION_RECORD_SCHEMA, "mode": "preview64", "status": "running",
                "model_id": model_id, "seed": seed, "samples_required": 64,
                "batch_size": batch_size, "device": device, "filtered_samples": 0,
                "started_at_utc": datetime.now(timezone.utc).isoformat(), "metrics": "not_requested"}

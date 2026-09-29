@@ -1,9 +1,9 @@
 {
   "model_order": [
-    "MeanFlow-B-2"
+    "Diffusion-LDM-UNet"
   ],
   "model_configs": {
-    "MeanFlow-B-2": "configs/quality-v1/meanflow-b2.json"
+    "Diffusion-LDM-UNet": "configs/quality/diffusion.json"
   },
   "gpu_ids": [
     0,
@@ -19,29 +19,29 @@
   "save_interval_seconds": 900,
   "preview_interval_seconds": 1800,
   "review_interval_seconds": 7200,
-  "review_policy": "quality_v1_lexicographic_release_gate_no_auto_second_budget",
+  "review_policy": "lexicographic_release_gate_no_auto_second_budget",
   "max_consecutive_recovery_failures": 2,
   "bounded_stage": {
     "schema_version": 2,
-    "stage_id": "qv1-mf-b2",
-    "model_id": "MeanFlow-B-2",
-    "parent_checkpoint_id": "MeanFlow-B-2-0679ep-20260926T041357192035Z",
-    "objective_id": "imf_boundary_v1",
+    "stage_id": "qv1-diffusion",
+    "model_id": "Diffusion-LDM-UNet",
+    "parent_checkpoint_id": "Diffusion-LDM-UNet-0741ep-20260924T143627Z",
+    "objective_id": "min_snr_epsilon_v1",
     "source_step": 0,
-    "stop_step": 20000,
+    "stop_step": 15000,
     "initialization_mode": "ema_warm_start_new_optimizer",
     "recipe": {
+      "learning_rate": 3e-06,
+      "end_learning_rate": 3e-07,
+      "warmup_steps": 500,
       "ema_decay": 0.999,
       "microbatch": 64,
+      "precision": "bf16",
       "adam_betas": [
         0.9,
-        0.95
+        0.999
       ],
-      "weight_decay": 0.0,
-      "learning_rate": 3e-05,
-      "end_learning_rate": 3e-06,
-      "warmup_steps": 500,
-      "precision": "fp32"
+      "weight_decay": 0.0
     }
   }
 }

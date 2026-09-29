@@ -25,13 +25,4 @@ configs/*.local.json
 *.npy
 *.npz
 reports/
-docs/implementation.md
-src/safa_facegen/meanflow/selftest.py
-src/safa_facegen/meanflow/validate_legacy.py
-src/safa_facegen/meanflow/training_validate.py
-src/safa_facegen/meanflow/verify_export.py
-src/safa_facegen/meanflow/compare_checkpoints.py
-src/safa_facegen/torch_models/validation.py
-src/safa_facegen/torch_models/training_validation.py
-src/safa_facegen/torch_models/trainer_validation.py
 !vendor/**/models/

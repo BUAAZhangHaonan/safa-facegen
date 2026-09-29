@@ -4,6 +4,7 @@ Run via torchrun. The only preview/review action on this host is exporting state
 and emitting callbacks; evaluation is dispatched to the storage/research host.
 """
 from __future__ import annotations
+from .contracts import MIN_SNR_EPSILON, RF_BATCH_OT, LCF_REAL, LCD_TEACHER, QUALITY_STAGE_SCHEMA, TORCH_EMA_FORMAT, TORCH_TRAIN_FORMAT
 import argparse
 import copy
 import gc
@@ -30,7 +31,7 @@ from .torch_models.models import family, load_backbone, LDM_ID,registered_ema_sh
 from .torch_models.codec import read_checkpoint,registered_codec
 from .torch_models.objectives import TrainingObjective, resolve_objective
 from .bounded_stage import validate_training_resume, guard_trainer_launch, append_event, validate_journal
-from .quality_stage import is_v2, scheduled_learning_rate, latest_path as stage_latest_path
+from .quality_stage import is_quality_stage, scheduled_learning_rate, latest_path as stage_latest_path
 from .integrity import file_record, validate_files, completion_record, validate_completion
 
 
@@ -178,7 +179,7 @@ def _recipe(config,paths,world):
     def identity(path):
         value=Path(path).resolve();info=value.stat()
         return {"path":str(value),"bytes":info.st_size,"mtime_ns":info.st_mtime_ns}
-    quality_stage = is_v2(config.get("bounded_stage"))
+    quality_stage = is_quality_stage(config.get("bounded_stage"))
     teacher_path = Path(paths["teacher_checkpoint"]) if paths.get("teacher_checkpoint") else None
     result.update(world_size=world,dataset_identity=identity(paths["dataset_manifest"]),
                   codec_sha256=registered_codec(paths["codec"])["sha256"] if paths.get("codec") else None,
@@ -223,7 +224,7 @@ def _parent_ema(config, paths):
     if path.name == "ema.pt":
         _validate_metadata_checkpoint(path, role="ema")
     payload = read_checkpoint(path)
-    if (payload.get("format") != "safa-facegen-ema-v1" or payload.get("state_role") != "ema"
+    if (payload.get("format") != TORCH_EMA_FORMAT or payload.get("state_role") != "ema"
             or payload.get("model_id") != config["model_id"]
             or payload.get("checkpoint_id", declared_id) != declared_id):
         raise ValueError("Quality initialization requires this model's registered parent EMA")
@@ -269,7 +270,7 @@ def run(config,callbacks=None):
     config.update(overrides)
     model_id=config["model_id"]
     kind=family(model_id)
-    quality_stage = is_v2(config.get("bounded_stage"))
+    quality_stage = is_quality_stage(config.get("bounded_stage"))
     objective_id = resolve_objective(kind, config.get("objective_id"))
     if quality_stage:
         # A selected new teacher is identified by its registered metadata; an
@@ -289,17 +290,17 @@ def run(config,callbacks=None):
                 raise ValueError(f"Quality stage runtime {key} differs from its immutable recipe")
         if int(config["microbatch"]) > stage_recipe["microbatch"]:
             raise ValueError("Quality stage microbatch cannot exceed its registered batch")
-        if (objective_id == "rf_batch_ot_v1" and config.get("ot_global_batch", 48) != 48
-                or objective_id == "min_snr_epsilon_v1" and config.get("min_snr_gamma", 5.0) != 5.0
-                or objective_id == "lcf_real_v1" and config.get("lcf_skip", 20) != 20):
+        if (objective_id == RF_BATCH_OT and config.get("ot_global_batch", 48) != 48
+                or objective_id == MIN_SNR_EPSILON and config.get("min_snr_gamma", 5.0) != 5.0
+                or objective_id == LCF_REAL and config.get("lcf_skip", 20) != 20):
             raise ValueError("Objective settings differ from the authorized quality recipe")
     elif objective_id not in ("diffusion", "rectified_flow", "latent_consistency"):
-        raise ValueError("Quality objectives require a registered schema-v2 stage")
+        raise ValueError("Quality objectives require a registered quality stage")
     root=Path(config.get("project_root",Path(__file__).resolve().parents[2])).resolve()
     validate_journal(root/"runs"/model_id/"events.jsonl")
     validate_journal(root/"runs"/model_id/"requests.jsonl")
     guard_trainer_launch(config, root)
-    if config.get('bounded_stage', {}).get('schema_version') == 2:
+    if config.get('bounded_stage', {}).get('schema_version') == QUALITY_STAGE_SCHEMA:
         from .quality_stage import guard_initialization
         guard_initialization(config, root, config['paths'].get('resume'))
     stop_request_path=_stop_request_path(config,root,model_id)
@@ -379,19 +380,19 @@ def run(config,callbacks=None):
     if not usable_batches:
         raise ValueError("No complete gradient accumulation group")
     teacher=None;teacher_metadata=None
-    if kind=="latent_consistency" and objective_id != "lcf_real_v1":
+    if kind=="latent_consistency" and objective_id != LCF_REAL:
         if not paths.get("teacher_checkpoint"):
             raise ValueError("LCM requires project LDM teacher_checkpoint")
         if Path(paths["teacher_checkpoint"]).name == "ema.pt":
             _validate_metadata_checkpoint(paths["teacher_checkpoint"], role="ema")
         payload=read_checkpoint(paths["teacher_checkpoint"])
-        if (payload.get("format")!="safa-facegen-ema-v1" or payload.get("state_role") != "ema"
+        if (payload.get("format")!=TORCH_EMA_FORMAT or payload.get("state_role") != "ema"
                 or family(payload["model_id"])!="diffusion"):
             raise ValueError("LCM teacher must be this project's LDM EMA export")
-        if objective_id == "lcd_teacher_v2" and (payload.get("objective_id") != "min_snr_epsilon_v1"
-                or not is_v2(payload.get("config", {}).get("bounded_stage"))):
-            raise ValueError("LCD v2 requires the newly selected Min-SNR Diffusion EMA")
-        if objective_id == "lcd_teacher_v2" and payload.get("checkpoint_id") != config["bounded_stage"].get(
+        if objective_id == LCD_TEACHER and (payload.get("objective_id") != MIN_SNR_EPSILON
+                or not is_quality_stage(payload.get("config", {}).get("bounded_stage"))):
+            raise ValueError("Teacher LCD requires the newly selected Min-SNR Diffusion EMA")
+        if objective_id == LCD_TEACHER and payload.get("checkpoint_id") != config["bounded_stage"].get(
                 "selection", {}).get("candidate", {}).get("checkpoint_id"):
             raise ValueError("LCD teacher does not match the quality gate's selected checkpoint")
         if payload.get("codec_sha256")!=registered_codec(paths["codec"])["sha256"]:
@@ -400,7 +401,7 @@ def run(config,callbacks=None):
                           "objective_id","step","samples_seen","codec_sha256")}
         teacher=load_backbone(LDM_ID,paths["teacher_checkpoint"],payload=payload).requires_grad_(False).eval()
         del payload
-    if objective_id == "lcf_real_v1" and paths.get("teacher_checkpoint"):
+    if objective_id == LCF_REAL and paths.get("teacher_checkpoint"):
         raise ValueError("Teacher-free LCF cannot include a teacher path")
     if quality_stage:
         parent_payload = _parent_ema(config, paths)
@@ -438,7 +439,7 @@ def run(config,callbacks=None):
         if quality_stage:
             resume_manifest = _validate_metadata_checkpoint(resume, role="state")
         payload=read_checkpoint(resume)
-        if payload.get("format")!="safa-facegen-train-v1":
+        if payload.get("format")!=TORCH_TRAIN_FORMAT:
             raise ValueError("Resume requires a complete training checkpoint")
         validate_training_resume(config, payload, root)
         previous_recipe=payload["recipe"]
@@ -570,14 +571,14 @@ def run(config,callbacks=None):
                     stage_step=progress.get("stage_step", progress["step"]),
                     parent_checkpoint_id=stage.get("parent_checkpoint_id"),
                     codec_registration=registered_codec(paths["codec"]) if paths.get("codec") else None)
-            atomic_torch_save({"format":"safa-facegen-train-v1",**metadata,"recipe":recipe,"state_role":"full_training_state",
+            atomic_torch_save({"format":TORCH_TRAIN_FORMAT,**metadata,"recipe":recipe,"state_role":"full_training_state",
                 "model_state":net.state_dict(),"ema_state":ema.state_dict(),
                 "optimizer_state":optimizer.state_dict(),"rng_by_rank":rngs,
                 "dataloader":{"epoch":progress["epoch"],"next_batch":progress["next_batch"],
                               "samples_in_epoch_per_rank":progress["samples_in_epoch_per_rank"],
                               "sampler_seed":seed,"augmentation":"stateless_seed_epoch_index",
                               "usable_batches":usable_batches}},state_path)
-            atomic_torch_save({"format":"safa-facegen-ema-v1",**metadata,
+            atomic_torch_save({"format":TORCH_EMA_FORMAT,**metadata,
                               "state_role":"ema","model_state":ema.state_dict()},ema_path)
             atomic_json(config_path,config)
             if metadata_mode:

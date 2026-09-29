@@ -5,6 +5,7 @@ recovery, and checkpoint publication. This module only adds a fixed stop budget
 and intentional runtime overrides AFTER the existing resume/recovery resolution.
 """
 from __future__ import annotations
+from .contracts import BOUNDED_STAGE_SCHEMA, BOUNDED_REGISTRATION_SCHEMA, QUALITY_STAGE_SCHEMA
 import copy
 import json
 import math
@@ -16,7 +17,7 @@ MODEL = "Diffusion-LDM-UNet"
 RF_MODEL = "RectifiedFlow-NCSNpp"
 LCM_MODEL = "LatentConsistency-LDM-UNet"
 SUPPORTED_MODELS = (MODEL, RF_MODEL, LCM_MODEL)
-SCHEMA = 1
+SCHEMA = BOUNDED_STAGE_SCHEMA
 FIELDS = {"schema_version", "stage_id", "model_id", "source_checkpoint_id",
           "source_step", "additional_steps", "learning_rate"}
 
@@ -88,7 +89,7 @@ def validate_stage(campaign: dict) -> dict | None:
         return None
     if not isinstance(stage, dict):
         raise ValueError("bounded_stage has missing or unknown fields")
-    if stage.get('schema_version') == 2:
+    if stage.get('schema_version') == QUALITY_STAGE_SCHEMA:
         from .quality_stage import validate
         if campaign.get('model_order') != [stage.get('model_id')]:
             raise ValueError('Quality campaign must contain one model')
@@ -126,7 +127,7 @@ def validate_stage(campaign: dict) -> dict | None:
 
 
 def goal(stage: dict) -> int:
-    if stage.get('schema_version') == 2:
+    if stage.get('schema_version') == QUALITY_STAGE_SCHEMA:
         return stage['stop_step']
     return stage["source_step"] + stage["additional_steps"]
 
@@ -319,7 +320,7 @@ def read_registration(root: Path, model: str = MODEL) -> dict | None:
         return None
     record = _read_json_file(path)
     stage = validate_stage({"model_order": [model], "bounded_stage": record.get("stage")})
-    if (record.get("schema_version") != 1 or stage is None or
+    if (record.get("schema_version") != BOUNDED_REGISTRATION_SCHEMA or stage is None or
             record.get("model_id") != model or record.get("stop_step") != goal(stage)):
         raise ValueError("Invalid immutable stage registration")
     return record
@@ -333,7 +334,7 @@ def guard_campaign(root: Path, campaign: dict) -> None:
     """
     stage = validate_stage(campaign)
     from . import quality_stage as q
-    if q.is_v2(stage):
+    if q.is_quality_stage(stage):
         existing = q.read_registration(root, stage['model_id'])
         if existing and existing['stage'] != stage:
             raise ValueError('Cannot replace quality stage or LCM branch')
@@ -374,7 +375,7 @@ def bind_stage(root: Path, stage: dict) -> None:
     import tempfile
     path = registry_path(root, model)
     path.parent.mkdir(parents=True, exist_ok=True)
-    record = {"schema_version": 1, "model_id": model, "stage": stage,
+    record = {"schema_version": BOUNDED_REGISTRATION_SCHEMA, "model_id": model, "stage": stage,
               "stop_step": goal(stage), "registered_at_utc": utc_now()}
     fd, temp = tempfile.mkstemp(prefix=".bounded-stage-", dir=path.parent)
     try:
@@ -397,7 +398,7 @@ def prepare_launch(root: Path, campaign: dict, config: dict, state: dict | None,
                    recovery: dict) -> dict:
     guard_campaign(root, campaign)
     stage = validate_stage(campaign)
-    if stage and stage.get('schema_version') == 2:
+    if stage and stage.get('schema_version') == QUALITY_STAGE_SCHEMA:
         from .quality_stage import resolve
         return resolve(root, campaign, config, state, recovery)
     if stage is None:
@@ -418,7 +419,7 @@ def guard_trainer_launch(config: dict, root: Path) -> None:
     """Check registered stage even when a stale torchrun config omits resume."""
     model = config.get("model_id")
     from . import quality_stage as q
-    if q.is_v2(config.get('bounded_stage')):
+    if q.is_quality_stage(config.get('bounded_stage')):
         q.guard_trainer(config, root)
         return
     if model in q.RECIPES and q.read_registration(root, model):
@@ -460,7 +461,7 @@ def validate_training_resume(config: dict, payload: dict, root: Path | None = No
     This is called before loading model/EMA/Adam state. Existing recipe equality
     and RNG/data-cursor restore checks remain in place in the original trainer.
     """
-    if config.get('bounded_stage', {}).get('schema_version') == 2:
+    if config.get('bounded_stage', {}).get('schema_version') == QUALITY_STAGE_SCHEMA:
         from .quality_stage import validate_resume
         validate_resume(config, payload, root)
         return
@@ -510,7 +511,7 @@ def validate_training_resume(config: dict, payload: dict, root: Path | None = No
 
 def protected_identities(campaign: dict) -> tuple[str, ...]:
     stage = validate_stage(campaign)
-    if stage and stage.get('schema_version') == 2:
+    if stage and stage.get('schema_version') == QUALITY_STAGE_SCHEMA:
         return (stage['parent_checkpoint_id'],)
     return (stage["source_checkpoint_id"],) if stage else ()
 
@@ -546,7 +547,7 @@ def _durable_append(path: Path, event: str, payload: dict) -> None:
 def finish_if_budget_met(root: Path, campaign: dict, state: dict | None,
                          config: dict, events: Path) -> bool:
     stage = validate_stage(campaign)
-    if stage and stage.get('schema_version') == 2:
+    if stage and stage.get('schema_version') == QUALITY_STAGE_SCHEMA:
         from .quality_stage import finish
         return finish(root, campaign, state, config, events)
     if stage is None or state is None or state.get("step", -1) < goal(stage):

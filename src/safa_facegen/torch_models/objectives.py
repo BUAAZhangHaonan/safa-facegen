@@ -1,5 +1,6 @@
 """Explicit legacy and quality-stage objectives; forwards return scalar loss."""
 from __future__ import annotations
+from ..contracts import DIFFUSION_ORIGINAL, RECTIFIED_FLOW_ORIGINAL, LATENT_CONSISTENCY_ORIGINAL, MIN_SNR_EPSILON, RF_BATCH_OT, LCF_REAL, LCD_TEACHER
 
 import torch
 from torch import distributed as dist, nn
@@ -8,16 +9,16 @@ from .vendor import lcd_math
 
 
 LEGACY_OBJECTIVES = {
-    "rectified_flow": "rectified_flow",
-    "diffusion": "diffusion",
-    "latent_consistency": "latent_consistency",
+    RECTIFIED_FLOW_ORIGINAL: RECTIFIED_FLOW_ORIGINAL,
+    DIFFUSION_ORIGINAL: DIFFUSION_ORIGINAL,
+    LATENT_CONSISTENCY_ORIGINAL: LATENT_CONSISTENCY_ORIGINAL,
 }
 OBJECTIVE_FAMILIES = {
     **{value: key for key, value in LEGACY_OBJECTIVES.items()},
-    "min_snr_epsilon_v1": "diffusion",
-    "rf_batch_ot_v1": "rectified_flow",
-    "lcf_real_v1": "latent_consistency",
-    "lcd_teacher_v2": "latent_consistency",
+    MIN_SNR_EPSILON: DIFFUSION_ORIGINAL,
+    RF_BATCH_OT: RECTIFIED_FLOW_ORIGINAL,
+    LCF_REAL: LATENT_CONSISTENCY_ORIGINAL,
+    LCD_TEACHER: LATENT_CONSISTENCY_ORIGINAL,
 }
 
 
@@ -150,17 +151,17 @@ class TrainingObjective(nn.Module):
         # Teacher and target are registered but frozen; DDP sees only student gradients.
         self.teacher = teacher
         self.target = target
-        self.schedule = None if kind == "rectified_flow" else DiffusionSchedule()
+        self.schedule = None if kind == RECTIFIED_FLOW_ORIGINAL else DiffusionSchedule()
         self.ddim_steps = ddim_steps
         self.gamma = float(gamma)
         self.lcf_skip = lcf_skip
         self.ot_global_batch = ot_global_batch
         self.last_metrics = {}
-        if kind == "latent_consistency":
+        if kind == LATENT_CONSISTENCY_ORIGINAL:
             if target is None:
                 raise ValueError("LCM requires an FP32 EMA student target")
             target.requires_grad_(False).eval()
-            if self.objective_id == "lcf_real_v1":
+            if self.objective_id == LCF_REAL:
                 if teacher is not None:
                     raise ValueError("LCF real-data objective must not load a teacher")
             else:
@@ -180,27 +181,27 @@ class TrainingObjective(nn.Module):
     def forward(self, clean):
         clean = clean.float()
         self.last_metrics = {}
-        if self.objective_id == "rf_batch_ot_v1":
+        if self.objective_id == RF_BATCH_OT:
             loss, metrics = rf_ot_loss(self.net, clean, max_global_batch=self.ot_global_batch)
             self.last_metrics = metrics
             return loss
-        if self.objective_id == "lcf_real_v1":
+        if self.objective_id == LCF_REAL:
             loss, metrics = lcf_loss(self.net, self.target, clean, self.schedule, skip=self.lcf_skip)
             self.last_metrics = metrics
             return loss
         noise = torch.randn_like(clean)
-        if self.kind == "rectified_flow":
+        if self.kind == RECTIFIED_FLOW_ORIGINAL:
             t = torch.rand(clean.shape[0], device=clean.device)*0.999+0.001
             tt = t[:,None,None,None]
             pred = self.net(tt*clean+(1-tt)*noise,t*999).float()
             loss = (pred-(clean-noise)).square().mean()
             self.last_metrics = {"velocity_mse": loss.detach()}
             return loss
-        if self.kind == "diffusion":
+        if self.kind == DIFFUSION_ORIGINAL:
             t = torch.randint(0,1000,(clean.shape[0],),device=clean.device)
             noisy = self.schedule.add_noise(clean,noise,t)
             pred = self.net(noisy,t).float()
-            if self.objective_id == "min_snr_epsilon_v1":
+            if self.objective_id == MIN_SNR_EPSILON:
                 loss, metrics = min_snr_epsilon_loss(pred,noise,self.schedule.alphas_cumprod,t,self.gamma)
                 self.last_metrics = metrics
                 return loss

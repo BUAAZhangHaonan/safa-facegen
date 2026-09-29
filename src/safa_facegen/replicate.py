@@ -3,6 +3,7 @@
 SSH passwords and pinned host keys are accepted on stdin, never in config or files.
 """
 from __future__ import annotations
+from .contracts import REPLICATION_RECORD_SCHEMA
 
 import argparse
 import base64
@@ -249,7 +250,7 @@ class RemoteReader:
                 raise ValueError("Active transfer record is not a regular file")
         except FileNotFoundError:
             pass
-        payload = {"schema_version": 1, "status": "active" if self.active else "idle",
+        payload = {"schema_version": REPLICATION_RECORD_SCHEMA, "status": "active" if self.active else "idle",
                    "updated_at_unix": time.time(), "retrying": self.retrying, **(self.active or {})}
         temporary = destination.with_name(".active-transfer.partial." + uuid.uuid4().hex)
         with self.sftp.open(str(temporary), "wx") as handle:
@@ -390,7 +391,7 @@ def copy_bundle(reader: RemoteReader, files: list[dict], destination: Path, *, r
         return receipt
     destination.parent.mkdir(parents=True, exist_ok=True)
     staging = destination.with_name("." + destination.name + ".partial")
-    receipt = {"schema_version": 1, "managed_by": "safa_facegen.replicate", "role": role,
+    receipt = {"schema_version": REPLICATION_RECORD_SCHEMA, "managed_by": "safa_facegen.replicate", "role": role,
                "identity": request["identity"], "model_id": request["model_id"], "status": "transferring",
                "integrity_mode": "metadata", "files": files}
     if staging.exists():
@@ -707,7 +708,7 @@ def transfer_pending(reader: RemoteReader, journal: Journal, root: Path, config:
             request["local_path"] = str(path)
             bundle_dir = path if path.is_dir() else path.parent
             bundle = json.loads((bundle_dir / "REPLICA.json").read_text())
-            acknowledgement = {"schema_version": 1, "request_id": row["id"], "model_id": row["model"],
+            acknowledgement = {"schema_version": REPLICATION_RECORD_SCHEMA, "request_id": row["id"], "model_id": row["model"],
                                "identity": row["identity"], "event": row["event"], "artifact_role": role,
                                "source_checkpoint": request["checkpoint"], "source_ema": request["ema"],
                                "source_declared_hashes": request["hashes"], "files": bundle["files"],
@@ -800,13 +801,13 @@ def evaluate_worker(journal: Journal, root: Path, config: dict, stop: threading.
             if row["event"] == "preview":
                 result = preview(**kwargs)
             else:
-                quality_settings = settings.get("quality_v1_evaluation")
+                quality_settings = settings.get("quality_evaluation")
                 if quality_settings is not None:
                     quality_settings = dict(quality_settings)
                     if "reference_review" in quality_settings:
                         quality_settings["reference_review"] = local_dependency(root, quality_settings["reference_review"])
                 result = evaluate(**kwargs,
-                    quality_v1_evaluation=quality_settings,
+                    quality_evaluation=quality_settings,
                     dataset_manifest=local_dependency(root, config["dataset_manifest"]),
                     dataset_manifest_sha256=config.get("dataset_manifest_sha256"),
                     image_root=local_dependency(root, config["image_root"]),
@@ -831,7 +832,7 @@ def evaluate_worker(journal: Journal, root: Path, config: dict, stop: threading.
                 panel = run_panel(root, output, result, device=config.get("device", "cuda:0"))
                 if panel is not None:
                     request["quality_panel"] = {"status": panel["status"],
-                                                "report": str(output / "quality-v1/status.json")}
+                                                "report": str(output / "quality/status.json")}
             except Exception as exc:
                 request["quality_panel"] = {"status": "failed", "error": f"{type(exc).__name__}: {exc}",
                                             "formal_review_status": "complete"}

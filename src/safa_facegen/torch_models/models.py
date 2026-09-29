@@ -1,4 +1,5 @@
 """Official RF/LDM backbones, and LCD student using the same FFHQ-LDM backbone."""
+from ..contracts import TORCH_EMA_FORMAT
 import numpy as np
 import torch
 from torch import nn
@@ -50,7 +51,7 @@ def load_backbone(model_id, checkpoint, use_ema=True, *, payload=None):
     kind = family(model_id)
     net = rf_backbone() if kind == "rectified_flow" else new_unet()
     if payload is None:payload = read_checkpoint(checkpoint)
-    if payload.get("format") == "safa-facegen-ema-v1":
+    if payload.get("format") == TORCH_EMA_FORMAT:
         if payload.get("state_role")!="ema":
             raise ValueError("Project generator checkpoint must explicitly declare state_role='ema'")
         if family(payload["model_id"]) != kind:
@@ -235,7 +236,7 @@ def load_generator(model_id, checkpoint, device="cuda", codec_checkpoint=None,
     from pathlib import Path
     kind = family(model_id)
     metadata = read_checkpoint(checkpoint)
-    is_export = metadata.get("format") == "safa-facegen-ema-v1"
+    is_export = metadata.get("format") == TORCH_EMA_FORMAT
     if not is_export and not allow_initialization:
         raise ValueError("Formal evaluation requires an EMA-only project export; set allow_initialization=True only for initialization validation")
     if is_export and metadata.get("state_role")!="ema":

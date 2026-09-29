@@ -1,5 +1,6 @@
 """Validated HQ image manifests and read-only memory mapped training datasets."""
 from __future__ import annotations
+from .contracts import DATA_RECORD_SCHEMA
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor
@@ -27,7 +28,7 @@ def read_manifest(path: str | Path) -> dict[str, Any]:
     path = Path(path)
     with path.open("r", encoding="utf-8") as handle:
         value = json.load(handle)
-    if value.get("schema_version") != 1:
+    if value.get("schema_version") != DATA_RECORD_SCHEMA:
         raise ValueError(f"Unsupported manifest schema: {path}")
     if "records" in value and value.get("count") != len(value["records"]):
         raise ValueError(f"Manifest record count mismatch: {path}")
@@ -124,7 +125,7 @@ def validate_hq_dataset(
                 if start // (workers * 4) % 100 == 0:
                     print(json.dumps({"validated": len(records), "errors": len(errors), "total": len(tasks)}), flush=True)
     summary = {
-        "schema_version": 1, "status": "failed" if errors else "complete",
+        "schema_version": DATA_RECORD_SCHEMA, "status": "failed" if errors else "complete",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "expected_count": 100000, "valid_count": len(records), "error_count": len(errors),
         "source_counts": {source: sum(r["source"] == source for r in records) for source in ("ffhq", "celeba_hq")},
@@ -136,7 +137,7 @@ def validate_hq_dataset(
     }
     if not errors:
         manifest = {
-            "schema_version": 1,
+            "schema_version": DATA_RECORD_SCHEMA,
             "project_root_relative": os.path.relpath(project_root, output.parent).replace(os.sep, "/"),
             "image_root": os.path.relpath(image_root, project_root).replace(os.sep, "/"),
             "count": len(records), "pixel_size": [256, 256], "channels": 3,

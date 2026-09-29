@@ -1,5 +1,6 @@
 """Sequential four-GPU training with explicit human approvals and bounded recovery."""
 from __future__ import annotations
+from .contracts import QUALITY_STAGE_SCHEMA, RECOVERY_RECORD_SCHEMA
 
 import argparse
 import copy
@@ -46,7 +47,7 @@ def load_model_config(root, campaign, model_id):
     config.pop("max_steps", None)
     config.pop("max_epochs", None)
     config.pop("max_hq_epochs", None)
-    if campaign.get('bounded_stage', {}).get('schema_version') == 2:
+    if campaign.get('bounded_stage', {}).get('schema_version') == QUALITY_STAGE_SCHEMA:
         stage = validate_stage(campaign)
         config.update(stage['recipe'])
         config.update(bounded_stage=stage, objective_id=stage['objective_id'],
@@ -142,7 +143,7 @@ def verify_launch(root, config, *, events=None):
 
 def latest_state(root, model_id, stage=None):
     output = root / "runs" / model_id
-    if stage and stage.get('schema_version') == 2:
+    if stage and stage.get('schema_version') == QUALITY_STAGE_SCHEMA:
         from .quality_stage import latest_path
         path = latest_path(root, stage)
         return read_json(path) if path.exists() else None
@@ -174,7 +175,7 @@ def restore_torch_runtime(root, config, state):
         if not path.is_absolute():
             path = root / path
         expected = root / 'runs' / model / (identity + suffix)
-        if config.get('bounded_stage', {}).get('schema_version') == 2:
+        if config.get('bounded_stage', {}).get('schema_version') == QUALITY_STAGE_SCHEMA:
             expected = root / 'runs' / model / identity / {'.state.pt': 'state.pt', '.config.json': 'config.json'}[suffix]
         if path != expected:
             raise ValueError('Torch checkpoint file is outside its named model identity')
@@ -198,7 +199,7 @@ def restore_torch_runtime(root, config, state):
     saved = json.loads(encoded)
     if not isinstance(saved, dict) or saved.get('model_id') != model or saved.get('project_root') != str(root):
         raise ValueError('Saved Torch configuration model or project root differs')
-    if config.get('bounded_stage', {}).get('schema_version') == 2:
+    if config.get('bounded_stage', {}).get('schema_version') == QUALITY_STAGE_SCHEMA:
         if saved.get('bounded_stage') != config['bounded_stage']:
             raise ValueError('Torch recovery stage mismatch')
         result = copy.deepcopy(config)
@@ -372,7 +373,7 @@ def recovery_config(config, state, reason):
     if is_meanflow and state:
         saved = read_json(Path(state['checkpoint']) / 'manifest.json')
         previous_batch = min(previous_batch, int(saved['progress']['microbatch']))
-        if config.get('bounded_stage', {}).get('schema_version') != 2:
+        if config.get('bounded_stage', {}).get('schema_version') != QUALITY_STAGE_SCHEMA:
             previous_learning_rate = min(previous_learning_rate, float(saved['learning_rate']))
     if reason in ("gpu_memory", "out_of_memory"):
         changes["microbatch"] = max(1, previous_batch // 2)
@@ -463,7 +464,7 @@ def checkpoint_runtime(root, bounds, state):
         raise ValueError('MeanFlow recovery checkpoint metadata differs')
     result = copy.deepcopy(bounds)
     rate = saved['learning_rate']
-    if bounds.get('bounded_stage', {}).get('schema_version') == 2:
+    if bounds.get('bounded_stage', {}).get('schema_version') == QUALITY_STAGE_SCHEMA:
         if saved['config'].get('bounded_stage') != bounds['bounded_stage']:
             raise ValueError('MeanFlow recovery stage mismatch')
         result['recovery_scale'] = saved['progress']['recovery_scale']
@@ -475,12 +476,12 @@ def checkpoint_runtime(root, bounds, state):
 
 def recovery_file(root, model, stage_id=None):
     if stage_id:
-        return Path(root) / 'runs/controller/quality-v1' / (model + '.' + stage_id + '.recovery.json')
+        return Path(root) / 'runs/controller/quality' / (model + '.' + stage_id + '.recovery.json')
     return stop_request_file(root, model).with_name(model + '.recovery.json')
 
 
 def idle_recovery(model):
-    return {'schema_version': 1, 'model_id': model, 'status': 'idle', 'failure_kind': None,
+    return {'schema_version': RECOVERY_RECORD_SCHEMA, 'model_id': model, 'status': 'idle', 'failure_kind': None,
             'recoveries_scheduled': 0, 'recovery_origin_step': None}
 
 
@@ -495,7 +496,7 @@ def save_recovery(root, record):
 def load_recovery(root, bounds, events, state, limit):
     model = bounds['model_id']
     stage = bounds.get('bounded_stage', {})
-    stage_id = stage.get('stage_id') if stage.get('schema_version') == 2 else None
+    stage_id = stage.get('stage_id') if stage.get('schema_version') == QUALITY_STAGE_SCHEMA else None
     path = recovery_file(root, model, stage_id)
     if path.is_symlink():
         raise ValueError('Symlink in persisted recovery path')
@@ -541,7 +542,7 @@ def load_recovery(root, bounds, events, state, limit):
                 record['attention_reason'] = 'Legacy model failure has no subsequent recovery plan'
         elif failure is not None:
             raise ValueError('Legacy model failure has no durable recovery plan; inspect its event')
-    if (not isinstance(record, dict) or record.get('schema_version') != 1 or record.get('model_id') != model or
+    if (not isinstance(record, dict) or record.get('schema_version') != RECOVERY_RECORD_SCHEMA or record.get('model_id') != model or
             record.get('status') not in ('idle', 'pending', 'running', 'exhausted')):
         raise ValueError('Invalid persisted recovery identity or status')
     count = record.get('recoveries_scheduled')
@@ -638,12 +639,12 @@ def schedule_recovery(root, bounds, config, state, record, reason, limit):
         raise
     parameters = runtime_parameters(changed)
     validate_runtime_parameters(parameters, bounds)
-    record = {'schema_version': 1, 'model_id': config['model_id'], 'status': 'pending',
+    record = {'schema_version': RECOVERY_RECORD_SCHEMA, 'model_id': config['model_id'], 'status': 'pending',
               'failure_kind': reason, 'recoveries_scheduled': used + 1,
               'recovery_origin_step': int((state or {}).get('step', 0)),
               'parameters': parameters, 'changes': changes,
               'source_identity': recovery_checkpoint_identity(state, config['model_id'])}
-    if config.get('bounded_stage', {}).get('schema_version') == 2:
+    if config.get('bounded_stage', {}).get('schema_version') == QUALITY_STAGE_SCHEMA:
         record['stage_id'] = config['bounded_stage']['stage_id']
     save_recovery(root, record)
     return record
@@ -712,7 +713,7 @@ def run_campaign(root, campaign_path):
                     return
                 continue
             config = load_model_config(root, campaign, model_id)
-            if model_id == "LatentConsistency-LDM-UNet" and campaign.get("bounded_stage", {}).get("schema_version") != 2:
+            if model_id == "LatentConsistency-LDM-UNet" and campaign.get("bounded_stage", {}).get("schema_version") != QUALITY_STAGE_SCHEMA:
                 teacher = read_lcm_teacher_approval(root)
                 config["teacher_approval"] = teacher
                 config["teacher_ema_sha256"] = teacher["ema_sha256"]
@@ -783,7 +784,7 @@ def run_campaign(root, campaign_path):
                     approval = read_approval(root, model_id)
                     completed = latest_state(root, model_id, campaign.get('bounded_stage'))
                     if time.monotonic() - retention_checked > 60:
-                        if campaign.get("bounded_stage", {}).get("schema_version") != 2:
+                        if campaign.get("bounded_stage", {}).get("schema_version") != QUALITY_STAGE_SCHEMA:
                             retire_states(root, model_id, protected_identities=protected_identities(campaign))
                         retention_checked = time.monotonic()
                     recovery = settle_recovery(root, bounds, recovery, completed, events)
@@ -866,7 +867,7 @@ def run_campaign(root, campaign_path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=str(project_root()))
-    parser.add_argument("--campaign", default="configs/campaign.json")
+    parser.add_argument("--campaign", required=True)
     args = parser.parse_args()
     root = Path(args.root).resolve()
     campaign = Path(args.campaign)

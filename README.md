@@ -1,53 +1,21 @@
 # safa-facegen
 
-六种无条件人脸生成器的训练、权重管理和 PyTorch 可微生成接口。输出分辨率为256×256，训练数据为 FFHQ 70,000张与 CelebA-HQ 30,000张 JPEG95 图片。
+六种无条件人脸生成器的训练、评价与 PyTorch 可微生成接口。输出为 256×256 RGB；训练数据由 FFHQ 70,000 张和 CelebA-HQ 30,000 张组成。
 
-| 模型 | 训练实现 | 初始化 | 采样 |
-|---|---|---|---|
-| MeanFlow-B-4 | 原作者 JAX DiT | 迁移已有1751轮权重 | 单步 |
-| MeanFlow-B-2 | 原作者 JAX DiT | 迁移已有240轮权重 | 单步 |
-| MeanFlow-L-2 | 原作者 JAX DiT | 迁移已有397轮权重 | 单步 |
-| RectifiedFlow-NCSNpp | 原作者 NCSN++ | CelebA-HQ 官方权重 | Dormand–Prince ODE |
-| Diffusion-LDM-UNet | 原作者 FFHQ LDM-VQ-4 | FFHQ 官方权重 | 200步 DDIM |
-| LatentConsistency-LDM-UNet | LDM骨干与官方一致性蒸馏公式 | 本项目经过人工验收的 Diffusion | 4步 |
+| 模型 | 实现目标 | 采样 |
+| --- | --- | --- |
+| MeanFlow-B-4 | 原始 MeanFlow | 单步 |
+| MeanFlow-B-2 | iMF 边界速度 | 单步 |
+| MeanFlow-L-2 | 原始 MeanFlow | 单步 |
+| RectifiedFlow-NCSNpp | 四卡当前批次全局 OT | 自适应 RK45 |
+| Diffusion-LDM-UNet | Min-SNR epsilon | 200 步 DDIM |
+| LatentConsistency-LDM-UNet | 真实数据一致性细化 | 4 步 |
 
-模型的质量状态以 `models/formal/` 中的人工验收记录为依据。实现验证、训练启动和正式质量验收分别记录。
+B/2、Diffusion、Rectified Flow 和 Latent Consistency 的四项适配共 55,000 次更新，训练、正式评价和最终副本同步均已完成。B/4 与 L/2 保留各自选中的 EMA，未进入本轮适配。H100 当前没有训练作业；K100 的空闲复制与评价 worker 已于 2026-09-29 06:00 UTC 停止。六个选中 EMA 与各模型最新完整恢复状态共 11 个 checkpoint 身份纳入保留清单，中间权重已完成清理。
 
-## 项目结构
+最终结果见 [结果与选择](docs/results.md)、[资产清单](docs/artifacts.json) 和 [六模型原图联系表](reports/final/gallery.html)。图像与AI审阅标注、原始初始化权重、codec、10 万张训练图和两类潜变量缓存保存在计算服务器。
 
-- `src/safa_facegen/meanflow`：原作者 JAX 训练、旧权重转换和 PyTorch 导出。
-- `src/safa_facegen/torch_models`：RF、LDM、LCM 骨干、目标函数和可微采样。
-- `src/safa_facegen/data.py`、`cache.py`：数据清单、确定性增强和两种潜变量缓存。
-- `src/safa_facegen/controller.py`、`replicate.py`：四卡训练队列、资源保护、跨机存储与评价。
-- `configs`：六个模型的训练配方和队列配置。
-- `vendor`：按固定提交保存的必要官方源码、许可证及修改说明。
-- `models`、`runs`、`data`、`reports`：机器本地资产和运行记录，通过 Git 忽略。
-
-## 机器角色
-
-H100 在现有 `meanflow_e15_h100_bundle` 根目录内执行全部训练。K100 使用 `safa-facegen` 保存检查点、进行生成评价并向独立 SAFA 研究项目提供生成器。两个代码副本使用同一 Git 提交。
-
-项目内 `.venv-torch` 和 `.venv-jax` 分别管理 PyTorch 与 JAX。`requirements/` 保存各机器环境的实际依赖版本；CUDA环境通过真实计算和四卡恢复测试验收。机器专用路径写入忽略的 `configs/local.json`。H100 不安装代理工具，外部依赖通过获准的 SSH 链路取得；训练进程使用项目内缓存并关闭在线模型下载。
-
-```bash
-export PYTHONPATH="$PWD/src"
-export SAFA_FACEGEN_ROOT="$PWD"
-.venv-torch/bin/python -m safa_facegen.cli status
-# Resume only the already registered single-model campaign for the active stage.
-.venv-torch/bin/python -m safa_facegen.controller --campaign runs/controller/<registered-campaign>.json
-```
-
-控制器每次仅启动一个四卡任务；实际 batch、学习率、恢复记录及固定预算以已登记阶段和完整保存配置为准。六模型清单保留，调度停止与人工图像验收分别记录。有界阶段达到绝对步数上限后完整保存、提交唯一最终审核并退出，不能因等待审核继续更新。LCM 须明确批准教师 EMA，并单独登记有界蒸馏阶段；教师批准不表示 Diffusion 或 LCM 已通过画质验收。
-
-## 检查点与评价
-
-检查点名称使用 `模型名称-本次HQ阶段完成轮数-UTC时间`。元数据额外保存精确优化器步数、有效样本曝光数、数据与编解码器哈希、代码提交、初始化来源和异常恢复记录。历史数据阶段的轮数单独登记。
-
-每15分钟保存完整恢复状态，每30分钟导出预览请求，每2小时提交1024张样本的评价，并展示其中固定前256张。目前 K100 为减少传输跳过单独预览，每模型完整恢复副本距上次传输成功至少2小时才启动下一份，审核 EMA 保持两小时间隔。记录单脸检测、空白或非有限图、FID-1024和KID；样本不按质量筛选。FID-1024的样本预算在指标名称中明确保留。
-
-训练恢复状态与正式 EMA 使用不同角色标识。跨机传输使用临时文件与内容校验，正式评价只接受明确的 EMA 导出。
-
-## PyTorch 接口
+## 使用接口
 
 ```python
 import torch
@@ -55,15 +23,19 @@ from safa_facegen import load_generator
 
 generator = load_generator(model_id, checkpoint)
 noise = torch.randn(1, *generator.noise_shape, device="cuda", requires_grad=True)
+step_noises = [
+    torch.randn(1, *generator.step_noise_shape, device="cuda")
+    for _ in range(generator.step_noise_count)
+]
 images = generator.sample(noise, step_noises=step_noises, grad_enabled=True)
 ```
 
-`images` 为 `[B,3,256,256]` RGB Tensor，值域约定为 `[-1,1]`。生成器参数保持冻结，输入噪声可以接收梯度。随机多步采样通过显式 `step_noises` 复现；模型暴露 `step_noise_count` 和 `step_noise_shape`。
+`images` 的形状为 `[B,3,256,256]`，值域为 `[-1,1]`。生成器参数冻结，输入噪声与显式逐步噪声可参与梯度计算。MeanFlow 使用 SD-VAE-EMA，Diffusion 与 Latent Consistency 使用 LDM-VQ4；`load_generator` 从项目本机配置或显式 `codec=` 参数解析已登记的 codec。
 
-两参数加载会读取项目 `configs/local.json` 中该模型登记的 `paths.codec`；未设置覆盖时，MeanFlow 使用 `models/codecs/SD-VAE-EMA`，Diffusion 与 LCM 使用 `models/codecs/LDM-VQ4.pt`。路径按 `SAFA_FACEGEN_ROOT` 或当前安装源码的项目根目录解析，缺失路径会直接报错。显式 `codec=` 参数可以指定已登记的编解码器，加载过程继续核对权重中的编解码器身份、结构和缩放。
+## 代码与资料
 
-LDM与LCM保留官方VQ量化的直通梯度估计。预训练始终使用无条件输入，SAFA 的条件注入在独立研究项目中实现。
+`src/safa_facegen/meanflow` 保存 JAX 训练、严格权重转换和 PyTorch 推理；`src/safa_facegen/torch_models` 保存 RF、Diffusion 与 Latent Consistency 的骨干和目标函数。`controller.py` 读取显式指定的单模型 campaign；`replicate.py` 管理跨机副本和正式评价。`configs/quality` 保存本轮已执行阶段的原始配方和登记身份；阶段 ID、目标 ID 及 checkpoint 格式值保留在保存记录中。`vendor` 保存固定上游提交、许可及修改说明。
 
-## 数据与来源
+实现与协议分别见 [数据](docs/data.md)、[MeanFlow](docs/meanflow.md)、[PyTorch 模型](docs/torch_models.md)、[跨机存储](docs/storage.md) 和 [画质证据](docs/quality.md)。初始化来源见 [initializations.json](docs/initializations.json)，完整阶段记录见 [training-history.json](docs/training-history.json)。
 
-图片及其缓存仅存储在计算服务器。FFHQ、CelebA-HQ、各官方权重和源代码分别保留来源及许可说明；这些资产不通过代码仓库分发。详见 `docs/data.md`、各 `vendor` 目录中的许可证，以及 `docs/initializations.json`。
+训练图像、模型权重和运行记录由服务器本地管理；Git 仓库保存源码、配置和来源说明。

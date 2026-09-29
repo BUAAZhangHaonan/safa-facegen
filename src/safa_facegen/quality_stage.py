@@ -1,9 +1,10 @@
 """Quality-plan stage contracts, dispatched by the existing bounded controller.
 
-Each model has one quality-v1 slot; LCM's branches share that slot. Legacy
+Each model has one quality slot; LCM's branches share that slot. Legacy
 registrations are read-only and are never replaced by a new recipe.
 """
 from __future__ import annotations
+from .contracts import IMF_BOUNDARY, MIN_SNR_EPSILON, RF_BATCH_OT, LCF_REAL, LCD_TEACHER, QUALITY_STAGE_SCHEMA
 
 import copy
 import json
@@ -14,17 +15,17 @@ import re
 import tempfile
 
 RECIPES = {
-    'MeanFlow-B-2': ('imf_boundary_v1', 20000, 3e-5, .999, 64, 'fp32'),
-    'MeanFlow-B-4': ('imf_boundary_v1', 15000, 3e-5, .999, 64, 'fp32'),
-    'MeanFlow-L-2': ('imf_boundary_v1', 20000, 2e-5, .999, 64, 'fp32'),
-    'Diffusion-LDM-UNet': ('min_snr_epsilon_v1', 15000, 3e-6, .999, 64, 'bf16'),
-    'RectifiedFlow-NCSNpp': ('rf_batch_ot_v1', 10000, 3e-6, .999, 12, 'fp32'),
+    'MeanFlow-B-2': (IMF_BOUNDARY, 20000, 3e-5, .999, 64, 'fp32'),
+    'MeanFlow-B-4': (IMF_BOUNDARY, 15000, 3e-5, .999, 64, 'fp32'),
+    'MeanFlow-L-2': (IMF_BOUNDARY, 20000, 2e-5, .999, 64, 'fp32'),
+    'Diffusion-LDM-UNet': (MIN_SNR_EPSILON, 15000, 3e-6, .999, 64, 'bf16'),
+    'RectifiedFlow-NCSNpp': (RF_BATCH_OT, 10000, 3e-6, .999, 12, 'fp32'),
     'LatentConsistency-LDM-UNet': None,
 }
 
 
-def is_v2(value):
-    return isinstance(value, dict) and value.get('schema_version') == 2
+def is_quality_stage(value):
+    return isinstance(value, dict) and value.get('schema_version') == QUALITY_STAGE_SCHEMA
 
 
 def validate(stage):
@@ -33,7 +34,7 @@ def validate(stage):
     conditional = stage.get('model_id') in ('MeanFlow-B-4', 'MeanFlow-L-2', 'LatentConsistency-LDM-UNet') if isinstance(stage, dict) else False
     if conditional:
         fields.add('selection')
-    if not is_v2(stage) or set(stage) != fields:
+    if not is_quality_stage(stage) or set(stage) != fields:
         raise ValueError('Invalid quality-stage fields')
     for key in ('stage_id', 'model_id', 'parent_checkpoint_id', 'objective_id'):
         if not isinstance(stage[key], str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', stage[key]):
@@ -43,15 +44,15 @@ def validate(stage):
         raise ValueError('Unknown quality-stage model')
     expected = RECIPES[model]
     if model == 'LatentConsistency-LDM-UNet':
-        expected = {'lcd_teacher_v2': ('lcd_teacher_v2', 15000, 5e-6, .95, 64, 'bf16'),
-                    'lcf_real_v1': ('lcf_real_v1', 10000, 2e-6, .9999, 64, 'bf16')}.get(stage['objective_id'])
+        expected = {LCD_TEACHER: (LCD_TEACHER, 15000, 5e-6, .95, 64, 'bf16'),
+                    LCF_REAL: (LCF_REAL, 10000, 2e-6, .9999, 64, 'bf16')}.get(stage['objective_id'])
     if expected is None:
         raise ValueError('Unknown objective')
     obj, cap, peak, ema, batch, precision = expected
     if (stage['objective_id'] != obj or type(stage['source_step']) is not int or stage['source_step'] != 0 or
             type(stage['stop_step']) is not int or stage['stop_step'] != cap or
             stage['initialization_mode'] != 'ema_warm_start_new_optimizer'):
-        raise ValueError('Quality-v1 stage cannot change its objective, zero origin, or fixed budget')
+        raise ValueError('Quality stage cannot change its objective, zero origin, or fixed budget')
     recipe = stage['recipe']
     required = {'learning_rate': peak, 'end_learning_rate': peak / 10, 'warmup_steps': 500,
                 'ema_decay': ema, 'microbatch': batch, 'precision': precision,
@@ -63,9 +64,9 @@ def validate(stage):
         actual = recipe[key]
         if isinstance(value, float):
             if type(actual) not in (int, float) or not math.isclose(actual, value, rel_tol=1e-12):
-                raise ValueError(f'Quality-v1 {key} differs from authorized recipe')
+                raise ValueError(f'Quality {key} differs from authorized recipe')
         elif actual != value:
-            raise ValueError(f'Quality-v1 {key} differs from authorized recipe')
+            raise ValueError(f'Quality {key} differs from authorized recipe')
     if conditional:
         from .quality.gate import select_better
         selection = stage['selection']
@@ -74,12 +75,12 @@ def validate(stage):
         candidate, baseline = selection['candidate'], selection['baseline']
         result = select_better(candidate, baseline)
         required_model = 'Diffusion-LDM-UNet' if model == 'LatentConsistency-LDM-UNet' else 'MeanFlow-B-2'
-        required_objective = 'min_snr_epsilon_v1' if model == 'LatentConsistency-LDM-UNet' else 'imf_boundary_v1'
+        required_objective = MIN_SNR_EPSILON if model == 'LatentConsistency-LDM-UNet' else IMF_BOUNDARY
         if (candidate.get('model_id') != required_model or candidate.get('objective_id') != required_objective or
                 not candidate.get('checkpoint_id') or not candidate.get('stage_id') or
                 result['decision'] != selection['decision'] or result['decision'] == 'REVIEW_REQUIRED'):
             raise ValueError('Conditional stage lacks applicable completed quality evidence')
-        if stage['objective_id'] == 'lcf_real_v1':
+        if stage['objective_id'] == LCF_REAL:
             if result['decision'] != 'NOT_BETTER' or candidate.get('stage_complete') is not True:
                 raise ValueError('LCF requires completed new Diffusion without selected improvement')
         elif result['decision'] != 'BETTER':
@@ -90,7 +91,7 @@ def validate(stage):
 def registry_path(root, model):
     if model not in RECIPES:
         raise ValueError('Unknown model')
-    return Path(root) / 'runs/controller/quality-v1' / (model + '.bounded-stage.json')
+    return Path(root) / 'runs/controller/quality' / (model + '.bounded-stage.json')
 
 
 def read_registration(root, model):
@@ -101,7 +102,7 @@ def read_registration(root, model):
         return None
     record = json.loads(p.read_text())
     stage = validate(record['stage'])
-    if record.get('schema_version') != 2 or record.get('stop_step') != stage['stop_step']:
+    if record.get('schema_version') != QUALITY_STAGE_SCHEMA or record.get('stop_step') != stage['stop_step']:
         raise ValueError('Invalid quality-stage registration')
     return record
 
@@ -113,13 +114,13 @@ def bind(root, stage):
     existing = read_registration(root, stage['model_id'])
     if existing:
         if existing['stage'] != stage:
-            raise ValueError('Quality-v1 slot already registered; cannot replace branch or budget')
+            raise ValueError('Quality slot already registered; cannot replace branch or budget')
         return
     p.parent.mkdir(parents=True, exist_ok=True)
     fd, temp = tempfile.mkstemp(prefix='.stage-', dir=p.parent)
     try:
         with os.fdopen(fd, 'w') as f:
-            json.dump({'schema_version': 2, 'stage': stage, 'stop_step': stage['stop_step'],
+            json.dump({'schema_version': QUALITY_STAGE_SCHEMA, 'stage': stage, 'stop_step': stage['stop_step'],
                        'registered_at_utc': utc_now()}, f, indent=2)
             f.flush(); os.fsync(f.fileno())
         try:

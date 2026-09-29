@@ -1,8 +1,10 @@
 """Dependency-free format and architecture definitions."""
 from dataclasses import asdict, dataclass
 
+from ..contracts import MEANFLOW_ORIGINAL, IMF_BOUNDARY, MEANFLOW_EXPORT_FORMAT_VERSION
+
 UPSTREAM_COMMIT = "d70cb55d298ee03c53bf6da67bec281082e4e2d9"
-FORMAT_VERSION = 1
+FORMAT_VERSION = MEANFLOW_EXPORT_FORMAT_VERSION
 NULL_LABEL = 1000
 LATENT_SCALE = 0.18215
 
@@ -24,16 +26,16 @@ FIXED_RECIPE = {
 
 
 def validate_recipe(config):
-    objective = config.get('objective_id', 'meanflow_original')
-    if objective not in ('meanflow_original', 'imf_boundary_v1'):
+    objective = config.get('objective_id', MEANFLOW_ORIGINAL)
+    if objective not in (MEANFLOW_ORIGINAL, IMF_BOUNDARY):
         raise ValueError('Unknown MeanFlow objective')
     for key, expected in FIXED_RECIPE.items():
-        if objective == 'imf_boundary_v1' and key in ('ema_decay', 'data_proportion'):
+        if objective == IMF_BOUNDARY and key in ('ema_decay', 'data_proportion'):
             expected = .999 if key == 'ema_decay' else .5
         if config.get(key) != expected:
             raise ValueError(f"Original MeanFlow implementation requires {key}={expected!r}; "
                              f"configuration provided {config.get(key)!r}")
-    if objective == 'imf_boundary_v1' and config.get('matmul_precision') != 'highest':
+    if objective == IMF_BOUNDARY and config.get('matmul_precision') != 'highest':
         raise ValueError('iMF requires explicit highest matmul precision')
 
 

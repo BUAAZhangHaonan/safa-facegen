@@ -1,99 +1,36 @@
-# PyTorch face generators
+# PyTorch 模型
 
-The three adapters preserve the pinned official backbones and unconditional inputs. RF uses pixels. Diffusion and Latent Consistency use the FFHQ VQ-f4 codec with three channels at 64 × 64, prequant encoding, and scale factor 1. The training configurations share the HQ manifest and derive epoch counts from the number of actual training images consumed.
+Rectified Flow、Diffusion 和 Latent Consistency 共用 `src/safa_facegen/torch_models` 的冻结可微生成接口。RF 在 RGB 空间运行；后两者使用 FFHQ LDM-VQ4 的 `[3,64,64]` prequant latent。固定上游源码、提交和许可证保存在 `vendor`，初始化权重来源见 [initializations.json](initializations.json)。
 
-| Model ID | Pinned source | Initialization | Objective and sampling |
+| 模型 | 骨干与来源 | 当前目标 | 采样 |
 | --- | --- | --- | --- |
-| RectifiedFlow-NCSNpp | [gnobitab/RectifiedFlow](https://github.com/gnobitab/RectifiedFlow/tree/5a1fd4dd3ea7db764ce370a84ce35f9c8b15fde6) | Official CelebAHQ256 NCSN++ checkpoint, EMA shadow parameters | Straight flow matching; differentiable PyTorch Dormand–Prince RK45 from 0.001 to 1, tolerance 1e-5 |
-| Diffusion-LDM-UNet | [CompVis/latent-diffusion](https://github.com/CompVis/latent-diffusion/tree/a506df5756472e2ebaf9078affdde2c4f1502cd4) | Official FFHQ VQ-f4 UNet EMA | Epsilon MSE; official 1,000-step square-root linear beta schedule, 0.0015–0.0195; DDIM 200 steps and eta 1 |
-| LatentConsistency-LDM-UNet | [luosiallen/latent-consistency-model](https://github.com/luosiallen/latent-consistency-model/tree/a9ad79587cc8bd1e404ccd1a3056a3da969b2f62) | This project's Diffusion EMA teacher | Unconditional latent consistency distillation, 50-step teacher DDIM grid, EMA student target, official boundary scaling, stop gradient through teacher and target; four inference steps |
+| RectifiedFlow-NCSNpp | [RectifiedFlow NCSN++](https://github.com/gnobitab/RectifiedFlow/tree/5a1fd4dd3ea7db764ce370a84ce35f9c8b15fde6) | 四卡当前批次全局 OT | 可微 RK45，容差 1e-5 |
+| Diffusion-LDM-UNet | [CompVis FFHQ LDM](https://github.com/CompVis/latent-diffusion/tree/a506df5756472e2ebaf9078affdde2c4f1502cd4) | Min-SNR epsilon，γ=5 | DDIM 200 步，η=1 |
+| LatentConsistency-LDM-UNet | [LCM 蒸馏公式](https://github.com/luosiallen/latent-consistency-model/tree/a9ad79587cc8bd1e404ccd1a3056a3da969b2f62) 与项目 FFHQ UNet | 真实数据一致性细化，skip=20 | 4 步 |
 
-LCM retains the project's unconditional FFHQ UNet and omits the upstream text/CFG conditioning branches. Its teacher must be an explicit project Diffusion EMA export with the same codec hash. The upstream distillation math is retained in `vendor/latent_consistency/lcd_math.py`, extracted from the pinned training script. The provenance file records this adaptation. The teacher, target, loss, and solver run within the same schedule; the target is the FP32 student EMA.
+LCM 的原始学生由已批准的项目 Diffusion EMA 初始化。当前 LCF 阶段从已选 LCM EMA 初始化，使用真实数据和 FP32 EMA 目标；采样保持四步。其固定推理时间点为 `[999,759,499,259]`。
 
-The LCM inference grid follows the [Diffusers scheduler correction](https://github.com/huggingface/diffusers/pull/5836): evenly selecting indices from the unchanged 50-point teacher grid gives `[999, 759, 499, 259]` at four steps. The generator returns the final denoised latent; the three intermediate transitions consume explicit noises. The unused random draw after the final denoised result in that scheduler is omitted.
+## 已执行适配
 
-The original production LCD requires a teacher-only decision in `runs/teacher-approvals/LatentConsistency-LDM-UNet.json` and a single registered bounded campaign. The decision fixes the Diffusion EMA identity and is independent of either model's image-quality acceptance. The student starts from that EMA with fresh optimizer and step zero; subsequent recovery preserves its full state and absolute stop step. A completed stage cannot be extended by changing the latest checkpoint or calling the old campaign.
+| 阶段 | 更新数 | 每卡 batch | 峰值→末端学习率 | EMA | 精度 |
+| --- | ---: | ---: | --- | ---: | --- |
+| Diffusion Min-SNR | 15,000 | 64 | 3e-6 → 3e-7 | 0.999 | BF16 前向、FP32 参数 |
+| RF 全局当前批次 OT | 10,000 | 12 | 3e-6 → 3e-7 | 0.999 | FP32 |
+| LCF 真实数据细化 | 10,000 | 64 | 2e-6 → 2e-7 | 0.9999 | BF16 前向、FP32 参数 |
 
-The separately authorized [quality-v1 plan](quality-v1.md) now implements explicit
-Min-SNR, global-batch RF OT, LCD-v2 and teacher-independent real-data LCF routes.
-Its conditional LCD/LCF branches share one immutable budget slot. LCF keeps an
-FP32 target EMA but uses no fixed teacher; LCD-v2 requires a quality-selected
-new Diffusion teacher. These routes do not alter or reopen the sealed original LCD.
+三个阶段均使用四卡、500 步预热、cosine 学习率、Adam β=(0.9,0.999)、weight decay=0。OT 将四卡当前 batch 聚合后执行一次一对一分配，上限为 48 个样本。完整配方与原始阶段身份保存在 `configs/quality/` 的三个单模型配置和 campaign；训练结果见 [results.md](results.md)。
 
-## Vendor boundaries
+训练状态保存模型、EMA、优化器、随机状态、数据游标、配方和阶段身份。完整恢复和独立 EMA 导出各自使用固定格式身份。阶段、目标和格式标识的原始序列化值由 `src/safa_facegen/contracts.py` 固定。保留的恢复状态及六个选中 EMA 见 [artifacts.json](artifacts.json)。
 
-Each vendor directory contains `UPSTREAM.json`, retained source references, and available upstream license notices. The official RF pure-PyTorch FIR resampling branch is selected on all devices to avoid compiling the old custom CUDA operator. It retains the upstream operation and casts the FIR kernel to the activation dtype under BF16. The RF Fourier embedding frequencies remain frozen during training. The LDM activation-checkpoint adapter uses PyTorch's non-reentrant implementation, which supports frozen parameters and gradients with respect to the input. The frozen codec retains the official Encoder, Decoder, and VectorQuantizer2 implementation. The quantizer dependency is pinned to CompVis/taming-transformers `24268930bf1dce879235a7fddd0b2355b84d7ea6` with its license.
-
-The differentiable RF solver translates the official SciPy RK45 coefficients, embedded error estimate, initial-step selection, RMS norm, rejection control, and endpoint truncation into PyTorch. It uses FP64 solver state and FP32 neural velocity evaluations at absolute and relative tolerance 1e-5. Casts and accepted state updates retain input gradients. Adaptive step decisions are discrete. The SciPy BSD license and source attribution are retained.
-
-RF's source tree has no repository-wide license file at the pinned commit. Its existing file-level notices are retained; `LICENSE_NOTICE.md` records this boundary without asserting a broader license.
-
-## Generator contract
+## 生成器接口
 
 ```python
-from safa_facegen.torch_models import load_generator, load_codec
+from safa_facegen import load_generator
 
-generator = load_generator(
-    model_id, ema_checkpoint, device="cuda",
-    codec_checkpoint=codec_checkpoint,  # Required for Diffusion and LCM.
-)
+generator = load_generator(model_id, ema_checkpoint, codec=codec_checkpoint)
 rgb = generator.sample(noise, step_noises=step_noises, grad_enabled=True)
 ```
 
-`noise_shape` is `(3, 256, 256)` for RF and `(3, 64, 64)` for the latent models. `step_noise_shape` equals `noise_shape`. `step_noise_count` is zero for RF and deterministic DDIM, the number of DDIM steps for eta > 0, and three for four-step LCM. Each explicit step noise is a tensor shaped `(batch, *step_noise_shape)`. Providing these noises makes sample identity independent of unrelated RNG activity. The evaluation layer generates them per sample on CPU from fixed seeds. Omitting them permits fresh random noise during exploratory sampling.
+RF 的 `noise_shape=(3,256,256)`；Diffusion 与 LCM 为 `(3,64,64)`。`step_noise_count` 和 `step_noise_shape` 描述多步采样所需的显式噪声。参数保持冻结，输出 `[B,3,256,256]` RGB `[-1,1]`；输入与逐步噪声的梯度经过执行的采样路径传播。LDM/LCM 解码采用官方 VQ 量化直通梯度，RF 求解器采用 FP64 状态和 FP32 神经速度场。
 
-All generator and codec parameters stay frozen. `grad_enabled=True` preserves the graph from the output back to the initial noise and explicit step noises, through every solver step and the decoder. RGB output is clamped to [-1, 1], so saturated output coordinates have zero clamp derivative. The VQ assignment uses the official VectorQuantizer2 straight-through estimator; its input gradient is the declared surrogate for the discrete nearest-code operation. RF gradients differentiate the executed adaptive solver computation; changes of solver control decisions are discrete.
-
-Formal evaluation accepts only `format="safa-facegen-ema-v1"` and `state_role="ema"`. A supplied latent codec must match the registered `codec_sha256` and file size in its sibling metadata. `generator.ema_sha256` reuses the EMA-only hash registered at export/transfer; inference does not rescan the weights. External official checkpoint initialization can be checked explicitly with `allow_initialization=True`; its returned role is `external_initialization_ema_selected`, with no project EMA hash.
-
-Project exports must contain `config.sampling`. Loading restores the saved DDIM steps/eta, RF tolerance, or LCM steps by default; explicit sampling keyword arguments override the saved values. `generator.sampling_config` exposes the resolved settings.
-
-`load_codec(checkpoint, device)` accepts a full official LDM checkpoint or an extracted codec state dictionary. It accepts `state_dict` with `first_stage_model.` prefixes, or a bare codec dictionary. Tensor names and shapes are loaded strictly. `encode(rgb)` returns prequant latents; `decode(latent)` includes the official quantizer.
-
-## Training and recovery
-
-Launch the PyTorch trainer with four torchrun ranks:
-
-```sh
-PYTHONPATH=src .venv-torch/bin/torchrun --standalone --nproc_per_node=4 \
-  -m safa_facegen.train_torch --config configs/rectified_flow.json
-```
-
-The initial learning rates are 2e-5 for RF and 1e-5 for Diffusion and LCM. BF16 autocast is optional; loss arithmetic and EMA remain FP32. The configured per-GPU microbatches are Diffusion 128, LCM 128, and RF 24. With four GPUs and one accumulation step, effective batches are 512, 512, and 96. Learning rates, Adam coefficients, and EMA decay retain their approved values; batch changes do not scale them automatically. The GPU allocator is capped at the configured GPU envelope minus 3 GiB for context and NCCL allocations. Allocation errors propagate to the controller; the trainer does not silently retry or change batch size. Host soft and hard redlines are 192 and 224 GiB. At the soft limit, the current loader's workers and queued batches are released and training stops using the previous complete checkpoint, without serializing new state under memory pressure. The hard limit aborts immediately without allocating another checkpoint.
-
-The distributed sampler and loader retain the final partial batch. The manifest length must be divisible by world size, preventing sampler padding. `samples_seen` uses the actual batch size multiplied by rank count. Augmentation depends on dataset seed, epoch, and image index. Accumulation is fixed to one. The controller uses the explicit model configuration as the batch target.
-
-Complete recovery state includes model, EMA, optimizer, per-rank Python/NumPy/CPU/CUDA RNG, sampler epoch, next batch, samples consumed within the current epoch, registered artifact identities, file metadata, code revision, and absolute UTC event timestamps. Ordinary resume requires the same recipe. An explicit `recovery_overrides` object may change `learning_rate`, `microbatch`, `precision`, `num_workers`, or `prefetch_factor`. The sampler resumes at the exact committed sample index before forming new batches, supporting any new positive microbatch size without repeating or dropping samples. Dataset, codec, teacher, world size, and structural recipe fields remain strict. Overrides are written to events, and the learning rate is applied to the restored optimizer.
-
-On controller restart, the controller checks the formal configuration, registered input paths, and four GPUs. It reads the latest complete Torch checkpoint's `config_path` and restores its learning rate, precision, worker count, and prefetch factor. The files must belong to the same model and checkpoint identity within the project; the small configuration JSON must match its committed digest. Runtime metadata records `configured_microbatch` separately from the effective `microbatch`: a changed configured target authorizes that batch change during full-state resume, while an unchanged target preserves any saved OOM reduction. Older checkpoints use their saved microbatch as the previous target. The trainer records requested changes as `configuration_changed` and immediately saves a `configuration_change` state without consuming the failure recovery budget. Model, EMA, optimizer, per-rank RNG, data cursor, and preview/review schedule remain continuous. The next batch is formed after skipping the exact number of committed samples. Temporary validation reports are not launch dependencies.
-
-Each model's recovery budget is saved atomically in `runs/controller/<model_id>.recovery.json`. A pending plan records the failure kind, scheduled recovery count, committed source identity, desired runtime parameters, and progress at the recovery start before its event and launch. A controller restart reuses that plan; a checkpoint that already contains its recipe uses ordinary resume. A running record preserves the budget through controller or telemetry errors. For a repeated failure, the controller permits two scheduled recoveries and stops when both fail. The budget clears after a complete checkpoint records at least 100 optimizer steps beyond the recovery start. Existing event history supplies the initial record; an interrupted legacy failure without a recorded plan requires inspection. MeanFlow's complete checkpoint also supplies its actual runtime values, including a subsequently committed reduction from its own bounded recovery. Before every launch, the controller checks all six project runtime paths against live trainer arguments and the project working directory, and refuses to launch while a matching trainer remains alive.
-
-MeanFlow's explicit internal-recovery exhaustion also persists as an exhausted record and blocks subsequent controller launches for that model. Resuming after an exhausted record requires inspecting and explicitly resolving the recorded failure.
-
-The controller retries a timed-out or unsuccessful GPU memory query with up to three fresh queries, each with a 10-second timeout and a one-second delay between attempts. Retries emit `gpu_query_retry`; exhausted queries report an error. Decisions use the fresh query result and the configured resource limits.
-
-Each Torch launch receives an absolute `stop_request_path` at `runs/controller/<model_id>.stop.json`, with a previous request removed before launch. A graceful stop atomically writes `model_id`, `reason`, and compact UTC `created_at`; the ranks observe the request, save when resource limits permit, and exit together. MeanFlow receives SIGTERM only at its main process. A hard host-memory limit or a 300-second stop timeout terminates the process group with SIGKILL.
-
-
-Every optimizer update checks the loss, gradients, parameters, optimizer tensors, and EMA for finite values. A non-finite update leaves the previous complete checkpoint pointer available. Checkpoint files are atomically written, flushed, and hashed; the completed metadata and durable replication requests precede the update of `last.json`.
-
-## Artifacts and replication
-
-Artifacts live under `runs/<model_id>`. Names follow `<model_id>-<completed-HQ-epochs>ep-<UTC>` without experiment identifiers. The epoch component is the integer completed-pass count; metadata records exact sample exposure. A save creates `.state.pt`, `.ema.pt`, `.config.json`, and `.json`, followed by `last.json`. Timestamps make each identity immutable even when multiple checkpoints fall within the same epoch.
-
-The full state uses `format="safa-facegen-train-v1"`. The separate EMA export contains `format="safa-facegen-ema-v1"`, `state_role="ema"`, `model_state`, `model_id`, config/progress, dataset size, codec/teacher hashes, and code revision. It excludes raw model and optimizer state.
-
-`events.jsonl` and `requests.jsonl` are in the run root. Save requests are emitted every 900 seconds; preview and review requests use 1,800 and 7,200 seconds. Scheduled preview/review only export and queue state on H100. The K100 worker performs image generation and evaluation. Callback and request payloads include:
-
-```text
-model_id, checkpoint_id, identity, complete=true,
-checkpoint/state_path, ema_path, config_path,
-hashes={state,ema,config}, state_sha256, sha256/ema_sha256,
-state_role=ema, step, samples_seen, completed_epochs,
-created_at_utc, reason
-```
-
-Paths are relative to the project root. `sha256` and `ema_sha256` both refer to the EMA-only file. Each JSONL request also has `event`, `type`, and `request_id=<checkpoint_id>-<event>`.
-
-Implementation acceptance scripts and their reports are kept outside the delivered Git source. Production training and inference reuse registered artifact metadata and avoid repeated full-file integrity scans.
+正式评价读取独立 EMA 和已登记 codec 身份，使用 [data.md](data.md) 的固定输入与参考集。来源文件及许可证说明见 `vendor/latent_diffusion`、`vendor/latent_consistency` 和 `vendor/rectified_flow`；RF 的 SciPy RK45 许可保存在 `vendor/rectified_flow/SCIPY_LICENSE.txt`。
