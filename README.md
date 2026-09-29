@@ -11,9 +11,9 @@
 | Diffusion-LDM-UNet | Min-SNR epsilon | 200 步 DDIM |
 | LatentConsistency-LDM-UNet | 真实数据一致性细化 | 4 步 |
 
-B/2、Diffusion、Rectified Flow 和 Latent Consistency 的四项适配共 55,000 次更新，训练、正式评价和最终副本同步均已完成。B/4 与 L/2 保留各自选中的 EMA，未进入本轮适配。H100 当前没有训练作业；K100 的空闲复制与评价 worker 已于 2026-09-29 06:00 UTC 停止。六个选中 EMA 与各模型最新完整恢复状态共 11 个 checkpoint 身份纳入保留清单，中间权重已完成清理。
+B/2、Diffusion、Rectified Flow 和 Latent Consistency 的四项适配共 55,000 次更新，训练、正式评价和最终副本同步均已完成。B/4 与 L/2 保留各自选中的 EMA，未进入本轮适配。H100 当前没有训练作业；K100 的空闲复制与评价 worker 已于 2026-09-29 06:00 UTC 停止。H100 保留六模型候选、最新完整恢复状态及原始初始化。K100 每个模型仅保留一份选中 EMA，共六份、5.34 GB；训练过程副本和重复权重已清理。
 
-最终结果见 [结果与选择](docs/results.md)、[资产清单](docs/artifacts.json) 和 [六模型原图联系表](reports/final/gallery.html)。图像与AI审阅标注、原始初始化权重、codec、10 万张训练图和两类潜变量缓存保存在计算服务器。
+最终结果见 [结果与选择](docs/results.md)、[资产清单](docs/artifacts.json) 和 [六模型原图联系表](reports/final/gallery.html)。正式原图、AI 审阅标注、codec、10 万张训练图和两类潜变量缓存继续保留。原始初始化权重集中存放在 H100。
 
 ## 使用接口
 

@@ -2,7 +2,9 @@
 
 H100 的项目根目录为 `/home/apulis-dev/code/meanflow_e15_h100_bundle`，承担四卡训练和完整状态保存。K100 的项目根目录为 `/home/k100/projects/safa-facegen`，保存副本、执行生成评价并向独立 SAFA 研究项目提供选中 EMA。四项适配共 55,000 次更新及最终副本同步已经完成；H100 当前没有训练作业，K100 空闲 worker 已于 2026-09-29 06:00 UTC 停止。
 
-六模型选中 EMA、各模型最新可恢复完整状态共 11 个 checkpoint 身份，以及原始初始化、codec、100k 图像、两类潜变量缓存、正式原图和人工标注列在 [artifacts.json](artifacts.json)。中间权重整理以该清单为边界；评价结果和选择见 [results.md](results.md)。
+H100 保留六模型候选、各模型最新完整恢复状态及原始初始化，合计 11 个训练 checkpoint 身份。K100 每个模型保留一份选中 EMA，共六份、5,340,905,289 字节；配套配置、codec、评价模型、100k 图像、潜变量缓存、正式原图和 AI 审阅标注继续保留。K100 的完整训练状态副本、额外 EMA 和初始化副本已清理，完整恢复源集中在 H100。机器路径与文件大小见 [artifacts.json](artifacts.json)，评价结果和选择见 [results.md](results.md)。
+
+K100 的 `models/core-weights.json` 列出六份核心权重，复制日志数据库的 `selected_ema` 指针指向这些文件。已清理副本的恢复指针已撤下，传输回执和正式审核记录保留在原日志及 `reports/cleanup`。
 
 ## 保存与传输
 
@@ -10,7 +12,7 @@ H100 的项目根目录为 `/home/apulis-dev/code/meanflow_e15_h100_bundle`，�
 
 训练器在 `runs/<model_id>/requests.jsonl` 记录保存和审核请求。K100 的复制 worker 按请求身份建立临时副本，完成内容核对后发布，并向 H100 写入传输回执。`runs/controller/quality/` 保存本轮阶段登记与恢复记录；每个模型的 `latest-<stage_id>.json` 指向对应阶段的完整状态。历史阶段与目标 ID 保留在原始 checkpoint、登记和事件记录中。
 
-`reports/evaluation/<checkpoint_id>/review/` 保存 1,024 张正式评价原图、指标及原始记录；`quality/` 子目录保存纹理评分、覆盖率和人工审核材料。画质协议见 [quality.md](quality.md)，固定参考数据见 [data.md](data.md)。
+`reports/evaluation/<checkpoint_id>/review/` 保存 1,024 张正式评价原图、指标及原始记录；`quality/` 子目录保存纹理评分、覆盖率和 AI 审阅材料。画质协议见 [quality.md](quality.md)，固定参考数据见 [data.md](data.md)。
 
 ## 本机配置与调用
 
