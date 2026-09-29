@@ -472,7 +472,7 @@
     }
   ],
   "hq_pretraining": {
-    "recorded_at_utc": "2026-09-28T23:02:37.467515+00:00",
+    "recorded_at_utc": "2026-09-29T01:25:55.099108+00:00",
     "dataset_size": 100000,
     "queue": [
       "Diffusion-LDM-UNet",
@@ -608,7 +608,7 @@
       "K100_replication": {
         "worker_pid": 543313,
         "loaded_code_commit": "e956eec2e6dd364627a60d035db29d127d1c89cc",
-        "observed_at_utc": "2026-09-28T22:55:00.037888+00:00",
+        "observed_at_utc": "2026-09-29T01:25:55.099108+00:00",
         "initial_complete_state_status": "transport_verified",
         "restore_exercised": false,
         "restore_transfer_interval_seconds": 7200,
@@ -618,17 +618,26 @@
         "worker_alive": true,
         "initial_complete_state_received_at_utc": "2026-09-28T21:34:04.065183+00:00",
         "latest_restore": {
-          "identity": "LatentConsistency-LDM-UNet-0000ep-20260928T203217Z",
-          "path": "/home/k100/projects/safa-facegen/models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0000ep-20260928T203217Z/state.pt",
+          "identity": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z",
+          "path": "/home/k100/projects/safa-facegen/models/replicas/LatentConsistency-LDM-UNet/restore/LatentConsistency-LDM-UNet-0025ep-20260928T221828Z/state.pt",
           "restore_exercised": false
         },
-        "final_complete_state_status": "received",
+        "final_complete_state_status": "transport_verified",
         "final_complete_state_request_id": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z-save",
         "final_review_status": "complete",
         "final_review_request_id": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z-review",
         "final_complete_transfer_not_before_utc": "2026-09-28T23:34:04.065183+00:00",
         "source_retained_until_receipt": true,
-        "final_review_finished_at_utc": "2026-09-28T22:37:49.888373+00:00"
+        "final_review_finished_at_utc": "2026-09-28T22:37:49.888373+00:00",
+        "final_complete_state_received_at_utc": "2026-09-29T01:16:57.792611+00:00",
+        "final_complete_replica_metadata_verified": true,
+        "final_complete_replica_file_bytes": {
+          "state.pt": 4385770147,
+          "ema.pt": 1096540575,
+          "config.json": 253568
+        },
+        "pending_request_count": 0,
+        "source_files_preserved": true
       },
       "controller_alive": false,
       "trainer_alive": false,
@@ -15297,6 +15306,23 @@
         "LCF_observed_optimizer_step": 60,
         "budget_added_beyond_authorized_plan": false,
         "quality_approved": false
+      },
+      {
+        "at_utc": "2026-09-29T01:25:55.099108+00:00",
+        "action": "LCF final complete replica transport receipt confirmed; all executable quality-v1 stages, formal reviews and final replicas finished",
+        "model_id": "LatentConsistency-LDM-UNet",
+        "stage_id": "qv1-lcm-refine",
+        "checkpoint_id": "LatentConsistency-LDM-UNet-0025ep-20260928T221828Z",
+        "optimizer_step": 10000,
+        "samples_seen": 2557600,
+        "final_replica_received_at_utc": "2026-09-29T01:16:57.792611+00:00",
+        "integrity_mode": "metadata",
+        "latest_restore_matches_final": true,
+        "restore_exercised": false,
+        "pending_replication_or_evaluation_requests": 0,
+        "quality_approved": false,
+        "retained_candidates_and_six_model_tasks": true,
+        "cloud_instance_released": false
       }
     ],
     "historical_pending_quality_reviews_snapshot": {
@@ -16871,8 +16897,8 @@
       }
     },
     "dispatch_policy": {
-      "observed_at_utc": "2026-09-28T22:29:21.137700+00:00",
-      "status": "quality_v1_executable_training_and_formal_reviews_complete_LCF_full_replica_pending",
+      "observed_at_utc": "2026-09-29T01:25:55.099108+00:00",
+      "status": "quality_v1_executable_stages_reviews_and_final_replicas_complete_pending_owner_acceptance",
       "current_training_model": null,
       "current_stage_id": null,
       "absolute_stop_step": null,
@@ -16889,10 +16915,12 @@
       "remaining_conditional_MF_policy": "B4/L2 require actual B2 BETTER; current B2 REVIEW_REQUIRED does not authorize promotion. No second budget for completed models.",
       "LCF_stage_complete": true,
       "LCF_final_review_pending": false,
-      "LCF_final_complete_replica_pending": true,
+      "LCF_final_complete_replica_pending": false,
       "all_four_H100_idle": true,
       "next_training_action": "None: B4/L2 require actual B2 BETTER; LCF/LCD alternatives are mutually exclusive; no second budgets.",
-      "remaining_work": "Original K100 worker copies the LCF final complete state after the existing interval. All formal reviews are complete; no further generation or active authorized training."
+      "remaining_work": "No executable training, formal review or replica work remains. Preserve six-model candidates and tasks for owner acceptance; B4/L2 promotion condition is unmet.",
+      "follow_up_policy": "Stop empty heartbeat polling after final replica receipt; no new training budget or owner approval is implied.",
+      "H100_training_or_transfer_requirement_remaining": false
     },
     "rf_diagnostics": {
       "observed_at_utc": "2026-09-25T22:01:20.913441+00:00",
